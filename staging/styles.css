@@ -76,7 +76,6 @@ body {
   align-items: center;
   gap: 6px;
 }
-.wpl-tab:hover { color: var(--wpl-ink); }
 .wpl-tab.active { color: var(--wpl-accent-dark); }
 .wpl-tab.active::after {
   content: "";
@@ -125,16 +124,11 @@ body {
   min-width: 0;
   transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease, color 0.15s ease;
 }
-.prog-tab:hover, .key-tab:hover, .step-btn:hover {
-  box-shadow: var(--wpl-lift-shadow);
-  transform: translateY(-1.5px);
-}
 .prog-tab.active, .key-tab.active, .step-btn.active {
   background: var(--wpl-accent); color: #fff; border-color: var(--wpl-accent);
   box-shadow: var(--wpl-active-shadow);
   transform: translateY(0);
 }
-.prog-tab.active:hover, .key-tab.active:hover, .step-btn.active:hover { background: var(--wpl-accent-dark); border-color: var(--wpl-accent-dark); }
 
 /* ---------- Progression tabs ---------- */
 .prog-tab {
@@ -143,7 +137,6 @@ body {
   display: flex; flex-direction: column; justify-content: center;
   min-height: 78px;
 }
-.prog-tab:hover { background: var(--wpl-prog-hover); border-color: var(--wpl-prog-hover); }
 .prog-tab .num { font-weight: 800; font-size: 22px; line-height: 1.2; }
 .prog-tab .name { font-size: 12px; font-weight: 600; opacity: 0.9; margin-top: 2px; }
 
@@ -153,7 +146,6 @@ body {
   background: var(--wpl-tan); color: var(--wpl-tan-text);
   white-space: nowrap;
 }
-.key-tab:hover { background: var(--wpl-tan-hover); border-color: var(--wpl-tan-hover); }
 .key-tab.locked { opacity: 0.55; }
 
 /* ---------- Step buttons ---------- */
@@ -169,7 +161,6 @@ body {
   gap: 4px;
   min-height: 60px;
 }
-.step-btn:hover { background: var(--wpl-tan-hover); border-color: var(--wpl-tan-hover); }
 .step-btn.active .n { color: #fff; }
 .step-btn.active .l { color: rgba(255,255,255,0.85); }
 .step-btn.playing { border-color: #f59e0b; box-shadow: 0 0 0 2px rgba(245,158,11,0.35); }
@@ -177,7 +168,11 @@ body {
 .step-btn .l { font-size: 12px; color: var(--wpl-muted); line-height: 1.2; }
 
 /* ---------- Chord / number readout ---------- */
-.wpl-readout-row { display: flex; justify-content: space-between; align-items: flex-end; margin: 8px 0 6px; padding: 0 20px; }
+/* Both boxes are a fixed width (not min-width) sized with buffer to fit the
+   widest real value ("Root High"/"Root Low" on the Chords tab) so the row
+   never shifts based on content length, and justify-content:center + gap
+   groups them near the middle instead of pinning them to the row's edges. */
+.wpl-readout-row { display: flex; justify-content: center; align-items: flex-end; gap: 36px; margin: 8px 0 6px; padding: 0 20px; }
 .wpl-readout-label { font-size: 13px; color: var(--wpl-muted); }
 
 /* ---------- Piano ---------- */
@@ -251,9 +246,7 @@ body {
   transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease, color 0.15s ease;
   white-space: nowrap;
 }
-.wpl-toggle-btn:hover { background: var(--wpl-tan-hover); border-color: var(--wpl-tan-hover); box-shadow: var(--wpl-lift-shadow); transform: translateY(-1.5px); }
 .wpl-toggle-btn.active { background: var(--wpl-accent); border-color: var(--wpl-accent); color: #fff; box-shadow: var(--wpl-active-shadow); }
-.wpl-toggle-btn.active:hover { background: var(--wpl-accent-dark); border-color: var(--wpl-accent-dark); }
 .wpl-toggle-btn .wpl-icon { font-size: 14px; line-height: 1; }
 
 .wpl-play-btn {
@@ -271,9 +264,7 @@ body {
   white-space: nowrap;
   min-width: 132px;
 }
-.wpl-play-btn:hover { background: var(--wpl-accent-dark); border-color: var(--wpl-accent-dark); transform: translateY(-1.5px); }
 .wpl-play-btn.playing { background: #f59e0b; border-color: #f59e0b; }
-.wpl-play-btn.playing:hover { background: #d97706; border-color: #d97706; }
 
 /* ---------- Panels (fixed height so the shell doesn't move on tab switch —
    the key selector + piano above this live in .wpl-instrument and never
@@ -343,7 +334,33 @@ body {
   box-shadow: var(--wpl-active-shadow);
   transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
 }
-.wpl-lock-cta:hover { background: var(--wpl-accent-dark); border-color: var(--wpl-accent-dark); transform: translateY(-1.5px); }
+
+/* ---------- Hover states — real hover devices only ----------
+   iOS Safari (and touch browsers generally) fires a CSS :hover state on tap
+   and never clears it until a different element is tapped, since touch has
+   no mouseleave. Every "lift" effect below was written assuming hover means
+   "the cursor is over this" — on a phone it instead meant "the last thing I
+   tapped," so tapping Click made Loop look permanently hovered until the
+   next tap moved the stuck state onto Loop. Scoping all of it to
+   (hover: hover) and (pointer: fine) means only real mice/trackpads ever
+   see these effects; touch just gets the immediate tap feedback with
+   nothing left stuck afterward. */
+@media (hover: hover) and (pointer: fine) {
+  .wpl-tab:hover { color: var(--wpl-ink); }
+  .prog-tab:hover, .key-tab:hover, .step-btn:hover {
+    box-shadow: var(--wpl-lift-shadow);
+    transform: translateY(-1.5px);
+  }
+  .prog-tab.active:hover, .key-tab.active:hover, .step-btn.active:hover { background: var(--wpl-accent-dark); border-color: var(--wpl-accent-dark); }
+  .prog-tab:hover { background: var(--wpl-prog-hover); border-color: var(--wpl-prog-hover); }
+  .key-tab:hover { background: var(--wpl-tan-hover); border-color: var(--wpl-tan-hover); }
+  .step-btn:hover { background: var(--wpl-tan-hover); border-color: var(--wpl-tan-hover); }
+  .wpl-toggle-btn:hover { background: var(--wpl-tan-hover); border-color: var(--wpl-tan-hover); box-shadow: var(--wpl-lift-shadow); transform: translateY(-1.5px); }
+  .wpl-toggle-btn.active:hover { background: var(--wpl-accent-dark); border-color: var(--wpl-accent-dark); }
+  .wpl-play-btn:hover { background: var(--wpl-accent-dark); border-color: var(--wpl-accent-dark); transform: translateY(-1.5px); }
+  .wpl-play-btn.playing:hover { background: #d97706; border-color: #d97706; }
+  .wpl-lock-cta:hover { background: var(--wpl-accent-dark); border-color: var(--wpl-accent-dark); transform: translateY(-1.5px); }
+}
 
 @media (max-width: 520px) {
   html, body { overflow-x: hidden; }
@@ -363,8 +380,8 @@ body {
   .step-btn .l { font-size: 10px; }
   #wpl-prog-tabs, #wpl-step-row, #wpl-chord-quality-tabs, #wpl-chord-position-row { gap: 4px !important; }
   #wpl-prog-tabs, #wpl-chord-quality-tabs { margin-bottom: 6px !important; }
-  .wpl-readout-row { padding: 0 4px; margin: 4px 0 2px; }
-  .wpl-readout-row > div { min-width: 0 !important; height: 40px !important; }
+  .wpl-readout-row { padding: 0 4px; margin: 4px 0 2px; gap: 20px; }
+  .wpl-readout-row > div { width: 112px !important; height: 40px !important; }
   .wpl-readout-row #wpl-chord-name, .wpl-readout-row #wpl-step-label { font-size: 19px !important; }
   .wpl-instrument { margin-bottom: 16px; }
   .wpl-legend { font-size: 12px !important; gap: 14px !important; }
