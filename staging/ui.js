@@ -182,13 +182,27 @@
     });
   }
 
+  // ---------- Readout helper ----------
+  // The Chord/Number(Position) readout is normally a short number or 1-2
+  // letter symbol (e.g. "C", "1", "5/7") shown big and bold. The Chords
+  // tab's position names ("Root Low", "1st Inv", "Root High"...) are full
+  // words instead, and at that same size/weight they read as noticeably
+  // heavier/bigger than everything else in the readout (Chris: "does the
+  // black root high text look too big?"). Rather than sizing every value
+  // the same, drop to a smaller size (via the "long-label" class) whenever
+  // the raw value is longer than any real number/symbol ever gets.
+  function setReadoutValue(el, rawText, html) {
+    el.classList.toggle("long-label", rawText.length > 5);
+    el.innerHTML = html;
+  }
+
   // ---------- Render ----------
   function render(highlightStep) {
     const prog = D.allProgs[curProg];
     const stepToShow = highlightStep != null ? highlightStep : curStep;
     const ch = prog[stepToShow];
-    document.getElementById("wpl-chord-name").innerHTML = E.formatLabel(E.transposeChordName(ch.name, curKeyPc, useFlats));
-    document.getElementById("wpl-step-label").innerHTML = E.formatLabel(ch.topLabel);
+    setReadoutValue(document.getElementById("wpl-chord-name"), ch.name, E.formatLabel(E.transposeChordName(ch.name, curKeyPc, useFlats)));
+    setReadoutValue(document.getElementById("wpl-step-label"), ch.topLabel, E.formatLabel(ch.topLabel));
     document.querySelectorAll("#wpl-step-row .step-btn").forEach((b, i) => {
       b.classList.toggle("active", i === stepToShow);
       b.querySelector(".n").textContent = E.transposeChordName(prog[i].name, curKeyPc, useFlats);
@@ -268,8 +282,9 @@
     const voicings = D.chordVoicings[D.chordQualityNames[curQuality]];
     const posToShow = highlightPosition != null ? highlightPosition : curPosition;
     const ch = voicings[posToShow];
-    document.getElementById("wpl-chord-name").innerHTML = E.formatLabel(E.transposeChordName(ch.name, curKeyPc, useFlats));
-    document.getElementById("wpl-step-label").textContent = D.chordPositionNames[posToShow];
+    setReadoutValue(document.getElementById("wpl-chord-name"), ch.name, E.formatLabel(E.transposeChordName(ch.name, curKeyPc, useFlats)));
+    const posName = D.chordPositionNames[posToShow];
+    setReadoutValue(document.getElementById("wpl-step-label"), posName, posName);
     updateChordQualityNumbers();
     document.querySelectorAll("#wpl-chord-position-row .step-btn").forEach((b, i) => {
       b.classList.toggle("active", i === posToShow);
