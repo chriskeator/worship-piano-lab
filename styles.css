@@ -1,0 +1,386 @@
+#wpl-wrapper * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+#wpl-wrapper button { font-family: inherit; }
+body {
+  box-sizing: border-box;
+  background: #f2efe9;
+  margin: 0;
+  padding: 14px 16px;
+}
+#wpl-wrapper {
+  --wpl-cream: #f2efe9;
+  --wpl-card: #fffdf8;
+  --wpl-ink: #2a2f34;
+  --wpl-muted: #8a8b82;
+  --wpl-tan: #efe9e0;
+  --wpl-tan-hover: #e3dcd0;
+  --wpl-tan-text: #55565a;
+  --wpl-accent: #14A3C7;
+  --wpl-accent-dark: #0e8fb0;
+  --wpl-line: #e5ded2;
+  --wpl-prog-bg: #e2f5fa;
+  --wpl-prog-hover: #cfeaf2;
+  --wpl-prog-border: #cdeaf2;
+  --wpl-lift-shadow: 0 4px 10px rgba(42,38,32,0.10);
+  --wpl-active-shadow: 0 3px 10px rgba(42,38,32,0.16);
+
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 16px 32px 16px;
+  background: var(--wpl-card);
+  border-radius: 20px;
+  box-shadow: 0 4px 24px rgba(60,50,20,0.08);
+  color: var(--wpl-ink);
+}
+
+/* ---------- Header ---------- */
+.wpl-header { text-align: center; margin-bottom: 8px; }
+.wpl-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--wpl-muted);
+  text-transform: uppercase;
+  letter-spacing: 1.6px;
+  margin-bottom: 6px;
+}
+.wpl-title {
+  font-family: 'Fraunces', Georgia, 'Times New Roman', serif;
+  font-size: 32px;
+  font-weight: 600;
+  color: var(--wpl-ink);
+  line-height: 1.15;
+}
+.wpl-subtitle { font-size: 14px; font-weight: 500; color: var(--wpl-muted); margin-top: 6px; }
+
+/* ---------- Top tab bar ---------- */
+.wpl-tabbar {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1.5px solid var(--wpl-line);
+  margin-bottom: 10px;
+}
+.wpl-tab {
+  position: relative;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 8px 16px 10px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--wpl-tan-text);
+  letter-spacing: 0.2px;
+  transition: color 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.wpl-tab:hover { color: var(--wpl-ink); }
+.wpl-tab.active { color: var(--wpl-accent-dark); }
+.wpl-tab.active::after {
+  content: "";
+  position: absolute;
+  left: 8px; right: 8px; bottom: -1.5px;
+  height: 2.5px;
+  border-radius: 2px;
+  background: var(--wpl-accent);
+}
+.wpl-tab-soon {
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--wpl-muted);
+  background: var(--wpl-tan);
+  border-radius: 5px;
+  padding: 2px 5px;
+}
+.wpl-tab.active .wpl-tab-soon { color: var(--wpl-accent-dark); background: #e6f6fb; }
+
+/* ---------- Shared instrument block (key selector + readout + piano) —
+   stays in the same position across every tab; only .wpl-panel below it
+   swaps content. ---------- */
+.wpl-instrument { margin-bottom: 10px; }
+
+/* ---------- Section labels ---------- */
+.section-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--wpl-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 5px;
+}
+
+/* ---------- Shared button feel: progression tabs, key tabs, step buttons
+   all hover/select the same way — a quiet lift, no colored ring. Progression
+   tabs get their own light-blue rest color (matching the reference); key
+   tabs and step buttons share the tan. ---------- */
+.prog-tab, .key-tab, .step-btn {
+  border: 1.5px solid var(--wpl-line);
+  cursor: pointer;
+  text-align: center;
+  color: var(--wpl-ink);
+  min-width: 0;
+  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease, color 0.15s ease;
+}
+.prog-tab:hover, .key-tab:hover, .step-btn:hover {
+  box-shadow: var(--wpl-lift-shadow);
+  transform: translateY(-1.5px);
+}
+.prog-tab.active, .key-tab.active, .step-btn.active {
+  background: var(--wpl-accent); color: #fff; border-color: var(--wpl-accent);
+  box-shadow: var(--wpl-active-shadow);
+  transform: translateY(0);
+}
+.prog-tab.active:hover, .key-tab.active:hover, .step-btn.active:hover { background: var(--wpl-accent-dark); border-color: var(--wpl-accent-dark); }
+
+/* ---------- Progression tabs ---------- */
+.prog-tab {
+  flex: 1; border-radius: 12px; padding: 14px 6px;
+  background: var(--wpl-prog-bg); border-color: var(--wpl-prog-border);
+}
+.prog-tab:hover { background: var(--wpl-prog-hover); border-color: var(--wpl-prog-hover); }
+.prog-tab .num { font-weight: 800; font-size: 22px; line-height: 1.2; }
+.prog-tab .name { font-size: 12px; font-weight: 600; opacity: 0.9; margin-top: 2px; }
+
+/* ---------- Key tabs ---------- */
+.key-tab {
+  flex: 1; border-radius: 8px; padding: 9px 0; font-weight: 600; font-size: 13px;
+  background: var(--wpl-tan); color: var(--wpl-tan-text);
+  white-space: nowrap;
+}
+.key-tab:hover { background: var(--wpl-tan-hover); border-color: var(--wpl-tan-hover); }
+.key-tab.locked { opacity: 0.55; }
+
+/* ---------- Step buttons ---------- */
+.step-btn {
+  flex: 1;
+  border-radius: 8px;
+  padding: 9px 4px 7px;
+  background: var(--wpl-tan);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.step-btn:hover { background: var(--wpl-tan-hover); border-color: var(--wpl-tan-hover); }
+.step-btn.active .n { color: #fff; }
+.step-btn.active .l { color: rgba(255,255,255,0.85); }
+.step-btn.playing { border-color: #f59e0b; box-shadow: 0 0 0 2px rgba(245,158,11,0.35); }
+.step-btn .n { font-weight: 700; color: var(--wpl-ink); font-size: 15px; line-height: 1.2; }
+.step-btn .l { font-size: 12px; color: var(--wpl-muted); line-height: 1.2; }
+
+/* ---------- Chord / number readout ---------- */
+.wpl-readout-row { display: flex; justify-content: space-between; align-items: flex-end; margin: 8px 0 6px; padding: 0 20px; }
+.wpl-readout-label { font-size: 13px; color: var(--wpl-muted); }
+
+/* ---------- Piano ---------- */
+#wpl-piano-frame { background: #1e293b; border-radius: 12px; padding: 5px; }
+#wpl-status {
+  text-align: center;
+  font-size: 12px;
+  color: var(--wpl-muted);
+  margin-top: 3px;
+  height: 18px;
+  line-height: 18px;
+  overflow: hidden;
+}
+
+/* ---------- Playback bar ---------- */
+.wpl-playbar {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  background: var(--wpl-tan);
+  border: 1.5px solid var(--wpl-line);
+  border-radius: 14px;
+  padding: 9px 18px;
+  margin-top: 22px;
+  flex-wrap: wrap;
+}
+.wpl-bpm {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 180px;
+}
+.wpl-bpm-label { font-size: 12px; font-weight: 700; color: var(--wpl-tan-text); white-space: nowrap; }
+.wpl-bpm-value { font-size: 13px; font-weight: 800; color: var(--wpl-ink); width: 40px; text-align: right; font-variant-numeric: tabular-nums; }
+.wpl-bpm input[type="range"] {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 5px;
+  border-radius: 3px;
+  background: linear-gradient(var(--wpl-accent),var(--wpl-accent)) 0/var(--pct,50%) 100% no-repeat, #ddd2b3;
+  outline: none;
+}
+.wpl-bpm input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--wpl-accent);
+  border: 2.5px solid var(--wpl-card);
+  box-shadow: 0 1px 4px rgba(60,50,20,0.3);
+  cursor: pointer;
+  margin-top: -0.5px;
+}
+.wpl-bpm input[type="range"]::-moz-range-thumb {
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--wpl-accent); border: 2.5px solid var(--wpl-card);
+  box-shadow: 0 1px 4px rgba(60,50,20,0.3); cursor: pointer;
+}
+
+.wpl-playbar-controls { display: flex; align-items: center; gap: 8px; }
+.wpl-toggle-btn {
+  display: flex; align-items: center; gap: 6px;
+  border: 1.5px solid var(--wpl-line);
+  background: var(--wpl-card);
+  color: var(--wpl-tan-text);
+  font-weight: 700;
+  font-size: 12.5px;
+  padding: 9px 13px;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease, color 0.15s ease;
+  white-space: nowrap;
+}
+.wpl-toggle-btn:hover { background: var(--wpl-tan-hover); border-color: var(--wpl-tan-hover); box-shadow: var(--wpl-lift-shadow); transform: translateY(-1.5px); }
+.wpl-toggle-btn.active { background: var(--wpl-accent); border-color: var(--wpl-accent); color: #fff; box-shadow: var(--wpl-active-shadow); }
+.wpl-toggle-btn.active:hover { background: var(--wpl-accent-dark); border-color: var(--wpl-accent-dark); }
+.wpl-toggle-btn .wpl-icon { font-size: 14px; line-height: 1; }
+
+.wpl-play-btn {
+  display: flex; align-items: center; gap: 7px;
+  border: 1.5px solid var(--wpl-accent);
+  background: var(--wpl-accent);
+  color: #fff;
+  font-weight: 800;
+  font-size: 13px;
+  padding: 10px 18px;
+  border-radius: 9px;
+  cursor: pointer;
+  box-shadow: var(--wpl-active-shadow);
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+  white-space: nowrap;
+}
+.wpl-play-btn:hover { background: var(--wpl-accent-dark); border-color: var(--wpl-accent-dark); transform: translateY(-1.5px); }
+.wpl-play-btn.playing { background: #f59e0b; border-color: #f59e0b; }
+.wpl-play-btn.playing:hover { background: #d97706; border-color: #d97706; }
+
+/* ---------- Panels (fixed height so the shell doesn't move on tab switch —
+   the key selector + piano above this live in .wpl-instrument and never
+   move at all, regardless of tab) ---------- */
+.wpl-panel { min-height: 230px; }
+
+/* ---------- Coming soon panel ---------- */
+.wpl-soon {
+  min-height: 230px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  text-align: center;
+  color: var(--wpl-muted);
+}
+.wpl-soon-icon { font-size: 34px; margin-bottom: 12px; }
+.wpl-soon-title { font-size: 17px; font-weight: 700; color: var(--wpl-ink); margin-bottom: 6px; }
+.wpl-soon-text { font-size: 13.5px; max-width: 380px; margin: 0 auto; line-height: 1.5; }
+
+/* ---------- Demo lock overlay (covers readout + piano + legend + status
+   when a locked key is tapped in demo mode; the key-selector row above it
+   stays outside this wrapper and always clickable). ---------- */
+.wpl-instrument-display { position: relative; }
+.wpl-instrument-display.locked .wpl-instrument-content {
+  filter: blur(2.5px);
+  opacity: 0.35;
+  pointer-events: none;
+  user-select: none;
+}
+.wpl-lock-overlay {
+  display: none;
+  position: absolute;
+  inset: 0;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 5;
+}
+.wpl-lock-overlay.show { display: flex; }
+.wpl-lock-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  background: var(--wpl-card);
+  border: 1.5px solid var(--wpl-line);
+  border-radius: 16px;
+  padding: 22px 30px;
+  box-shadow: 0 10px 28px rgba(42,38,32,0.22);
+}
+.wpl-lock-icon { font-size: 28px; }
+.wpl-lock-title { font-size: 19px; font-weight: 800; color: var(--wpl-ink); }
+.wpl-lock-cta {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 13px 30px;
+  background: var(--wpl-accent);
+  border: 1.5px solid var(--wpl-accent);
+  color: #fff;
+  font-weight: 800;
+  font-size: 15.5px;
+  border-radius: 10px;
+  text-decoration: none;
+  box-shadow: var(--wpl-active-shadow);
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+.wpl-lock-cta:hover { background: var(--wpl-accent-dark); border-color: var(--wpl-accent-dark); transform: translateY(-1.5px); }
+
+@media (max-width: 520px) {
+  html, body { overflow-x: hidden; }
+  #wpl-wrapper { padding: 16px 10px 18px !important; width: 100%; max-width: 100%; overflow-x: hidden; }
+  #wpl-piano { height: 55px !important; }
+  #wpl-piano span { font-size: 6px !important; }
+  #wpl-piano-frame { padding: 4px !important; border-radius: 8px !important; }
+  .wpl-title { font-size: 22px; }
+  .wpl-panel, .wpl-soon { min-height: 0; }
+  .prog-tab { padding: 8px 2px; }
+  .prog-tab .num { font-size: 14px; }
+  .prog-tab .name { font-size: 8px; }
+  .key-tab { padding: 6px 0; font-size: 11px; }
+  #wpl-key-tabs { gap: 3px !important; }
+  .step-btn { padding: 5px 1px; }
+  .step-btn .n { font-size: 10px; }
+  .step-btn .l { font-size: 10px; }
+  #wpl-prog-tabs, #wpl-step-row { gap: 4px !important; }
+  #wpl-prog-tabs { margin-bottom: 6px !important; }
+  .wpl-readout-row { padding: 0 4px; margin: 4px 0 2px; }
+  .wpl-readout-row > div { min-width: 0 !important; height: 40px !important; }
+  .wpl-readout-row #wpl-chord-name, .wpl-readout-row #wpl-step-label { font-size: 19px !important; }
+  .wpl-instrument { margin-bottom: 16px; }
+  .wpl-legend { font-size: 12px !important; gap: 14px !important; }
+  .wpl-legend-dot { width: 9px !important; height: 9px !important; margin-right: 4px !important; }
+  /* Status line is JS-relocated to sit between the progression buttons and
+     the step row on mobile (see wireMobileStatusReposition in ui.js) — this
+     margin is tuned for that new spot, not its default under-the-piano one. */
+  #wpl-status { margin: 0 0 6px; }
+  .wpl-tabbar { gap: 0; }
+  .wpl-tab { padding: 7px 5px 9px; font-size: 10.5px; gap: 3px; }
+  .wpl-tab-soon { font-size: 7px; padding: 1.5px 3px; }
+  .wpl-lock-card { padding: 16px 18px; }
+  .wpl-lock-title { font-size: 16px; }
+  .wpl-lock-cta { padding: 11px 22px; font-size: 14px; }
+  .wpl-playbar { gap: 12px; padding: 10px 12px; }
+  .wpl-bpm { min-width: 100%; order: 1; }
+  .wpl-playbar-controls { order: 2; width: 100%; justify-content: space-between; }
+  .wpl-toggle-btn, .wpl-play-btn { flex: 1; justify-content: center; }
+}
+@media (max-height: 500px) {
+  #wpl-piano { height: 95px !important; }
+  #wpl-piano span { font-size: 8px !important; }
+  #wpl-piano-frame { padding: 4px !important; border-radius: 8px !important; }
+}
