@@ -468,47 +468,18 @@
     }
   }
 
-  // ---------- Mobile-only status reposition ----------
-  // On narrow screens, move the "Tap any chord..." status line down between
-  // each tab's own two button rows (progression tabs -> step row, or chord
-  // quality tabs -> position row), instead of leaving it under the piano
-  // legend — reuses existing vertical space there so the whole shell sits
-  // shorter and needs less scrolling on a phone. The anchor row depends on
-  // whichever tab is active, and is re-applied on every tab switch so the
-  // status line always lands in the visible panel, never stranded inside a
-  // hidden one.
-  let statusOriginalParent = null;
-  let statusOriginalNextSibling = null;
-  let statusMobileMq = null;
-
-  function repositionStatus() {
-    const statusEl = document.getElementById("wpl-status");
-    const isMobile = statusMobileMq ? statusMobileMq.matches : false;
-    if (isMobile) {
-      const anchorRow = activeTabId === "chords"
-        ? document.getElementById("wpl-chord-position-row")
-        : document.getElementById("wpl-step-row");
-      if (anchorRow && (statusEl.nextSibling !== anchorRow || statusEl.parentNode !== anchorRow.parentNode)) {
-        anchorRow.parentNode.insertBefore(statusEl, anchorRow);
-      }
-    } else if (statusEl.parentNode !== statusOriginalParent) {
-      if (statusOriginalNextSibling) {
-        statusOriginalParent.insertBefore(statusEl, statusOriginalNextSibling);
-      } else {
-        statusOriginalParent.appendChild(statusEl);
-      }
-    }
-  }
-
-  function wireMobileStatusReposition() {
-    const statusEl = document.getElementById("wpl-status");
-    statusOriginalParent = statusEl.parentNode;
-    statusOriginalNextSibling = statusEl.nextSibling;
-    statusMobileMq = window.matchMedia("(max-width: 520px)");
-
-    repositionStatus();
-    statusMobileMq.addEventListener("change", () => repositionStatus());
-  }
+  // ---------- Status line ----------
+  // "#wpl-status" (the "Tap any chord..." hint) always stays put under the
+  // piano/legend in the shared instrument block, on every tab and every
+  // viewport. An earlier version relocated it into the panel between the
+  // two button rows on mobile to save space, but that shrinks the shared
+  // instrument block itself depending on which tab is active — which broke
+  // the fixed-shell-height requirement (Progressions came out ~18px
+  // shorter than Chords/Scales/Riffs on mobile once Chords stopped sharing
+  // the same trick). Keeping it in one place, always, is what actually
+  // guarantees the shell is identical across every tab.
+  function repositionStatus() {}
+  function wireMobileStatusReposition() {}
 
   // ---------- Init ----------
   function init() {
