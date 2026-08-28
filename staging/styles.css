@@ -351,7 +351,7 @@ body {
   #wpl-piano span { font-size: 6px !important; }
   #wpl-piano-frame { padding: 4px !important; border-radius: 8px !important; }
   .wpl-title { font-size: 22px; }
-  .wpl-panel, .wpl-soon { min-height: 250px; }
+  .wpl-panel, .wpl-soon { min-height: 243px; }
   .prog-tab { padding: 8px 2px; min-height: 55px; }
   .prog-tab .num { font-size: 14px; }
   .prog-tab .name { font-size: 8px; }
@@ -368,10 +368,10 @@ body {
   .wpl-instrument { margin-bottom: 16px; }
   .wpl-legend { font-size: 12px !important; gap: 14px !important; }
   .wpl-legend-dot { width: 9px !important; height: 9px !important; margin-right: 4px !important; }
-  /* Status line is JS-relocated to sit between the progression buttons and
-     the step row on mobile (see wireMobileStatusReposition in ui.js) — this
-     margin is tuned for that new spot, not its default under-the-piano one. */
-  #wpl-status { margin: 0 0 6px; }
+  /* Chris: keep the "Tap any chord..." hint on desktop, but drop it on
+     mobile — narrow screens don't have room for it without crowding the
+     "3." heading above the step/position row. */
+  #wpl-status { display: none; }
   .wpl-tabbar { gap: 0; }
   .wpl-tab { padding: 7px 5px 9px; font-size: 10.5px; gap: 3px; }
   .wpl-tab-soon { font-size: 7px; padding: 1.5px 3px; }
