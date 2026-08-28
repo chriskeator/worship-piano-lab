@@ -44,8 +44,12 @@
       btn.addEventListener("click", () => {
         document.querySelectorAll(".wpl-tab").forEach(t => t.classList.remove("active"));
         btn.classList.add("active");
-        document.querySelectorAll(".wpl-panel").forEach(p => { p.style.display = "none"; });
-        document.getElementById("wpl-panel-" + tab.id).style.display = "";
+        // Panels stack in the same CSS Grid cell (.wpl-panels in styles.css)
+        // and are shown/hidden with the "active" class (visibility, not
+        // display:none) so the container is always sized to the tallest
+        // panel automatically — never toggle display/visibility here directly.
+        document.querySelectorAll(".wpl-panel").forEach(p => { p.classList.remove("active"); });
+        document.getElementById("wpl-panel-" + tab.id).classList.add("active");
         E.stopPlayThrough();
         resetPlayButton();
         resetChordsPlayButton();

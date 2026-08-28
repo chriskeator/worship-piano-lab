@@ -271,14 +271,33 @@ body {
 }
 .wpl-play-btn.playing { background: #f59e0b; border-color: #f59e0b; }
 
-/* ---------- Panels (fixed height so the shell doesn't move on tab switch —
-   the key selector + piano above this live in .wpl-instrument and never
-   move at all, regardless of tab) ---------- */
-.wpl-panel { min-height: 266px; }
+/* ---------- Panels (the shell doesn't move on tab switch — the key
+   selector + piano above this live in .wpl-instrument and never move at
+   all, regardless of tab) ----------
+   All 4 panels are stacked in the SAME grid cell (grid-row/grid-column:1),
+   so .wpl-panels sizes itself to whichever panel is naturally tallest —
+   automatically, with no min-height number to keep in sync by hand. Only
+   the active one is visible; the rest sit underneath at visibility:hidden
+   (not display:none, which would remove them from the height calculation
+   entirely and defeat the whole point). Chris (2026-08-28): "I don't want
+   to keep adjusting vertical heights for things" when adding future tabs
+   or content — this is the fix, do NOT go back to per-panel min-height
+   tuning. Adding tab #5 someday just means adding a 5th `.wpl-panel` in
+   here; its height is picked up automatically. */
+.wpl-panels { display: grid; }
+.wpl-panel {
+  grid-row: 1;
+  grid-column: 1;
+  visibility: hidden;
+  pointer-events: none;
+}
+.wpl-panel.active {
+  visibility: visible;
+  pointer-events: auto;
+}
 
 /* ---------- Coming soon panel ---------- */
 .wpl-soon {
-  min-height: 266px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -374,7 +393,6 @@ body {
   #wpl-piano span { font-size: 6px !important; }
   #wpl-piano-frame { padding: 4px !important; border-radius: 8px !important; }
   .wpl-title { font-size: 22px; }
-  .wpl-panel, .wpl-soon { min-height: 251px; }
   .prog-tab { padding: 8px 2px; min-height: 59px; }
   .prog-tab .num { font-size: 14px; }
   .prog-tab .name { font-size: 8px; }
