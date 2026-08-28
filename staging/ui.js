@@ -58,6 +58,7 @@
           headingLabel.textContent = "Number";
           render();
         }
+        repositionStatus();
       });
       bar.appendChild(btn);
     });
@@ -197,13 +198,26 @@
   }
 
   // ---------- Chords tab ----------
+  // Scale-degree numbers relative to the chord's OWN root (not the song
+  // key) — e.g. Major root position is always "1-3-5" regardless of which
+  // key-tab is selected. All chordVoicings shapes are written with root=C,
+  // so a note's pitch class already equals its interval-from-root in
+  // semitones; no transposition needed here.
+  const INTERVAL_LABELS = { 0: "1", 2: "2", 3: "♭3", 4: "3", 5: "4", 7: "5" };
+  function chordToneNumbers(rightNotes) {
+    return rightNotes.map(n => {
+      const pc = D.noteToPc[n.replace(/[0-9]/g, "")];
+      return INTERVAL_LABELS[pc] || "?";
+    });
+  }
+
   function buildChordQualityTabs() {
     const wrap = document.getElementById("wpl-chord-quality-tabs");
     wrap.innerHTML = "";
     D.chordQualityNames.forEach((name, i) => {
       const b = document.createElement("button");
       b.className = "prog-tab" + (i === 0 ? " active" : "");
-      b.innerHTML = `<div class="num">${name}</div>`;
+      b.innerHTML = `<div class="num">${name}</div><div class="name">${chordToneNumbers(D.chordVoicings[name][curPosition].right).join("-")}</div>`;
       b.addEventListener("click", () => {
         curQuality = i;
         document.querySelectorAll("#wpl-chord-quality-tabs .prog-tab").forEach(t => t.classList.remove("active"));
@@ -216,6 +230,17 @@
         }
       });
       wrap.appendChild(b);
+    });
+  }
+
+  // Refreshes the small "1-3-5"-style caption on all 4 quality buttons for
+  // whichever position is currently selected — every button shows its OWN
+  // quality's numbers at that position, not just the active one.
+  function updateChordQualityNumbers() {
+    document.querySelectorAll("#wpl-chord-quality-tabs .prog-tab").forEach((b, i) => {
+      const qName = D.chordQualityNames[i];
+      const nums = chordToneNumbers(D.chordVoicings[qName][curPosition].right).join("-");
+      b.querySelector(".name").textContent = nums;
     });
   }
 
@@ -245,8 +270,7 @@
     const ch = voicings[posToShow];
     document.getElementById("wpl-chord-name").innerHTML = E.formatLabel(E.transposeChordName(ch.name, curKeyPc, useFlats));
     document.getElementById("wpl-step-label").textContent = D.chordPositionNames[posToShow];
-    const noteNames = ch.right.map(n => E.transposeNote(n, curKeyPc, useFlats).replace(/[0-9]/g, ""));
-    document.getElementById("wpl-chord-notes").textContent = noteNames.join(" - ");
+    updateChordQualityNumbers();
     document.querySelectorAll("#wpl-chord-position-row .step-btn").forEach((b, i) => {
       b.classList.toggle("active", i === posToShow);
     });
@@ -446,32 +470,44 @@
 
   // ---------- Mobile-only status reposition ----------
   // On narrow screens, move the "Tap any chord..." status line down between
-  // the progression buttons and the step row, instead of leaving it under
-  // the piano legend — reuses existing vertical space there so the whole
-  // shell sits shorter and needs less scrolling on a phone.
-  function wireMobileStatusReposition() {
-    const statusEl = document.getElementById("wpl-status");
-    const originalParent = statusEl.parentNode;
-    const originalNextSibling = statusEl.nextSibling;
-    const stepRow = document.getElementById("wpl-step-row");
-    const mq = window.matchMedia("(max-width: 520px)");
+  // each tab's own two button rows (progression tabs -> step row, or chord
+  // quality tabs -> position row), instead of leaving it under the piano
+  // legend — reuses existing vertical space there so the whole shell sits
+  // shorter and needs less scrolling on a phone. The anchor row depends on
+  // whichever tab is active, and is re-applied on every tab switch so the
+  // status line always lands in the visible panel, never stranded inside a
+  // hidden one.
+  let statusOriginalParent = null;
+  let statusOriginalNextSibling = null;
+  let statusMobileMq = null;
 
-    function applyPosition(isMobile) {
-      if (isMobile) {
-        if (statusEl.nextSibling !== stepRow || statusEl.parentNode !== stepRow.parentNode) {
-          stepRow.parentNode.insertBefore(statusEl, stepRow);
-        }
-      } else if (statusEl.parentNode !== originalParent) {
-        if (originalNextSibling) {
-          originalParent.insertBefore(statusEl, originalNextSibling);
-        } else {
-          originalParent.appendChild(statusEl);
-        }
+  function repositionStatus() {
+    const statusEl = document.getElementById("wpl-status");
+    const isMobile = statusMobileMq ? statusMobileMq.matches : false;
+    if (isMobile) {
+      const anchorRow = activeTabId === "chords"
+        ? document.getElementById("wpl-chord-position-row")
+        : document.getElementById("wpl-step-row");
+      if (anchorRow && (statusEl.nextSibling !== anchorRow || statusEl.parentNode !== anchorRow.parentNode)) {
+        anchorRow.parentNode.insertBefore(statusEl, anchorRow);
+      }
+    } else if (statusEl.parentNode !== statusOriginalParent) {
+      if (statusOriginalNextSibling) {
+        statusOriginalParent.insertBefore(statusEl, statusOriginalNextSibling);
+      } else {
+        statusOriginalParent.appendChild(statusEl);
       }
     }
+  }
 
-    applyPosition(mq.matches);
-    mq.addEventListener("change", (e) => applyPosition(e.matches));
+  function wireMobileStatusReposition() {
+    const statusEl = document.getElementById("wpl-status");
+    statusOriginalParent = statusEl.parentNode;
+    statusOriginalNextSibling = statusEl.nextSibling;
+    statusMobileMq = window.matchMedia("(max-width: 520px)");
+
+    repositionStatus();
+    statusMobileMq.addEventListener("change", () => repositionStatus());
   }
 
   // ---------- Init ----------

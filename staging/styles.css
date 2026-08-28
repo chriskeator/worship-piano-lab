@@ -140,6 +140,8 @@ body {
 .prog-tab {
   flex: 1; border-radius: 12px; padding: 14px 6px;
   background: var(--wpl-prog-bg); border-color: var(--wpl-prog-border);
+  display: flex; flex-direction: column; justify-content: center;
+  min-height: 73px;
 }
 .prog-tab:hover { background: var(--wpl-prog-hover); border-color: var(--wpl-prog-hover); }
 .prog-tab .num { font-weight: 800; font-size: 22px; line-height: 1.2; }
@@ -163,7 +165,9 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 4px;
+  min-height: 55px;
 }
 .step-btn:hover { background: var(--wpl-tan-hover); border-color: var(--wpl-tan-hover); }
 .step-btn.active .n { color: #fff; }
@@ -348,12 +352,12 @@ body {
   #wpl-piano-frame { padding: 4px !important; border-radius: 8px !important; }
   .wpl-title { font-size: 22px; }
   .wpl-panel, .wpl-soon { min-height: 252px; }
-  .prog-tab { padding: 8px 2px; }
+  .prog-tab { padding: 8px 2px; min-height: 55px; }
   .prog-tab .num { font-size: 14px; }
   .prog-tab .name { font-size: 8px; }
   .key-tab { padding: 6px 0; font-size: 11px; }
   #wpl-key-tabs { gap: 3px !important; }
-  .step-btn { padding: 5px 1px; }
+  .step-btn { padding: 5px 1px; min-height: 40px; }
   .step-btn .n { font-size: 10px; }
   .step-btn .l { font-size: 10px; }
   #wpl-prog-tabs, #wpl-step-row, #wpl-chord-quality-tabs, #wpl-chord-position-row { gap: 4px !important; }
