@@ -273,11 +273,11 @@ body {
 /* ---------- Panels (fixed height so the shell doesn't move on tab switch —
    the key selector + piano above this live in .wpl-instrument and never
    move at all, regardless of tab) ---------- */
-.wpl-panel { min-height: 230px; }
+.wpl-panel { min-height: 238px; }
 
 /* ---------- Coming soon panel ---------- */
 .wpl-soon {
-  min-height: 230px;
+  min-height: 238px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -347,7 +347,7 @@ body {
   #wpl-piano span { font-size: 6px !important; }
   #wpl-piano-frame { padding: 4px !important; border-radius: 8px !important; }
   .wpl-title { font-size: 22px; }
-  .wpl-panel, .wpl-soon { min-height: 0; }
+  .wpl-panel, .wpl-soon { min-height: 252px; }
   .prog-tab { padding: 8px 2px; }
   .prog-tab .num { font-size: 14px; }
   .prog-tab .name { font-size: 8px; }
