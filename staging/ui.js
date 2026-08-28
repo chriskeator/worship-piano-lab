@@ -245,6 +245,8 @@
     const ch = voicings[posToShow];
     document.getElementById("wpl-chord-name").innerHTML = E.formatLabel(E.transposeChordName(ch.name, curKeyPc, useFlats));
     document.getElementById("wpl-step-label").textContent = D.chordPositionNames[posToShow];
+    const noteNames = ch.right.map(n => E.transposeNote(n, curKeyPc, useFlats).replace(/[0-9]/g, ""));
+    document.getElementById("wpl-chord-notes").textContent = noteNames.join(" - ");
     document.querySelectorAll("#wpl-chord-position-row .step-btn").forEach((b, i) => {
       b.classList.toggle("active", i === posToShow);
     });

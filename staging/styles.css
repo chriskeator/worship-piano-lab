@@ -273,11 +273,11 @@ body {
 /* ---------- Panels (fixed height so the shell doesn't move on tab switch —
    the key selector + piano above this live in .wpl-instrument and never
    move at all, regardless of tab) ---------- */
-.wpl-panel { min-height: 238px; }
+.wpl-panel { min-height: 240px; }
 
 /* ---------- Coming soon panel ---------- */
 .wpl-soon {
-  min-height: 238px;
+  min-height: 240px;
   display: flex;
   flex-direction: column;
   align-items: center;
