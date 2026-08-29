@@ -10,6 +10,75 @@
   const params = new URLSearchParams(window.location.search);
   const DEMO_MODE = params.get("mode") === "demo";
 
+  // Demo visitors get the whole tool unlocked for a trial window so they
+  // actually get used to it, rather than hitting the 11-key lock wall on
+  // their very first visit. First-visit timestamp is stored in the
+  // browser (no backend on this static site, so no real per-person IP
+  // tracking is possible) — after TRIAL_DAYS from that first visit, the
+  // 11 non-C keys lock like before. Clearing browser data or switching
+  // devices resets the timer; that's an accepted, minor leak for a demo
+  // funnel, not a real problem.
+  const TRIAL_DAYS = 7;
+  const TRIAL_STORAGE_KEY = "wpl_demo_first_visit";
+  let TRIAL_EXPIRED = false;
+  if (DEMO_MODE) {
+    try {
+      let firstVisit = localStorage.getItem(TRIAL_STORAGE_KEY);
+      if (!firstVisit) {
+        firstVisit = String(Date.now());
+        localStorage.setItem(TRIAL_STORAGE_KEY, firstVisit);
+      }
+      const elapsedDays = (Date.now() - parseInt(firstVisit, 10)) / (1000 * 60 * 60 * 24);
+      TRIAL_EXPIRED = elapsedDays >= TRIAL_DAYS;
+    } catch (e) {
+      // localStorage unavailable (private browsing, storage blocked, etc.)
+      // — fail open (unlocked) rather than breaking the demo entirely.
+      TRIAL_EXPIRED = false;
+    }
+  }
+
+  // Live-ticking dd:hh:mm:ss badge, overlaid on the card (position:absolute
+  // in styles.css) so it never affects the shell's height/layout — Chris:
+  // "the countdown timer need to be overlayed somewhere else that doesn't
+  // effect the size". Once the trial has expired the badge just hides;
+  // it does not re-lock keys mid-session on its own (TRIAL_EXPIRED is
+  // computed once at page load) — a refresh after expiry is what actually
+  // re-locks the 11 keys, same as before.
+  let trialCountdownTimer = null;
+  function startTrialCountdown() {
+    if (!DEMO_MODE || TRIAL_EXPIRED) return; // once locked, the lock overlay explains it, no badge needed
+    let firstVisit;
+    try { firstVisit = localStorage.getItem(TRIAL_STORAGE_KEY); } catch (e) { return; }
+    if (!firstVisit) return;
+    const trialEndMs = parseInt(firstVisit, 10) + TRIAL_DAYS * 24 * 60 * 60 * 1000;
+    const el = document.getElementById("wpl-trial-note");
+    if (!el) return;
+    el.style.display = "block";
+    // Reserve room in the centered header so the eyebrow/title text never
+    // runs under this corner badge on narrow screens (see styles.css).
+    document.getElementById("wpl-wrapper").classList.add("wpl-has-trial-badge");
+
+    function tick() {
+      const remainingMs = trialEndMs - Date.now();
+      if (remainingMs <= 0) {
+        el.style.display = "none";
+        clearInterval(trialCountdownTimer);
+        return;
+      }
+      const totalSec = Math.floor(remainingMs / 1000);
+      const d = Math.floor(totalSec / 86400);
+      const h = Math.floor((totalSec % 86400) / 3600);
+      const m = Math.floor((totalSec % 3600) / 60);
+      const s = totalSec % 60;
+      const pad = n => String(n).padStart(2, "0");
+      el.innerHTML =
+        '<span class="wpl-trial-label">Free demo ends in</span>' +
+        '<span class="wpl-trial-clock">' + d + 'd ' + pad(h) + 'h ' + pad(m) + 'm ' + pad(s) + 's</span>';
+    }
+    tick();
+    trialCountdownTimer = setInterval(tick, 1000);
+  }
+
   // ---------- State ----------
   let curKeyPc = 0;
   let useFlats = false;
@@ -79,7 +148,7 @@
         wrap.appendChild(divider);
       }
       const btn = document.createElement("button");
-      const locked = DEMO_MODE && k.pc !== 0;
+      const locked = TRIAL_EXPIRED && k.pc !== 0;
       btn.className = "key-tab" + (k.pc === 0 ? " active" : "") + (locked ? " locked" : "");
       btn.textContent = k.label;
       btn.dataset.pc = k.pc;
@@ -503,6 +572,7 @@
   // ---------- Init ----------
   function init() {
     buildTabBar();
+    startTrialCountdown();
     buildKeyTabs();
     buildProgTabs();
     buildChordQualityTabs();
