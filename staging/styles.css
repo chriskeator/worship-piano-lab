@@ -250,6 +250,7 @@ body {
   cursor: pointer;
   transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease, color 0.15s ease;
   white-space: nowrap;
+  min-width: 0;
 }
 .wpl-toggle-btn.active { background: var(--wpl-accent); border-color: var(--wpl-accent); color: #fff; box-shadow: var(--wpl-active-shadow); }
 .wpl-toggle-btn .wpl-icon { font-size: 14px; line-height: 1; }
@@ -429,7 +430,34 @@ body {
   .wpl-playbar { gap: 12px; padding: 10px 12px; }
   .wpl-bpm { min-width: 100%; order: 1; }
   .wpl-playbar-controls { order: 2; width: 100%; justify-content: space-between; }
-  .wpl-toggle-btn, .wpl-play-btn { flex: 1; justify-content: center; }
+  .wpl-toggle-btn, .wpl-play-btn { flex: 1; justify-content: center; min-width: 0; }
+}
+
+/* Extra-narrow safety net (2026-08-29): some embed contexts (e.g. a course
+   platform sidebar that does not collapse on mobile) can hand our iframe
+   less width than a normal phone screen. Below this the 520px mobile
+   sizing can still be too wide for Loop/Click/Play or the progression/
+   chord rows to fit without clipping, so shrink further and let the
+   playbar buttons wrap onto a second line as a last resort instead of
+   being cut off. */
+@media (max-width: 340px) {
+  #wpl-wrapper { padding: 12px 6px 14px !important; }
+  .prog-tab { padding: 6px 1px; min-height: 52px; }
+  .prog-tab .num { font-size: 12px; }
+  .prog-tab .name { font-size: 7px; }
+  .step-btn { padding: 4px 1px; min-height: 40px; }
+  .step-btn .n, .step-btn .l { font-size: 9px; }
+  .key-tab { font-size: 9.5px; padding: 5px 0; }
+  #wpl-key-tabs { gap: 2px !important; }
+  #wpl-prog-tabs, #wpl-step-row, #wpl-chord-quality-tabs, #wpl-chord-position-row { gap: 3px !important; }
+  .wpl-readout-row { gap: 10px; padding: 0 2px; }
+  .wpl-readout-row > div { width: 88px !important; height: 34px !important; }
+  .wpl-readout-row #wpl-chord-name, .wpl-readout-row #wpl-step-label { font-size: 15px !important; }
+  .wpl-readout-row #wpl-chord-name.long-label, .wpl-readout-row #wpl-step-label.long-label { font-size: 11.5px !important; }
+  .wpl-playbar { gap: 6px; padding: 8px 8px; }
+  .wpl-playbar-controls { gap: 5px; flex-wrap: wrap; row-gap: 6px; }
+  .wpl-toggle-btn, .wpl-play-btn { padding: 7px 5px; font-size: 10.5px; }
+  .wpl-play-btn { min-width: 0; }
 }
 @media (max-height: 500px) {
   #wpl-piano { height: 95px !important; }
