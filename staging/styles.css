@@ -53,6 +53,17 @@ body {
   line-height: 1.15;
 }
 .wpl-subtitle { font-size: 14px; font-weight: 500; color: var(--wpl-muted); margin-top: 6px; }
+.wpl-trial-note {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--wpl-accent-dark);
+  background: #e2f5fa;
+  border: 1px solid #cdeaf2;
+  border-radius: 999px;
+}
 
 /* ---------- Top tab bar ---------- */
 .wpl-tabbar {
