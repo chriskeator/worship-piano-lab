@@ -77,6 +77,43 @@
 
   const allProgs = [prog1, prog2, prog3, prog4, prog5];
 
+  // ---------- Chords tab ----------
+  // Chord dictionary: any root x any quality x any position. Voiced in the
+  // key of C, same as the progressions above — piano-engine's transposeNote
+  // moves each shape to whichever root is selected via the shared key-tabs.
+  // Left hand always anchors the chord's root note (Chris's "left hand is
+  // the bass player" rule) — only the right hand changes across positions.
+  const chordQualityNames = ["Major", "Minor", "Sus2", "Sus4"];
+  const chordQualitySuffix = { Major: "", Minor: "m", Sus2: "2", Sus4: "4" };
+  const chordPositionNames = ["Root Low", "1st Inv", "2nd Inv", "Root High"];
+
+  const chordVoicings = {
+    Major: [
+      { name: "C", left: ["C2", "C3"], right: ["C4", "E4", "G4"] },
+      { name: "C", left: ["C2", "C3"], right: ["E4", "G4", "C5"] },
+      { name: "C", left: ["C2", "C3"], right: ["G4", "C5", "E5"] },
+      { name: "C", left: ["C2", "C3"], right: ["C5", "E5", "G5"] }
+    ],
+    Minor: [
+      { name: "Cm", left: ["C2", "C3"], right: ["C4", "Eb4", "G4"] },
+      { name: "Cm", left: ["C2", "C3"], right: ["Eb4", "G4", "C5"] },
+      { name: "Cm", left: ["C2", "C3"], right: ["G4", "C5", "Eb5"] },
+      { name: "Cm", left: ["C2", "C3"], right: ["C5", "Eb5", "G5"] }
+    ],
+    Sus2: [
+      { name: "C2", left: ["C2", "C3"], right: ["C4", "D4", "G4"] },
+      { name: "C2", left: ["C2", "C3"], right: ["D4", "G4", "C5"] },
+      { name: "C2", left: ["C2", "C3"], right: ["G4", "C5", "D5"] },
+      { name: "C2", left: ["C2", "C3"], right: ["C5", "D5", "G5"] }
+    ],
+    Sus4: [
+      { name: "C4", left: ["C2", "C3"], right: ["C4", "F4", "G4"] },
+      { name: "C4", left: ["C2", "C3"], right: ["F4", "G4", "C5"] },
+      { name: "C4", left: ["C2", "C3"], right: ["G4", "C5", "F5"] },
+      { name: "C4", left: ["C2", "C3"], right: ["C5", "F5", "G5"] }
+    ]
+  };
+
   const sharpNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
   const flatNames  = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
   const preferFlats = [1, 3, 5, 8, 10];
@@ -100,6 +137,10 @@
     flatNames,
     preferFlats,
     noteToPc,
-    keyList
+    keyList,
+    chordQualityNames,
+    chordQualitySuffix,
+    chordPositionNames,
+    chordVoicings
   };
 })(window);

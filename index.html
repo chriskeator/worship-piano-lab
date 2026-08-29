@@ -31,13 +31,13 @@
       <div class="wpl-instrument-display" id="wpl-instrument-display">
         <div class="wpl-instrument-content">
           <div class="wpl-readout-row">
-            <div style="text-align:center; min-width:180px; height:50px;">
+            <div style="text-align:center; width:140px; height:50px;">
               <div class="wpl-readout-label">Chord</div>
-              <div id="wpl-chord-name" style="font-size:24px; font-weight:700; line-height:1.3;"></div>
+              <div id="wpl-chord-name" style="font-size:24px; font-weight:700; line-height:31px;"></div>
             </div>
-            <div style="text-align:center; min-width:160px; height:50px;">
-              <div class="wpl-readout-label">Number</div>
-              <div id="wpl-step-label" style="font-size:24px; font-weight:700; line-height:1.3;"></div>
+            <div style="text-align:center; width:140px; height:50px;">
+              <div class="wpl-readout-label" id="wpl-step-heading-label">Number</div>
+              <div id="wpl-step-label" style="font-size:24px; font-weight:700; line-height:31px;"></div>
             </div>
           </div>
           <div id="wpl-piano-frame">
@@ -61,11 +61,19 @@
       </div>
     </div>
 
+    <!-- All 4 panels stack in the same CSS Grid cell (see .wpl-panels in
+         styles.css) so the container is always exactly as tall as the
+         tallest one, automatically — adding a tab or changing a panel's
+         content never requires hand-tuning a min-height to match the
+         others again. -->
+    <div class="wpl-panels">
+
     <!-- Progressions panel -->
-    <div id="wpl-panel-progressions" class="wpl-panel">
+    <div id="wpl-panel-progressions" class="wpl-panel active">
       <div class="section-label">2. Choose a progression</div>
       <div id="wpl-prog-tabs" style="display:flex; gap:8px; margin-bottom:14px;"></div>
 
+      <div class="section-label">3. Choose a chord</div>
       <div id="wpl-step-row" style="display:flex; gap:8px;"></div>
 
       <div class="wpl-playbar">
@@ -82,17 +90,30 @@
       </div>
     </div>
 
-    <!-- Chords panel (coming soon) -->
-    <div id="wpl-panel-chords" class="wpl-panel" style="display:none;">
-      <div class="wpl-soon">
-        <div class="wpl-soon-icon">&#128400;</div>
-        <div class="wpl-soon-title">Chords — coming soon</div>
-        <div class="wpl-soon-text">Root chords, inversions, sus2, and sus4 in every key, right hand and both hands, with the full shape library from your courses.</div>
+    <!-- Chords panel -->
+    <div id="wpl-panel-chords" class="wpl-panel">
+      <div class="section-label">2. Choose a chord</div>
+      <div id="wpl-chord-quality-tabs" style="display:flex; gap:8px; margin-bottom:14px;"></div>
+
+      <div class="section-label">3. Choose a position</div>
+      <div id="wpl-chord-position-row" style="display:flex; gap:8px;"></div>
+
+      <div class="wpl-playbar">
+        <div class="wpl-bpm">
+          <span class="wpl-bpm-label">TEMPO</span>
+          <input type="range" id="wpl-chords-bpm-slider" min="40" max="160" value="80" />
+          <span class="wpl-bpm-value" id="wpl-chords-bpm-value">80</span>
+        </div>
+        <div class="wpl-playbar-controls">
+          <button class="wpl-toggle-btn" id="wpl-chords-loop-btn"><span class="wpl-icon">&#8635;</span>Loop</button>
+          <button class="wpl-toggle-btn" id="wpl-chords-click-btn"><span class="wpl-icon">&#9679;</span>Click</button>
+          <button class="wpl-play-btn" id="wpl-chords-play-btn"><span class="wpl-icon">&#9654;</span><span id="wpl-chords-play-label">Practice</span></button>
+        </div>
       </div>
     </div>
 
     <!-- Scales panel (coming soon) -->
-    <div id="wpl-panel-scales" class="wpl-panel" style="display:none;">
+    <div id="wpl-panel-scales" class="wpl-panel">
       <div class="wpl-soon">
         <div class="wpl-soon-icon">&#127929;</div>
         <div class="wpl-soon-title">Scales — coming soon</div>
@@ -101,13 +122,15 @@
     </div>
 
     <!-- Riffs panel (coming soon) -->
-    <div id="wpl-panel-riffs" class="wpl-panel" style="display:none;">
+    <div id="wpl-panel-riffs" class="wpl-panel">
       <div class="wpl-soon">
         <div class="wpl-soon-icon">&#127925;</div>
         <div class="wpl-soon-title">Riffs &amp; exercises — coming soon</div>
         <div class="wpl-soon-text">Finger-breaking exercises, arpeggio patterns, and riffs for turning static chords into movement.</div>
       </div>
     </div>
+
+    </div><!-- /.wpl-panels -->
   </div>
 
   <script src="chord-data.js"></script>

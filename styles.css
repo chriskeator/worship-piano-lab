@@ -76,7 +76,6 @@ body {
   align-items: center;
   gap: 6px;
 }
-.wpl-tab:hover { color: var(--wpl-ink); }
 .wpl-tab.active { color: var(--wpl-accent-dark); }
 .wpl-tab.active::after {
   content: "";
@@ -125,23 +124,19 @@ body {
   min-width: 0;
   transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease, color 0.15s ease;
 }
-.prog-tab:hover, .key-tab:hover, .step-btn:hover {
-  box-shadow: var(--wpl-lift-shadow);
-  transform: translateY(-1.5px);
-}
 .prog-tab.active, .key-tab.active, .step-btn.active {
   background: var(--wpl-accent); color: #fff; border-color: var(--wpl-accent);
   box-shadow: var(--wpl-active-shadow);
   transform: translateY(0);
 }
-.prog-tab.active:hover, .key-tab.active:hover, .step-btn.active:hover { background: var(--wpl-accent-dark); border-color: var(--wpl-accent-dark); }
 
 /* ---------- Progression tabs ---------- */
 .prog-tab {
   flex: 1; border-radius: 12px; padding: 14px 6px;
   background: var(--wpl-prog-bg); border-color: var(--wpl-prog-border);
+  display: flex; flex-direction: column; justify-content: center;
+  min-height: 78px;
 }
-.prog-tab:hover { background: var(--wpl-prog-hover); border-color: var(--wpl-prog-hover); }
 .prog-tab .num { font-weight: 800; font-size: 22px; line-height: 1.2; }
 .prog-tab .name { font-size: 12px; font-weight: 600; opacity: 0.9; margin-top: 2px; }
 
@@ -151,7 +146,6 @@ body {
   background: var(--wpl-tan); color: var(--wpl-tan-text);
   white-space: nowrap;
 }
-.key-tab:hover { background: var(--wpl-tan-hover); border-color: var(--wpl-tan-hover); }
 .key-tab.locked { opacity: 0.55; }
 
 /* ---------- Step buttons ---------- */
@@ -163,9 +157,10 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 4px;
+  min-height: 60px;
 }
-.step-btn:hover { background: var(--wpl-tan-hover); border-color: var(--wpl-tan-hover); }
 .step-btn.active .n { color: #fff; }
 .step-btn.active .l { color: rgba(255,255,255,0.85); }
 .step-btn.playing { border-color: #f59e0b; box-shadow: 0 0 0 2px rgba(245,158,11,0.35); }
@@ -173,8 +168,17 @@ body {
 .step-btn .l { font-size: 12px; color: var(--wpl-muted); line-height: 1.2; }
 
 /* ---------- Chord / number readout ---------- */
-.wpl-readout-row { display: flex; justify-content: space-between; align-items: flex-end; margin: 8px 0 6px; padding: 0 20px; }
+/* Both boxes are a fixed width (not min-width) sized with buffer to fit the
+   widest real value ("Root High"/"Root Low" on the Chords tab) so the row
+   never shifts based on content length, and justify-content:center + gap
+   groups them near the middle instead of pinning them to the row's edges. */
+.wpl-readout-row { display: flex; justify-content: center; align-items: flex-end; gap: 36px; margin: 8px 0 6px; padding: 0 20px; }
 .wpl-readout-label { font-size: 13px; color: var(--wpl-muted); }
+/* Numbers/symbols ("C", "1", "5/7") read fine big and bold; full words
+   ("Root High", "1st Inv") look oversized/heavy at the same size, so
+   ui.js's setReadoutValue() adds this class whenever the raw value is
+   longer than any real number/symbol ever gets (see ui.js comment). */
+#wpl-chord-name.long-label, #wpl-step-label.long-label { font-size: 18px !important; }
 
 /* ---------- Piano ---------- */
 #wpl-piano-frame { background: #1e293b; border-radius: 12px; padding: 5px; }
@@ -247,13 +251,11 @@ body {
   transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease, color 0.15s ease;
   white-space: nowrap;
 }
-.wpl-toggle-btn:hover { background: var(--wpl-tan-hover); border-color: var(--wpl-tan-hover); box-shadow: var(--wpl-lift-shadow); transform: translateY(-1.5px); }
 .wpl-toggle-btn.active { background: var(--wpl-accent); border-color: var(--wpl-accent); color: #fff; box-shadow: var(--wpl-active-shadow); }
-.wpl-toggle-btn.active:hover { background: var(--wpl-accent-dark); border-color: var(--wpl-accent-dark); }
 .wpl-toggle-btn .wpl-icon { font-size: 14px; line-height: 1; }
 
 .wpl-play-btn {
-  display: flex; align-items: center; gap: 7px;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
   border: 1.5px solid var(--wpl-accent);
   background: var(--wpl-accent);
   color: #fff;
@@ -265,19 +267,37 @@ body {
   box-shadow: var(--wpl-active-shadow);
   transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
   white-space: nowrap;
+  min-width: 132px;
 }
-.wpl-play-btn:hover { background: var(--wpl-accent-dark); border-color: var(--wpl-accent-dark); transform: translateY(-1.5px); }
 .wpl-play-btn.playing { background: #f59e0b; border-color: #f59e0b; }
-.wpl-play-btn.playing:hover { background: #d97706; border-color: #d97706; }
 
-/* ---------- Panels (fixed height so the shell doesn't move on tab switch —
-   the key selector + piano above this live in .wpl-instrument and never
-   move at all, regardless of tab) ---------- */
-.wpl-panel { min-height: 230px; }
+/* ---------- Panels (the shell doesn't move on tab switch — the key
+   selector + piano above this live in .wpl-instrument and never move at
+   all, regardless of tab) ----------
+   All 4 panels are stacked in the SAME grid cell (grid-row/grid-column:1),
+   so .wpl-panels sizes itself to whichever panel is naturally tallest —
+   automatically, with no min-height number to keep in sync by hand. Only
+   the active one is visible; the rest sit underneath at visibility:hidden
+   (not display:none, which would remove them from the height calculation
+   entirely and defeat the whole point). Chris (2026-08-28): "I don't want
+   to keep adjusting vertical heights for things" when adding future tabs
+   or content — this is the fix, do NOT go back to per-panel min-height
+   tuning. Adding tab #5 someday just means adding a 5th `.wpl-panel` in
+   here; its height is picked up automatically. */
+.wpl-panels { display: grid; }
+.wpl-panel {
+  grid-row: 1;
+  grid-column: 1;
+  visibility: hidden;
+  pointer-events: none;
+}
+.wpl-panel.active {
+  visibility: visible;
+  pointer-events: auto;
+}
 
 /* ---------- Coming soon panel ---------- */
 .wpl-soon {
-  min-height: 230px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -338,7 +358,33 @@ body {
   box-shadow: var(--wpl-active-shadow);
   transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
 }
-.wpl-lock-cta:hover { background: var(--wpl-accent-dark); border-color: var(--wpl-accent-dark); transform: translateY(-1.5px); }
+
+/* ---------- Hover states — real hover devices only ----------
+   iOS Safari (and touch browsers generally) fires a CSS :hover state on tap
+   and never clears it until a different element is tapped, since touch has
+   no mouseleave. Every "lift" effect below was written assuming hover means
+   "the cursor is over this" — on a phone it instead meant "the last thing I
+   tapped," so tapping Click made Loop look permanently hovered until the
+   next tap moved the stuck state onto Loop. Scoping all of it to
+   (hover: hover) and (pointer: fine) means only real mice/trackpads ever
+   see these effects; touch just gets the immediate tap feedback with
+   nothing left stuck afterward. */
+@media (hover: hover) and (pointer: fine) {
+  .wpl-tab:hover { color: var(--wpl-ink); }
+  .prog-tab:hover, .key-tab:hover, .step-btn:hover {
+    box-shadow: var(--wpl-lift-shadow);
+    transform: translateY(-1.5px);
+  }
+  .prog-tab.active:hover, .key-tab.active:hover, .step-btn.active:hover { background: var(--wpl-accent-dark); border-color: var(--wpl-accent-dark); }
+  .prog-tab:hover { background: var(--wpl-prog-hover); border-color: var(--wpl-prog-hover); }
+  .key-tab:hover { background: var(--wpl-tan-hover); border-color: var(--wpl-tan-hover); }
+  .step-btn:hover { background: var(--wpl-tan-hover); border-color: var(--wpl-tan-hover); }
+  .wpl-toggle-btn:hover { background: var(--wpl-tan-hover); border-color: var(--wpl-tan-hover); box-shadow: var(--wpl-lift-shadow); transform: translateY(-1.5px); }
+  .wpl-toggle-btn.active:hover { background: var(--wpl-accent-dark); border-color: var(--wpl-accent-dark); }
+  .wpl-play-btn:hover { background: var(--wpl-accent-dark); border-color: var(--wpl-accent-dark); transform: translateY(-1.5px); }
+  .wpl-play-btn.playing:hover { background: #d97706; border-color: #d97706; }
+  .wpl-lock-cta:hover { background: var(--wpl-accent-dark); border-color: var(--wpl-accent-dark); transform: translateY(-1.5px); }
+}
 
 @media (max-width: 520px) {
   html, body { overflow-x: hidden; }
@@ -347,27 +393,33 @@ body {
   #wpl-piano span { font-size: 6px !important; }
   #wpl-piano-frame { padding: 4px !important; border-radius: 8px !important; }
   .wpl-title { font-size: 22px; }
-  .wpl-panel, .wpl-soon { min-height: 0; }
-  .prog-tab { padding: 8px 2px; }
+  .prog-tab { padding: 8px 2px; min-height: 59px; }
   .prog-tab .num { font-size: 14px; }
   .prog-tab .name { font-size: 8px; }
   .key-tab { padding: 6px 0; font-size: 11px; }
   #wpl-key-tabs { gap: 3px !important; }
-  .step-btn { padding: 5px 1px; }
+  .step-btn { padding: 5px 1px; min-height: 44px; }
   .step-btn .n { font-size: 10px; }
   .step-btn .l { font-size: 10px; }
-  #wpl-prog-tabs, #wpl-step-row { gap: 4px !important; }
-  #wpl-prog-tabs { margin-bottom: 6px !important; }
-  .wpl-readout-row { padding: 0 4px; margin: 4px 0 2px; }
-  .wpl-readout-row > div { min-width: 0 !important; height: 40px !important; }
-  .wpl-readout-row #wpl-chord-name, .wpl-readout-row #wpl-step-label { font-size: 19px !important; }
+  #wpl-prog-tabs, #wpl-step-row, #wpl-chord-quality-tabs, #wpl-chord-position-row { gap: 4px !important; }
+  #wpl-prog-tabs, #wpl-chord-quality-tabs { margin-bottom: 6px !important; }
+  .wpl-readout-row { padding: 0 4px; margin: 4px 0 2px; gap: 20px; }
+  .wpl-readout-row > div { width: 112px !important; height: 40px !important; }
+  /* line-height is a fixed px value (not the desktop inline style's em-relative
+     1.3), shared by both the normal and .long-label sizes below, so a
+     short value ("C4") and a long one ("2nd Inv") sit on the same vertical
+     center in the readout instead of the smaller font pulling its line up
+     (Chris: "it sits higher than C4... it needs to be centered horizontally
+     with C4"). */
+  .wpl-readout-row #wpl-chord-name, .wpl-readout-row #wpl-step-label { font-size: 19px !important; line-height: 25px !important; }
+  .wpl-readout-row #wpl-chord-name.long-label, .wpl-readout-row #wpl-step-label.long-label { font-size: 15px !important; line-height: 25px !important; }
   .wpl-instrument { margin-bottom: 16px; }
   .wpl-legend { font-size: 12px !important; gap: 14px !important; }
   .wpl-legend-dot { width: 9px !important; height: 9px !important; margin-right: 4px !important; }
-  /* Status line is JS-relocated to sit between the progression buttons and
-     the step row on mobile (see wireMobileStatusReposition in ui.js) — this
-     margin is tuned for that new spot, not its default under-the-piano one. */
-  #wpl-status { margin: 0 0 6px; }
+  /* Chris: keep the "Tap any chord..." hint on desktop, but drop it on
+     mobile — narrow screens don't have room for it without crowding the
+     "3." heading above the step/position row. */
+  #wpl-status { display: none; }
   .wpl-tabbar { gap: 0; }
   .wpl-tab { padding: 7px 5px 9px; font-size: 10.5px; gap: 3px; }
   .wpl-tab-soon { font-size: 7px; padding: 1.5px 3px; }

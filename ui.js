@@ -19,11 +19,17 @@
   let loopOn = false;
   let clickOn = false;
   let playingDisplayedProg = null; // which progression the step row currently shows while playing
+  let activeTabId = "progressions";
+  let curQuality = 0;
+  let curPosition = 0;
+  let chordsBpm = 80;
+  let chordsLoopOn = false;
+  let chordsClickOn = false;
 
   // ---------- Tabs ----------
   const TABS = [
     { id: "progressions", label: "Progressions", soon: false },
-    { id: "chords", label: "Chords", soon: true },
+    { id: "chords", label: "Chords", soon: false },
     { id: "scales", label: "Scales", soon: true },
     { id: "riffs", label: "Riffs", soon: true }
   ];
@@ -38,9 +44,25 @@
       btn.addEventListener("click", () => {
         document.querySelectorAll(".wpl-tab").forEach(t => t.classList.remove("active"));
         btn.classList.add("active");
-        document.querySelectorAll(".wpl-panel").forEach(p => { p.style.display = "none"; });
-        document.getElementById("wpl-panel-" + tab.id).style.display = "";
-        if (tab.id !== "progressions") { E.stopPlayThrough(); resetPlayButton(); }
+        // Panels stack in the same CSS Grid cell (.wpl-panels in styles.css)
+        // and are shown/hidden with the "active" class (visibility, not
+        // display:none) so the container is always sized to the tallest
+        // panel automatically — never toggle display/visibility here directly.
+        document.querySelectorAll(".wpl-panel").forEach(p => { p.classList.remove("active"); });
+        document.getElementById("wpl-panel-" + tab.id).classList.add("active");
+        E.stopPlayThrough();
+        resetPlayButton();
+        resetChordsPlayButton();
+        activeTabId = tab.id;
+        const headingLabel = document.getElementById("wpl-step-heading-label");
+        if (tab.id === "chords") {
+          headingLabel.textContent = "Position";
+          renderChords();
+        } else if (tab.id === "progressions") {
+          headingLabel.textContent = "Number";
+          render();
+        }
+        repositionStatus();
       });
       bar.appendChild(btn);
     });
@@ -75,6 +97,9 @@
           // Don't cut the beat off or restart it — the running play-through
           // picks up the new key on its next scheduled step (see startPlayThrough).
           E.updatePlayback({ keyPc: curKeyPc, useFlats });
+        } else if (activeTabId === "chords") {
+          renderChords();
+          E.playChordSound(D.chordVoicings[D.chordQualityNames[curQuality]][curPosition], curKeyPc, useFlats);
         } else {
           buildStepButtons();
           render();
@@ -161,19 +186,115 @@
     });
   }
 
+  // ---------- Readout helper ----------
+  // The Chord/Number(Position) readout is normally a short number or 1-2
+  // letter symbol (e.g. "C", "1", "5/7") shown big and bold. The Chords
+  // tab's position names ("Root Low", "1st Inv", "Root High"...) are full
+  // words instead, and at that same size/weight they read as noticeably
+  // heavier/bigger than everything else in the readout (Chris: "does the
+  // black root high text look too big?"). Rather than sizing every value
+  // the same, drop to a smaller size (via the "long-label" class) whenever
+  // the raw value is longer than any real number/symbol ever gets.
+  function setReadoutValue(el, rawText, html) {
+    el.classList.toggle("long-label", rawText.length > 5);
+    el.innerHTML = html;
+  }
+
   // ---------- Render ----------
   function render(highlightStep) {
     const prog = D.allProgs[curProg];
     const stepToShow = highlightStep != null ? highlightStep : curStep;
     const ch = prog[stepToShow];
-    document.getElementById("wpl-chord-name").innerHTML = E.formatLabel(E.transposeChordName(ch.name, curKeyPc, useFlats));
-    document.getElementById("wpl-step-label").innerHTML = E.formatLabel(ch.topLabel);
-    document.querySelectorAll(".step-btn").forEach((b, i) => {
+    setReadoutValue(document.getElementById("wpl-chord-name"), ch.name, E.formatLabel(E.transposeChordName(ch.name, curKeyPc, useFlats)));
+    setReadoutValue(document.getElementById("wpl-step-label"), ch.topLabel, E.formatLabel(ch.topLabel));
+    document.querySelectorAll("#wpl-step-row .step-btn").forEach((b, i) => {
       b.classList.toggle("active", i === stepToShow);
       b.querySelector(".n").textContent = E.transposeChordName(prog[i].name, curKeyPc, useFlats);
     });
     const { usePurple } = E.renderChord(ch, curKeyPc, useFlats, curProg, stepToShow);
     document.getElementById("wpl-either-legend").style.display = usePurple ? "" : "none";
+  }
+
+  // ---------- Chords tab ----------
+  // Scale-degree numbers relative to the chord's OWN root (not the song
+  // key) — e.g. Major root position is always "1-3-5" regardless of which
+  // key-tab is selected. All chordVoicings shapes are written with root=C,
+  // so a note's pitch class already equals its interval-from-root in
+  // semitones; no transposition needed here.
+  const INTERVAL_LABELS = { 0: "1", 2: "2", 3: "♭3", 4: "3", 5: "4", 7: "5" };
+  function chordToneNumbers(rightNotes) {
+    return rightNotes.map(n => {
+      const pc = D.noteToPc[n.replace(/[0-9]/g, "")];
+      return INTERVAL_LABELS[pc] || "?";
+    });
+  }
+
+  function buildChordQualityTabs() {
+    const wrap = document.getElementById("wpl-chord-quality-tabs");
+    wrap.innerHTML = "";
+    D.chordQualityNames.forEach((name, i) => {
+      const b = document.createElement("button");
+      b.className = "prog-tab" + (i === 0 ? " active" : "");
+      b.innerHTML = `<div class="num">${name}</div><div class="name">${chordToneNumbers(D.chordVoicings[name][curPosition].right).join("-")}</div>`;
+      b.addEventListener("click", () => {
+        curQuality = i;
+        document.querySelectorAll("#wpl-chord-quality-tabs .prog-tab").forEach(t => t.classList.remove("active"));
+        b.classList.add("active");
+        if (E.isPlaying()) {
+          E.updatePlayback({ progArray: D.chordVoicings[D.chordQualityNames[curQuality]] });
+        } else {
+          renderChords();
+          E.playChordSound(D.chordVoicings[D.chordQualityNames[curQuality]][curPosition], curKeyPc, useFlats);
+        }
+      });
+      wrap.appendChild(b);
+    });
+  }
+
+  // Refreshes the small "1-3-5"-style caption on all 4 quality buttons for
+  // whichever position is currently selected — every button shows its OWN
+  // quality's numbers at that position, not just the active one.
+  function updateChordQualityNumbers() {
+    document.querySelectorAll("#wpl-chord-quality-tabs .prog-tab").forEach((b, i) => {
+      const qName = D.chordQualityNames[i];
+      const nums = chordToneNumbers(D.chordVoicings[qName][curPosition].right).join("-");
+      b.querySelector(".name").textContent = nums;
+    });
+  }
+
+  function buildChordPositionRow() {
+    const wrap = document.getElementById("wpl-chord-position-row");
+    wrap.innerHTML = "";
+    D.chordPositionNames.forEach((label, i) => {
+      const btn = document.createElement("div");
+      btn.className = "step-btn" + (i === curPosition ? " active" : "");
+      btn.innerHTML = `<div class="n">${label}</div>`;
+      const activate = () => {
+        E.stopPlayThrough();
+        resetChordsPlayButton();
+        curPosition = i;
+        renderChords();
+        E.playChordSound(D.chordVoicings[D.chordQualityNames[curQuality]][curPosition], curKeyPc, useFlats);
+      };
+      btn.addEventListener("click", activate);
+      btn.addEventListener("touchstart", (e) => { e.preventDefault(); activate(); }, { passive: false });
+      wrap.appendChild(btn);
+    });
+  }
+
+  function renderChords(highlightPosition) {
+    const voicings = D.chordVoicings[D.chordQualityNames[curQuality]];
+    const posToShow = highlightPosition != null ? highlightPosition : curPosition;
+    const ch = voicings[posToShow];
+    setReadoutValue(document.getElementById("wpl-chord-name"), ch.name, E.formatLabel(E.transposeChordName(ch.name, curKeyPc, useFlats)));
+    const posName = D.chordPositionNames[posToShow];
+    setReadoutValue(document.getElementById("wpl-step-label"), posName, posName);
+    updateChordQualityNumbers();
+    document.querySelectorAll("#wpl-chord-position-row .step-btn").forEach((b, i) => {
+      b.classList.toggle("active", i === posToShow);
+    });
+    E.renderChord(ch, curKeyPc, useFlats, -1, -1);
+    document.getElementById("wpl-either-legend").style.display = "none";
   }
 
   // ---------- Playback bar ----------
@@ -188,7 +309,7 @@
     btn.classList.remove("playing");
     document.getElementById("wpl-play-label").textContent = "Play";
     btn.querySelector(".wpl-icon").innerHTML = "&#9654;";
-    document.querySelectorAll(".step-btn.playing").forEach(b => b.classList.remove("playing"));
+    document.querySelectorAll("#wpl-step-row .step-btn.playing").forEach(b => b.classList.remove("playing"));
   }
 
   function startPlayThrough() {
@@ -211,7 +332,7 @@
           playingDisplayedProg = curProg;
           buildStepButtons();
         }
-        document.querySelectorAll(".step-btn").forEach((b, idx) => b.classList.toggle("playing", idx === i));
+        document.querySelectorAll("#wpl-step-row .step-btn").forEach((b, idx) => b.classList.toggle("playing", idx === i));
         render(i);
       },
       onDone: () => {
@@ -258,6 +379,80 @@
     });
   }
 
+  // ---------- Chords playback bar ("Practice") ----------
+  function updateChordsBpmFill() {
+    const slider = document.getElementById("wpl-chords-bpm-slider");
+    const pct = ((chordsBpm - 40) / (160 - 40)) * 100;
+    slider.style.setProperty("--pct", pct + "%");
+  }
+
+  function resetChordsPlayButton() {
+    const btn = document.getElementById("wpl-chords-play-btn");
+    if (!btn) return;
+    btn.classList.remove("playing");
+    document.getElementById("wpl-chords-play-label").textContent = "Practice";
+    btn.querySelector(".wpl-icon").innerHTML = "&#9654;";
+    document.querySelectorAll("#wpl-chord-position-row .step-btn.playing").forEach(b => b.classList.remove("playing"));
+  }
+
+  function startChordsPractice() {
+    const playBtn = document.getElementById("wpl-chords-play-btn");
+    playBtn.classList.add("playing");
+    document.getElementById("wpl-chords-play-label").textContent = "Stop";
+    playBtn.querySelector(".wpl-icon").innerHTML = "&#9632;";
+    E.playThrough(D.chordVoicings[D.chordQualityNames[curQuality]], curKeyPc, useFlats, {
+      bpm: chordsBpm,
+      loop: chordsLoopOn,
+      click: chordsClickOn,
+      beatsPerChord: 2,
+      onStep: (i) => {
+        curPosition = i;
+        document.querySelectorAll("#wpl-chord-position-row .step-btn").forEach((b, idx) => b.classList.toggle("playing", idx === i));
+        renderChords(i);
+      },
+      onDone: () => {
+        resetChordsPlayButton();
+      }
+    });
+  }
+
+  function wireChordsPlaybar() {
+    const slider = document.getElementById("wpl-chords-bpm-slider");
+    const valueEl = document.getElementById("wpl-chords-bpm-value");
+    slider.addEventListener("input", () => {
+      chordsBpm = parseInt(slider.value, 10);
+      valueEl.textContent = chordsBpm;
+      updateChordsBpmFill();
+      if (E.isPlaying()) E.updatePlayback({ bpm: chordsBpm });
+    });
+    updateChordsBpmFill();
+
+    const loopBtn = document.getElementById("wpl-chords-loop-btn");
+    loopBtn.addEventListener("click", () => {
+      chordsLoopOn = !chordsLoopOn;
+      loopBtn.classList.toggle("active", chordsLoopOn);
+      if (E.isPlaying()) E.updatePlayback({ loop: chordsLoopOn });
+    });
+
+    const clickBtn = document.getElementById("wpl-chords-click-btn");
+    clickBtn.addEventListener("click", () => {
+      chordsClickOn = !chordsClickOn;
+      clickBtn.classList.toggle("active", chordsClickOn);
+      if (E.isPlaying()) E.updatePlayback({ click: chordsClickOn });
+    });
+
+    const playBtn = document.getElementById("wpl-chords-play-btn");
+    playBtn.addEventListener("click", () => {
+      if (E.isPlaying()) {
+        E.stopPlayThrough();
+        resetChordsPlayButton();
+        renderChords();
+        return;
+      }
+      startChordsPractice();
+    });
+  }
+
   // ---------- Auto-resize (for iframe embeds) ----------
   // Tells the parent page (Squarespace/ThriveCart) exactly how tall this
   // page is, so the embed script can size the iframe to fit with no dead
@@ -292,44 +487,30 @@
     }
   }
 
-  // ---------- Mobile-only status reposition ----------
-  // On narrow screens, move the "Tap any chord..." status line down between
-  // the progression buttons and the step row, instead of leaving it under
-  // the piano legend — reuses existing vertical space there so the whole
-  // shell sits shorter and needs less scrolling on a phone.
-  function wireMobileStatusReposition() {
-    const statusEl = document.getElementById("wpl-status");
-    const originalParent = statusEl.parentNode;
-    const originalNextSibling = statusEl.nextSibling;
-    const stepRow = document.getElementById("wpl-step-row");
-    const mq = window.matchMedia("(max-width: 520px)");
-
-    function applyPosition(isMobile) {
-      if (isMobile) {
-        if (statusEl.nextSibling !== stepRow || statusEl.parentNode !== stepRow.parentNode) {
-          stepRow.parentNode.insertBefore(statusEl, stepRow);
-        }
-      } else if (statusEl.parentNode !== originalParent) {
-        if (originalNextSibling) {
-          originalParent.insertBefore(statusEl, originalNextSibling);
-        } else {
-          originalParent.appendChild(statusEl);
-        }
-      }
-    }
-
-    applyPosition(mq.matches);
-    mq.addEventListener("change", (e) => applyPosition(e.matches));
-  }
+  // ---------- Status line ----------
+  // "#wpl-status" (the "Tap any chord..." hint) always stays put under the
+  // piano/legend in the shared instrument block, on every tab and every
+  // viewport. An earlier version relocated it into the panel between the
+  // two button rows on mobile to save space, but that shrinks the shared
+  // instrument block itself depending on which tab is active — which broke
+  // the fixed-shell-height requirement (Progressions came out ~18px
+  // shorter than Chords/Scales/Riffs on mobile once Chords stopped sharing
+  // the same trick). Keeping it in one place, always, is what actually
+  // guarantees the shell is identical across every tab.
+  function repositionStatus() {}
+  function wireMobileStatusReposition() {}
 
   // ---------- Init ----------
   function init() {
     buildTabBar();
     buildKeyTabs();
     buildProgTabs();
+    buildChordQualityTabs();
+    buildChordPositionRow();
     E.buildKeyboard(document.getElementById("wpl-piano"), document.getElementById("wpl-status"));
     buildStepButtons();
     wirePlaybar();
+    wireChordsPlaybar();
     render();
     wireAutoResize();
     wireMobileStatusReposition();
