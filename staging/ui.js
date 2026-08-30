@@ -290,7 +290,7 @@
   // key-tab is selected. All chordVoicings shapes are written with root=C,
   // so a note's pitch class already equals its interval-from-root in
   // semitones; no transposition needed here.
-  const INTERVAL_LABELS = { 0: "1", 2: "2", 3: "♭3", 4: "3", 5: "4", 7: "5" };
+  const INTERVAL_LABELS = { 0: "1", 2: "2", 3: "♭3", 4: "3", 5: "4", 7: "5", 10: "♭7", 11: "7" };
   function chordToneNumbers(rightNotes) {
     return rightNotes.map(n => {
       const pc = D.noteToPc[n.replace(/[0-9]/g, "")];
@@ -298,17 +298,35 @@
     });
   }
 
+  // "3rd Inv" for Maj7/Min7 (a real 4th inversion), "Root High" for every
+  // other quality (see chordPositionNamesSeventh in chord-data.js) — always
+  // go through this instead of reading D.chordPositionNames directly.
+  function getChordPositionNames(quality) {
+    return D.seventhQualities.includes(quality) ? D.chordPositionNamesSeventh : D.chordPositionNames;
+  }
+
+  // All "every quality tab button" queries select from both row containers
+  // (see the two-row split in index.html / comment above it).
+  const CHORD_QUALITY_TAB_SELECTOR = "#wpl-chord-quality-tabs .prog-tab, #wpl-chord-quality-tabs-2 .prog-tab";
+
   function buildChordQualityTabs() {
     const wrap = document.getElementById("wpl-chord-quality-tabs");
+    const wrap2 = document.getElementById("wpl-chord-quality-tabs-2");
     wrap.innerHTML = "";
+    wrap2.innerHTML = "";
     D.chordQualityNames.forEach((name, i) => {
       const b = document.createElement("button");
       b.className = "prog-tab" + (i === 0 ? " active" : "");
       b.innerHTML = `<div class="num">${name}</div><div class="name">${chordToneNumbers(D.chordVoicings[name][curPosition].right).join("-")}</div>`;
       b.addEventListener("click", () => {
         curQuality = i;
-        document.querySelectorAll("#wpl-chord-quality-tabs .prog-tab").forEach(t => t.classList.remove("active"));
+        document.querySelectorAll(CHORD_QUALITY_TAB_SELECTOR).forEach(t => t.classList.remove("active"));
         b.classList.add("active");
+        // Position row's labels/voicing depend on the quality just picked
+        // (triad "Root High" vs 7th-chord "3rd Inv") — curPosition (the
+        // selected index) stays the same, only what that index MEANS
+        // changes, so no need to reset curPosition here.
+        updateChordPositionLabels();
         if (E.isPlaying()) {
           E.updatePlayback({ progArray: D.chordVoicings[D.chordQualityNames[curQuality]] });
         } else {
@@ -316,15 +334,15 @@
           E.playChordSound(D.chordVoicings[D.chordQualityNames[curQuality]][curPosition], curKeyPc, useFlats);
         }
       });
-      wrap.appendChild(b);
+      (i < 3 ? wrap : wrap2).appendChild(b);
     });
   }
 
-  // Refreshes the small "1-3-5"-style caption on all 4 quality buttons for
+  // Refreshes the small "1-3-5"-style caption on all quality buttons for
   // whichever position is currently selected — every button shows its OWN
   // quality's numbers at that position, not just the active one.
   function updateChordQualityNumbers() {
-    document.querySelectorAll("#wpl-chord-quality-tabs .prog-tab").forEach((b, i) => {
+    document.querySelectorAll(CHORD_QUALITY_TAB_SELECTOR).forEach((b, i) => {
       const qName = D.chordQualityNames[i];
       const nums = chordToneNumbers(D.chordVoicings[qName][curPosition].right).join("-");
       b.querySelector(".name").textContent = nums;
@@ -334,7 +352,7 @@
   function buildChordPositionRow() {
     const wrap = document.getElementById("wpl-chord-position-row");
     wrap.innerHTML = "";
-    D.chordPositionNames.forEach((label, i) => {
+    getChordPositionNames(D.chordQualityNames[curQuality]).forEach((label, i) => {
       const btn = document.createElement("div");
       btn.className = "step-btn" + (i === curPosition ? " active" : "");
       btn.innerHTML = `<div class="n">${label}</div>`;
@@ -351,12 +369,22 @@
     });
   }
 
+  // Swaps the 4 position button LABELS in place (no rebuild/rewiring) when
+  // the selected quality's position-name set changes — e.g. "Root High"
+  // <-> "3rd Inv" when toggling into/out of Maj7 or Min7.
+  function updateChordPositionLabels() {
+    const names = getChordPositionNames(D.chordQualityNames[curQuality]);
+    document.querySelectorAll("#wpl-chord-position-row .step-btn").forEach((btn, i) => {
+      btn.querySelector(".n").textContent = names[i];
+    });
+  }
+
   function renderChords(highlightPosition) {
     const voicings = D.chordVoicings[D.chordQualityNames[curQuality]];
     const posToShow = highlightPosition != null ? highlightPosition : curPosition;
     const ch = voicings[posToShow];
     setReadoutValue(document.getElementById("wpl-chord-name"), ch.name, E.formatLabel(E.transposeChordName(ch.name, curKeyPc, useFlats)));
-    const posName = D.chordPositionNames[posToShow];
+    const posName = getChordPositionNames(D.chordQualityNames[curQuality])[posToShow];
     setReadoutValue(document.getElementById("wpl-step-label"), posName, posName);
     updateChordQualityNumbers();
     document.querySelectorAll("#wpl-chord-position-row .step-btn").forEach((b, i) => {

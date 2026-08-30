@@ -83,9 +83,19 @@
   // moves each shape to whichever root is selected via the shared key-tabs.
   // Left hand always anchors the chord's root note (Chris's "left hand is
   // the bass player" rule) — only the right hand changes across positions.
-  const chordQualityNames = ["Major", "Minor", "Sus2", "Sus4"];
-  const chordQualitySuffix = { Major: "", Minor: "m", Sus2: "2", Sus4: "4" };
+  const chordQualityNames = ["Major", "Minor", "Sus2", "Sus4", "Maj7", "Min7"];
+  const chordQualitySuffix = { Major: "", Minor: "m", Sus2: "2", Sus4: "4", Maj7: "maj7", Min7: "m7" };
   const chordPositionNames = ["Root Low", "1st Inv", "2nd Inv", "Root High"];
+  // A 4-note 7th chord actually has a 4th inversion (bass on the 7th) where
+  // a 3-note triad only has "root voiced an octave up" to fill that 4th
+  // slot — so Maj7/Min7 reuse the same 4-button position row but swap its
+  // last label/voicing to a real 3rd Inv instead (Chris, 2026-08-30: "just
+  // change Root High to 3rd Inv when you click on the Maj7 or Min7 tabs").
+  // ui.js's getChordPositionNames(quality) is what picks between these two
+  // arrays — never read chordPositionNames directly for a quality-aware UI
+  // spot, always go through that helper.
+  const chordPositionNamesSeventh = ["Root Low", "1st Inv", "2nd Inv", "3rd Inv"];
+  const seventhQualities = ["Maj7", "Min7"];
 
   const chordVoicings = {
     Major: [
@@ -111,6 +121,22 @@
       { name: "C4", left: ["C2", "C3"], right: ["F4", "G4", "C5"] },
       { name: "C4", left: ["C2", "C3"], right: ["G4", "C5", "F5"] },
       { name: "C4", left: ["C2", "C3"], right: ["C5", "F5", "G5"] }
+    ],
+    // Chris plays these a lot (4maj7, 2m7, 6m7 in his progressions) —
+    // added 2026-08-30. Same left-hand-anchors-root convention as every
+    // other quality; right hand is the full 4-note 7th chord stack, one
+    // true inversion per position (see chordPositionNamesSeventh above).
+    Maj7: [
+      { name: "Cmaj7", left: ["C2", "C3"], right: ["C4", "E4", "G4", "B4"] },
+      { name: "Cmaj7", left: ["C2", "C3"], right: ["E4", "G4", "B4", "C5"] },
+      { name: "Cmaj7", left: ["C2", "C3"], right: ["G4", "B4", "C5", "E5"] },
+      { name: "Cmaj7", left: ["C2", "C3"], right: ["B4", "C5", "E5", "G5"] }
+    ],
+    Min7: [
+      { name: "Cm7", left: ["C2", "C3"], right: ["C4", "Eb4", "G4", "Bb4"] },
+      { name: "Cm7", left: ["C2", "C3"], right: ["Eb4", "G4", "Bb4", "C5"] },
+      { name: "Cm7", left: ["C2", "C3"], right: ["G4", "Bb4", "C5", "Eb5"] },
+      { name: "Cm7", left: ["C2", "C3"], right: ["Bb4", "C5", "Eb5", "G5"] }
     ]
   };
 
@@ -141,6 +167,8 @@
     chordQualityNames,
     chordQualitySuffix,
     chordPositionNames,
+    chordPositionNamesSeventh,
+    seventhQualities,
     chordVoicings
   };
 })(window);

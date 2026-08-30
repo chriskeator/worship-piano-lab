@@ -447,8 +447,9 @@ body {
   .step-btn { padding: 5px 1px; min-height: 44px; }
   .step-btn .n { font-size: 10px; }
   .step-btn .l { font-size: 10px; }
-  #wpl-prog-tabs, #wpl-step-row, #wpl-chord-quality-tabs, #wpl-chord-position-row { gap: 4px !important; }
+  #wpl-prog-tabs, #wpl-step-row, #wpl-chord-quality-tabs, #wpl-chord-quality-tabs-2, #wpl-chord-position-row { gap: 4px !important; }
   #wpl-prog-tabs, #wpl-chord-quality-tabs { margin-bottom: 6px !important; }
+  #wpl-chord-quality-tabs-2 { margin-bottom: 10px !important; }
   .wpl-readout-row { padding: 0 4px; margin: 4px 0 2px; gap: 20px; }
   .wpl-readout-row > div { width: 112px !important; height: 40px !important; }
   /* line-height is a fixed px value (not the desktop inline style's em-relative
@@ -508,7 +509,7 @@ body {
   .step-btn .n, .step-btn .l { font-size: 9px; }
   .key-tab { font-size: 9.5px; padding: 5px 0; }
   #wpl-key-tabs { gap: 2px !important; }
-  #wpl-prog-tabs, #wpl-step-row, #wpl-chord-quality-tabs, #wpl-chord-position-row { gap: 3px !important; }
+  #wpl-prog-tabs, #wpl-step-row, #wpl-chord-quality-tabs, #wpl-chord-quality-tabs-2, #wpl-chord-position-row { gap: 3px !important; }
   .wpl-readout-row { gap: 10px; padding: 0 2px; }
   .wpl-readout-row > div { width: 88px !important; height: 34px !important; }
   .wpl-readout-row #wpl-chord-name, .wpl-readout-row #wpl-step-label { font-size: 15px !important; }
