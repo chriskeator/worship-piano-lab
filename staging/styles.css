@@ -177,6 +177,23 @@ body {
 .prog-tab .num { font-weight: 800; font-size: 22px; line-height: 1.2; }
 .prog-tab .name { font-size: 12px; font-weight: 600; opacity: 0.9; margin-top: 2px; }
 
+/* ---------- Chords tab quality buttons: compact 2-row layout ----------
+   Two rows of 3 (Major/Minor/Sus2/Sus4/Maj7/Min7), each row exactly HALF
+   the height of the standard .prog-tab (minus the small inter-row gap), so
+   the combined block occupies the SAME total vertical space a single row
+   used to. This keeps #wpl-wrapper's height identical across every tab —
+   see the index.html comment above these two containers. Never let these
+   buttons grow back to the shared 78/59/52px .prog-tab min-height without
+   re-verifying the shell height stays put at every breakpoint. */
+#wpl-chord-quality-tabs, #wpl-chord-quality-tabs-2 { display: flex; }
+#wpl-chord-quality-tabs { margin-bottom: 4px; }
+#wpl-chord-quality-tabs-2 { margin-bottom: 14px; }
+#wpl-chord-quality-tabs .prog-tab, #wpl-chord-quality-tabs-2 .prog-tab {
+  height: 37px; min-height: 0; padding: 4px 4px;
+}
+#wpl-chord-quality-tabs .prog-tab .num, #wpl-chord-quality-tabs-2 .prog-tab .num { font-size: 12px; }
+#wpl-chord-quality-tabs .prog-tab .name, #wpl-chord-quality-tabs-2 .prog-tab .name { font-size: 7px; margin-top: 1px; }
+
 /* ---------- Key tabs ---------- */
 .key-tab {
   flex: 1; border-radius: 8px; padding: 9px 0; font-weight: 600; font-size: 13px;
@@ -448,8 +465,12 @@ body {
   .step-btn .n { font-size: 10px; }
   .step-btn .l { font-size: 10px; }
   #wpl-prog-tabs, #wpl-step-row, #wpl-chord-quality-tabs, #wpl-chord-quality-tabs-2, #wpl-chord-position-row { gap: 4px !important; }
-  #wpl-prog-tabs, #wpl-chord-quality-tabs { margin-bottom: 6px !important; }
-  #wpl-chord-quality-tabs-2 { margin-bottom: 10px !important; }
+  #wpl-prog-tabs { margin-bottom: 6px !important; }
+  #wpl-chord-quality-tabs { margin-bottom: 3px !important; }
+  #wpl-chord-quality-tabs-2 { margin-bottom: 6px !important; }
+  #wpl-chord-quality-tabs .prog-tab, #wpl-chord-quality-tabs-2 .prog-tab { height: 28px !important; min-height: 0 !important; padding: 2px 2px !important; }
+  #wpl-chord-quality-tabs .prog-tab .num, #wpl-chord-quality-tabs-2 .prog-tab .num { font-size: 10px !important; }
+  #wpl-chord-quality-tabs .prog-tab .name, #wpl-chord-quality-tabs-2 .prog-tab .name { font-size: 6px !important; }
   .wpl-readout-row { padding: 0 4px; margin: 4px 0 2px; gap: 20px; }
   .wpl-readout-row > div { width: 112px !important; height: 40px !important; }
   /* line-height is a fixed px value (not the desktop inline style's em-relative
@@ -510,6 +531,11 @@ body {
   .key-tab { font-size: 9.5px; padding: 5px 0; }
   #wpl-key-tabs { gap: 2px !important; }
   #wpl-prog-tabs, #wpl-step-row, #wpl-chord-quality-tabs, #wpl-chord-quality-tabs-2, #wpl-chord-position-row { gap: 3px !important; }
+  #wpl-chord-quality-tabs { margin-bottom: 2px !important; }
+  #wpl-chord-quality-tabs-2 { margin-bottom: 6px !important; }
+  #wpl-chord-quality-tabs .prog-tab, #wpl-chord-quality-tabs-2 .prog-tab { height: 25px !important; min-height: 0 !important; padding: 1px 2px !important; }
+  #wpl-chord-quality-tabs .prog-tab .num, #wpl-chord-quality-tabs-2 .prog-tab .num { font-size: 9px !important; }
+  #wpl-chord-quality-tabs .prog-tab .name, #wpl-chord-quality-tabs-2 .prog-tab .name { font-size: 6px !important; }
   .wpl-readout-row { gap: 10px; padding: 0 2px; }
   .wpl-readout-row > div { width: 88px !important; height: 34px !important; }
   .wpl-readout-row #wpl-chord-name, .wpl-readout-row #wpl-step-label { font-size: 15px !important; }

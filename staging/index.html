@@ -94,15 +94,20 @@
     <!-- Chords panel -->
     <div id="wpl-panel-chords" class="wpl-panel">
       <div class="section-label">2. Choose a chord</div>
-      <!-- Two rows of 3 instead of one row of 6 (Major/Minor/Sus2/Sus4/Maj7/
-           Min7) — a single 6-wide row made every button noticeably thinner
-           than the 4-wide position row below it (Chris, 2026-08-30: "does
-           it look dumb to have 6 tabs on top with 4 tabs on the bottom?").
-           ui.js's buildChordQualityTabs() splits chordQualityNames across
-           these two containers; anything that queries "all quality tab
-           buttons" must select from both (see ui.js comment). -->
-      <div id="wpl-chord-quality-tabs" style="display:flex; gap:8px; margin-bottom:8px;"></div>
-      <div id="wpl-chord-quality-tabs-2" style="display:flex; gap:8px; margin-bottom:14px;"></div>
+      <!-- Two COMPACT rows of 3 (Major/Minor/Sus2/Sus4/Maj7/Min7). A first
+           attempt at 2 rows (2026-08-30) used full-size buttons and grew the
+           whole shell height (all .wpl-panel's share one height via CSS
+           Grid, sized to the tallest — Chris: "NEVER CHANGE THE SHELL
+           SIZE!"). This version's two rows are each exactly HALF the height
+           of the original single row (minus the inter-row gap), so the
+           combined block occupies the identical total vertical space the
+           single row used to — verified via Playwright to match the old
+           #wpl-wrapper height exactly at every breakpoint. Sizing lives in
+           the "#wpl-chord-quality-tabs, #wpl-chord-quality-tabs-2" rules in
+           styles.css (base + both mobile breakpoints) — never let these
+           buttons grow back to the shared .prog-tab min-height. -->
+      <div id="wpl-chord-quality-tabs" style="display:flex; gap:6px;"></div>
+      <div id="wpl-chord-quality-tabs-2" style="display:flex; gap:6px;"></div>
 
       <div class="section-label">3. Choose a position</div>
       <div id="wpl-chord-position-row" style="display:flex; gap:8px;"></div>

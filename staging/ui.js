@@ -306,7 +306,7 @@
   }
 
   // All "every quality tab button" queries select from both row containers
-  // (see the two-row split in index.html / comment above it).
+  // (see the compact two-row split in index.html / styles.css).
   const CHORD_QUALITY_TAB_SELECTOR = "#wpl-chord-quality-tabs .prog-tab, #wpl-chord-quality-tabs-2 .prog-tab";
 
   function buildChordQualityTabs() {
