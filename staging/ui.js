@@ -305,15 +305,14 @@
     return D.seventhQualities.includes(quality) ? D.chordPositionNamesSeventh : D.chordPositionNames;
   }
 
-  // All "every quality tab button" queries select from both row containers
-  // (see the compact two-row split in index.html / styles.css).
-  const CHORD_QUALITY_TAB_SELECTOR = "#wpl-chord-quality-tabs .prog-tab, #wpl-chord-quality-tabs-2 .prog-tab";
+  // Single-row container for all 6 quality buttons (see index.html comment
+  // — both 2-row attempts were reverted 2026-08-30: one grew the shell,
+  // the compact one was too small to read on Chris's phone).
+  const CHORD_QUALITY_TAB_SELECTOR = "#wpl-chord-quality-tabs .prog-tab";
 
   function buildChordQualityTabs() {
     const wrap = document.getElementById("wpl-chord-quality-tabs");
-    const wrap2 = document.getElementById("wpl-chord-quality-tabs-2");
     wrap.innerHTML = "";
-    wrap2.innerHTML = "";
     D.chordQualityNames.forEach((name, i) => {
       const b = document.createElement("button");
       b.className = "prog-tab" + (i === 0 ? " active" : "");
@@ -334,7 +333,7 @@
           E.playChordSound(D.chordVoicings[D.chordQualityNames[curQuality]][curPosition], curKeyPc, useFlats);
         }
       });
-      (i < 3 ? wrap : wrap2).appendChild(b);
+      wrap.appendChild(b);
     });
   }
 

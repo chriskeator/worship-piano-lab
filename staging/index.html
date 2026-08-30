@@ -94,20 +94,17 @@
     <!-- Chords panel -->
     <div id="wpl-panel-chords" class="wpl-panel">
       <div class="section-label">2. Choose a chord</div>
-      <!-- Two COMPACT rows of 3 (Major/Minor/Sus2/Sus4/Maj7/Min7). A first
-           attempt at 2 rows (2026-08-30) used full-size buttons and grew the
-           whole shell height (all .wpl-panel's share one height via CSS
-           Grid, sized to the tallest — Chris: "NEVER CHANGE THE SHELL
-           SIZE!"). This version's two rows are each exactly HALF the height
-           of the original single row (minus the inter-row gap), so the
-           combined block occupies the identical total vertical space the
-           single row used to — verified via Playwright to match the old
-           #wpl-wrapper height exactly at every breakpoint. Sizing lives in
-           the "#wpl-chord-quality-tabs, #wpl-chord-quality-tabs-2" rules in
-           styles.css (base + both mobile breakpoints) — never let these
-           buttons grow back to the shared .prog-tab min-height. -->
-      <div id="wpl-chord-quality-tabs" style="display:flex; gap:6px;"></div>
-      <div id="wpl-chord-quality-tabs-2" style="display:flex; gap:6px;"></div>
+      <!-- Single row of all 6 qualities (Major/Minor/Sus2/Sus4/Maj7/Min7),
+           at full standard .prog-tab height. Two different 2-row layouts
+           were tried and reverted 2026-08-30: full-size 2 rows grew the
+           whole shell (all .wpl-panel's share one height via CSS Grid,
+           sized to the tallest — Chris: "NEVER CHANGE THE SHELL SIZE!");
+           a same-height COMPACT 2-row version kept the shell size but
+           Chris found the shrunk text "way too small" on his real phone.
+           Back to one row — buttons are narrower than the original 4-tab
+           row but at full readable height, and the shell height matches
+           the pre-Maj7/Min7 baseline exactly (verified via Playwright). -->
+      <div id="wpl-chord-quality-tabs" style="display:flex; gap:6px; margin-bottom:14px;"></div>
 
       <div class="section-label">3. Choose a position</div>
       <div id="wpl-chord-position-row" style="display:flex; gap:8px;"></div>
