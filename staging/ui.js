@@ -88,7 +88,7 @@
   let loopOn = false;
   let clickOn = false;
   let playingDisplayedProg = null; // which progression the step row currently shows while playing
-  let activeTabId = "progressions";
+  let activeTabId = "chords"; // Chords is now the first tab, and the default shown on load
   let curQuality = 0;
   let curPosition = 0;
   let chordsBpm = 80;
@@ -616,7 +616,11 @@
     buildStepButtons();
     wirePlaybar();
     wireChordsPlaybar();
-    render();
+    if (activeTabId === "chords") {
+      renderChords();
+    } else {
+      render();
+    }
     wireAutoResize();
     wireMobileStatusReposition();
   }
