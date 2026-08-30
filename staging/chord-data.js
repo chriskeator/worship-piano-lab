@@ -6,7 +6,7 @@
 (function (global) {
   const progressionNames = [
     "Foundation",
-    "Smooth Transitions",
+    "Transitions",
     "Soft & Intimate",
     "Big & Dynamic",
     "Full & Layered"
