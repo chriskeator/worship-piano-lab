@@ -97,8 +97,8 @@
 
   // ---------- Tabs ----------
   const TABS = [
-    { id: "progressions", label: "Progressions", soon: false },
     { id: "chords", label: "Chords", soon: false },
+    { id: "progressions", label: "Progressions", soon: false },
     { id: "scales", label: "Scales", soon: true },
     { id: "riffs", label: "Riffs", soon: true }
   ];
@@ -108,7 +108,10 @@
     bar.innerHTML = "";
     TABS.forEach((tab, i) => {
       const btn = document.createElement("button");
-      btn.className = "wpl-tab" + (i === 0 ? " active" : "");
+      // Active state tracks activeTabId (default "progressions"), not
+      // array position — TABS is now ordered Chords-first for display,
+      // but Progressions should still be the tab shown on first load.
+      btn.className = "wpl-tab" + (tab.id === activeTabId ? " active" : "");
       btn.innerHTML = tab.label + (tab.soon ? ' <span class="wpl-tab-soon">Soon</span>' : "");
       btn.addEventListener("click", () => {
         document.querySelectorAll(".wpl-tab").forEach(t => t.classList.remove("active"));
@@ -149,7 +152,12 @@
       }
       const btn = document.createElement("button");
       const locked = TRIAL_EXPIRED && k.pc !== 0;
-      btn.className = "key-tab" + (k.pc === 0 ? " active" : "") + (locked ? " locked" : "");
+      // key-tab-wide flags the 2-letter labels (Db/Eb/F#/Ab/Bb) so mobile
+      // CSS can give them a touch less font-size than the 1-letter keys —
+      // the boxes are always equal width (flex:1), but at small mobile
+      // sizes 2 characters filling the same box as 1 reads as visibly
+      // more cramped/"skinnier" even though the box itself isn't smaller.
+      btn.className = "key-tab" + (k.label.length > 1 ? " key-tab-wide" : "") + (k.pc === 0 ? " active" : "") + (locked ? " locked" : "");
       btn.textContent = k.label;
       btn.dataset.pc = k.pc;
       btn.addEventListener("click", () => {

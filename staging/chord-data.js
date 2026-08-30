@@ -6,10 +6,10 @@
 (function (global) {
   const progressionNames = [
     "Foundation",
-    "Transitions",
-    "Soft & Intimate",
-    "Big & Dynamic",
-    "Full & Layered"
+    "Smooth",
+    "Soft",
+    "Big",
+    "Full"
   ];
 
   const progressionBlurbs = [
