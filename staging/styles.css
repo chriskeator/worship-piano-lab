@@ -171,7 +171,14 @@ body {
 .prog-tab {
   flex: 1; border-radius: 12px; padding: 14px 6px;
   background: var(--wpl-prog-bg); border-color: var(--wpl-prog-border);
-  display: flex; flex-direction: column; justify-content: center;
+  /* flex-start (not center): buttons in a row are stretched to equal
+     height by the flex row's default align-items:stretch, so if one
+     button's .name text wraps to 2 lines (e.g. "Smooth Transitions"),
+     centering would push that button's .num up relative to the other
+     buttons' .num (which have more empty space to center within).
+     Top-aligning keeps every button's .num at the same y regardless of
+     how many lines .name wraps to. Fixed 2026-08-30. */
+  display: flex; flex-direction: column; justify-content: flex-start;
   min-height: 78px;
 }
 .prog-tab .num { font-weight: 800; font-size: 22px; line-height: 1.2; }
