@@ -90,7 +90,6 @@ body {
 /* Default (above the 520px breakpoint) reservation — covers the common
    embed widths between phone and the 1100px desktop max-width, where the
    card is narrower than the eyebrow text's clear margin needs. */
-#wpl-wrapper.wpl-has-trial-badge .wpl-header { padding-right: 150px; }
 
 /* ---------- Top tab bar ---------- */
 .wpl-tabbar {
