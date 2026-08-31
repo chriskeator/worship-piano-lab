@@ -184,6 +184,14 @@ body {
 .prog-tab .num { font-weight: 800; font-size: 22px; line-height: 1.2; }
 .prog-tab .name { font-size: 12px; font-weight: 600; opacity: 0.9; margin-top: 2px; }
 
+/* ---------- Practice tab sub-panels (Scales / Speed Drills / Progression
+   Drills) — plain show/hide, not the CSS-Grid tallest-wins stacking the
+   top-level .wpl-panel's use. That trick exists to keep the TOP tab bar
+   from resizing the shell when switching tabs; switching sub-tabs WITHIN
+   Practice is allowed to change Practice's own height. ---------- */
+.wpl-practice-subpanel { display: none; }
+.wpl-practice-subpanel.active { display: block; }
+
 /* ---------- Key tabs ---------- */
 .key-tab {
   flex: 1; border-radius: 8px; padding: 9px 0; font-weight: 600; font-size: 13px;

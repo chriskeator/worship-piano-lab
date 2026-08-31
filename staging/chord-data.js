@@ -155,6 +155,47 @@
     { pc: 6, label: "F#" }, { pc: 8, label: "Ab" }, { pc: 10, label: "Bb" }
   ];
 
+  // ---------- Scales (Practice tab) ----------
+  // Written in the key of C, same convention as the chord voicings above —
+  // piano-engine.js transposes live to the selected key. Right hand starts
+  // at C3 (not C4) specifically so a 3-octave run still tops out at C6,
+  // which stays inside the on-screen keyboard's 5-octave range (note
+  // octaves 2-6, see piano-engine.js renderChord's "oct - 2" mapping).
+  // Both-hands mode shadows the right hand exactly one octave down.
+  const MAJOR_SCALE_NOTE_ORDER = ["C", "D", "E", "F", "G", "A", "B"];
+  const SCALE_RIGHT_BASE_OCTAVE = 3;
+
+  function buildMajorScaleAscent(octaves) {
+    const ascent = [];
+    for (let oct = 0; oct < octaves; oct++) {
+      MAJOR_SCALE_NOTE_ORDER.forEach(name => ascent.push({ name, octaveOffset: oct }));
+    }
+    ascent.push({ name: "C", octaveOffset: octaves }); // top root
+    return ascent;
+  }
+
+  // direction: "up" | "down" | "updown". hands: "right" | "both".
+  // Returns chord-shaped {name, left, right} steps — same shape as a
+  // progression/chord-position array — so it drops straight into the
+  // existing playThrough/playChordSound/renderChord engine with no changes.
+  function buildScaleSteps(octaves, direction, hands) {
+    const ascent = buildMajorScaleAscent(octaves);
+    let seq = ascent;
+    if (direction === "down") {
+      seq = [...ascent].reverse();
+    } else if (direction === "updown") {
+      seq = [...ascent, ...[...ascent].slice(0, -1).reverse()];
+    }
+    return seq.map(step => {
+      const rightOct = SCALE_RIGHT_BASE_OCTAVE + step.octaveOffset;
+      return {
+        name: step.name,
+        right: [step.name + rightOct],
+        left: hands === "both" ? [step.name + (rightOct - 1)] : []
+      };
+    });
+  }
+
   global.WPL_DATA = {
     progressionNames,
     progressionBlurbs,
@@ -169,6 +210,7 @@
     chordPositionNames,
     chordPositionNamesSeventh,
     seventhQualities,
-    chordVoicings
+    chordVoicings,
+    buildScaleSteps
   };
 })(window);

@@ -94,13 +94,20 @@
   let chordsBpm = 80;
   let chordsLoopOn = false;
   let chordsClickOn = false;
+  let activePracticeSub = "scales";
+  let scaleOctaves = 1;
+  let scaleDirection = "up";
+  let scaleHands = "right";
+  let scaleStepIndex = 0;
+  let scalesBpm = 100;
+  let scalesLoopOn = false;
+  let scalesClickOn = false;
 
   // ---------- Tabs ----------
   const TABS = [
     { id: "chords", label: "Chords", soon: false },
     { id: "progressions", label: "Progressions", soon: false },
-    { id: "scales", label: "Scales", soon: true },
-    { id: "riffs", label: "Riffs", soon: true }
+    { id: "practice", label: "Practice", soon: false }
   ];
 
   function buildTabBar() {
@@ -125,6 +132,7 @@
         E.stopPlayThrough();
         resetPlayButton();
         resetChordsPlayButton();
+        resetScalesPlayButton();
         activeTabId = tab.id;
         const headingLabel = document.getElementById("wpl-step-heading-label");
         if (tab.id === "chords") {
@@ -133,6 +141,12 @@
         } else if (tab.id === "progressions") {
           headingLabel.textContent = "Number";
           render();
+        } else if (tab.id === "practice" && activePracticeSub === "scales") {
+          // "Soon" sub-tabs (Speed Drills, Progression Drills) have nothing
+          // to show yet — leave the heading/keyboard exactly as they were,
+          // same as switching into any other not-yet-built tab always has.
+          headingLabel.textContent = "Degree";
+          renderScale();
         }
         repositionStatus();
       });
@@ -177,6 +191,13 @@
         } else if (activeTabId === "chords") {
           renderChords();
           E.playChordSound(D.chordVoicings[D.chordQualityNames[curQuality]][curPosition], curKeyPc, useFlats);
+        } else if (activeTabId === "practice") {
+          // "Soon" sub-tabs (Speed Drills, Progression Drills) have nothing
+          // built yet to render/play — only react to key changes on Scales.
+          if (activePracticeSub === "scales") {
+            renderScale(0);
+            E.playChordSound(currentScaleSteps()[0], curKeyPc, useFlats);
+          }
         } else {
           buildStepButtons();
           render();
@@ -401,6 +422,203 @@
     document.getElementById("wpl-either-legend").style.display = "none";
   }
 
+  // ---------- Practice tab ----------
+  const PRACTICE_SUBS = [
+    { id: "scales", label: "Scales", soon: false },
+    { id: "drills", label: "Speed Drills", soon: true },
+    { id: "progdrills", label: "Progression Drills", soon: true }
+  ];
+
+  function buildPracticeSubTabs() {
+    const wrap = document.getElementById("wpl-practice-subtabs");
+    wrap.innerHTML = "";
+    PRACTICE_SUBS.forEach(sub => {
+      const btn = document.createElement("button");
+      btn.className = "wpl-toggle-btn" + (sub.id === activePracticeSub ? " active" : "");
+      btn.innerHTML = sub.label + (sub.soon ? ' <span class="wpl-tab-soon">Soon</span>' : "");
+      btn.addEventListener("click", () => {
+        activePracticeSub = sub.id;
+        document.querySelectorAll("#wpl-practice-subtabs .wpl-toggle-btn").forEach(t => t.classList.remove("active"));
+        btn.classList.add("active");
+        document.querySelectorAll(".wpl-practice-subpanel").forEach(p => p.classList.remove("active"));
+        document.getElementById("wpl-practice-sub-" + sub.id).classList.add("active");
+        E.stopPlayThrough();
+        resetPlayButton();
+        resetChordsPlayButton();
+        resetScalesPlayButton();
+        // "Soon" sub-tabs leave the heading/keyboard exactly as they were
+        // (nothing built yet to show) instead of relabeling to something
+        // that doesn't correspond to anything on screen.
+        if (sub.id === "scales") {
+          document.getElementById("wpl-step-heading-label").textContent = "Degree";
+          renderScale();
+        }
+        repositionStatus();
+      });
+      wrap.appendChild(btn);
+    });
+  }
+
+  // ---------- Scales sub-panel ----------
+  // Diatonic scale-degree labels for the readout's second box — pitch-class
+  // based (not step-index based) so it stays correct regardless of
+  // direction/octave: e.g. G in any octave is always "5".
+  const MAJOR_DEGREE_LABELS = { 0: "1", 2: "2", 4: "3", 5: "4", 7: "5", 9: "6", 11: "7" };
+  function scaleDegreeLabel(noteWithOctave) {
+    const name = noteWithOctave.replace(/[0-9]/g, "");
+    return MAJOR_DEGREE_LABELS[D.noteToPc[name]] || "1";
+  }
+
+  function currentScaleSteps() {
+    return D.buildScaleSteps(scaleOctaves, scaleDirection, scaleHands);
+  }
+
+  function renderScale(highlightStep) {
+    const steps = currentScaleSteps();
+    const stepToShow = highlightStep != null ? highlightStep : Math.min(scaleStepIndex, steps.length - 1);
+    const st = steps[stepToShow];
+    setReadoutValue(document.getElementById("wpl-chord-name"), st.name, E.formatLabel(E.transposeChordName(st.name, curKeyPc, useFlats)));
+    const degree = scaleDegreeLabel(st.right[0]);
+    setReadoutValue(document.getElementById("wpl-step-label"), degree, degree);
+    E.renderChord(st, curKeyPc, useFlats, -1, -1);
+    document.getElementById("wpl-either-legend").style.display = "none";
+  }
+
+  // Re-reads whichever setting just changed and either updates a running
+  // play-through live or previews step 0, same pattern as chord quality/
+  // position changes above.
+  function onScaleSettingChanged() {
+    scaleStepIndex = 0;
+    if (E.isPlaying()) {
+      E.updatePlayback({ progArray: currentScaleSteps() });
+    } else {
+      renderScale(0);
+      E.playChordSound(currentScaleSteps()[0], curKeyPc, useFlats);
+    }
+  }
+
+  function buildScaleHandsRow() {
+    const wrap = document.getElementById("wpl-scale-hands-row");
+    wrap.innerHTML = "";
+    [{ id: "right", label: "Right Hand" }, { id: "both", label: "Both Hands" }].forEach(opt => {
+      const b = document.createElement("button");
+      b.className = "wpl-toggle-btn" + (opt.id === scaleHands ? " active" : "");
+      b.textContent = opt.label;
+      b.addEventListener("click", () => {
+        scaleHands = opt.id;
+        document.querySelectorAll("#wpl-scale-hands-row .wpl-toggle-btn").forEach(t => t.classList.remove("active"));
+        b.classList.add("active");
+        onScaleSettingChanged();
+      });
+      wrap.appendChild(b);
+    });
+  }
+
+  function buildScaleOctavesRow() {
+    const wrap = document.getElementById("wpl-scale-octaves-row");
+    wrap.innerHTML = "";
+    [1, 2, 3].forEach(n => {
+      const b = document.createElement("button");
+      b.className = "prog-tab" + (n === scaleOctaves ? " active" : "");
+      b.innerHTML = `<div class="num">${n}</div><div class="name">Octave${n > 1 ? "s" : ""}</div>`;
+      b.addEventListener("click", () => {
+        scaleOctaves = n;
+        document.querySelectorAll("#wpl-scale-octaves-row .prog-tab").forEach(t => t.classList.remove("active"));
+        b.classList.add("active");
+        onScaleSettingChanged();
+      });
+      wrap.appendChild(b);
+    });
+  }
+
+  function buildScaleDirectionRow() {
+    const wrap = document.getElementById("wpl-scale-direction-row");
+    wrap.innerHTML = "";
+    [{ id: "up", label: "Up" }, { id: "down", label: "Down" }, { id: "updown", label: "Up & Down" }].forEach(opt => {
+      const b = document.createElement("button");
+      b.className = "wpl-toggle-btn" + (opt.id === scaleDirection ? " active" : "");
+      b.textContent = opt.label;
+      b.addEventListener("click", () => {
+        scaleDirection = opt.id;
+        document.querySelectorAll("#wpl-scale-direction-row .wpl-toggle-btn").forEach(t => t.classList.remove("active"));
+        b.classList.add("active");
+        onScaleSettingChanged();
+      });
+      wrap.appendChild(b);
+    });
+  }
+
+  function updateScalesBpmFill() {
+    const slider = document.getElementById("wpl-scales-bpm-slider");
+    const pct = ((scalesBpm - 40) / (160 - 40)) * 100;
+    slider.style.setProperty("--pct", pct + "%");
+  }
+
+  function resetScalesPlayButton() {
+    const btn = document.getElementById("wpl-scales-play-btn");
+    if (!btn) return;
+    btn.classList.remove("playing");
+    document.getElementById("wpl-scales-play-label").textContent = "Play";
+    btn.querySelector(".wpl-icon").innerHTML = "&#9654;";
+  }
+
+  function startScalesPlaythrough() {
+    const playBtn = document.getElementById("wpl-scales-play-btn");
+    playBtn.classList.add("playing");
+    document.getElementById("wpl-scales-play-label").textContent = "Stop";
+    playBtn.querySelector(".wpl-icon").innerHTML = "&#9632;";
+    E.playThrough(currentScaleSteps(), curKeyPc, useFlats, {
+      bpm: scalesBpm,
+      loop: scalesLoopOn,
+      click: scalesClickOn,
+      beatsPerChord: 1,
+      onStep: (i) => {
+        scaleStepIndex = i;
+        renderScale(i);
+      },
+      onDone: () => {
+        resetScalesPlayButton();
+      }
+    });
+  }
+
+  function wireScalesPlaybar() {
+    const slider = document.getElementById("wpl-scales-bpm-slider");
+    const valueEl = document.getElementById("wpl-scales-bpm-value");
+    slider.addEventListener("input", () => {
+      scalesBpm = parseInt(slider.value, 10);
+      valueEl.textContent = scalesBpm;
+      updateScalesBpmFill();
+      if (E.isPlaying()) E.updatePlayback({ bpm: scalesBpm });
+    });
+    updateScalesBpmFill();
+
+    const loopBtn = document.getElementById("wpl-scales-loop-btn");
+    loopBtn.addEventListener("click", () => {
+      scalesLoopOn = !scalesLoopOn;
+      loopBtn.classList.toggle("active", scalesLoopOn);
+      if (E.isPlaying()) E.updatePlayback({ loop: scalesLoopOn });
+    });
+
+    const clickBtn = document.getElementById("wpl-scales-click-btn");
+    clickBtn.addEventListener("click", () => {
+      scalesClickOn = !scalesClickOn;
+      clickBtn.classList.toggle("active", scalesClickOn);
+      if (E.isPlaying()) E.updatePlayback({ click: scalesClickOn });
+    });
+
+    const playBtn = document.getElementById("wpl-scales-play-btn");
+    playBtn.addEventListener("click", () => {
+      if (E.isPlaying()) {
+        E.stopPlayThrough();
+        resetScalesPlayButton();
+        renderScale();
+        return;
+      }
+      startScalesPlaythrough();
+    });
+  }
+
   // ---------- Playback bar ----------
   function updateBpmFill() {
     const slider = document.getElementById("wpl-bpm-slider");
@@ -612,12 +830,19 @@
     buildProgTabs();
     buildChordQualityTabs();
     buildChordPositionRow();
+    buildPracticeSubTabs();
+    buildScaleHandsRow();
+    buildScaleOctavesRow();
+    buildScaleDirectionRow();
     E.buildKeyboard(document.getElementById("wpl-piano"), document.getElementById("wpl-status"));
     buildStepButtons();
     wirePlaybar();
     wireChordsPlaybar();
+    wireScalesPlaybar();
     if (activeTabId === "chords") {
       renderChords();
+    } else if (activeTabId === "practice" && activePracticeSub === "scales") {
+      renderScale();
     } else {
       render();
     }
