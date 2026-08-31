@@ -258,6 +258,17 @@ body {
   padding: 12px 4px 9px;
   background: var(--wpl-prog-bg);
   border-color: var(--wpl-prog-border);
+  /* Chris, 2026-08-31: "the pill shape looks different... progressions
+     pill is more rounded than the chords pill" — this row is built from
+     .step-btn markup (border-radius: 8px, the tan family's corner) but is
+     now colored/sized to look like a Progressions .prog-tab row (12px,
+     more rounded). The height/color swap above never touched radius, so
+     the shape stayed step-btn's even after everything else became
+     prog-tab's. Matching it here, and step-btn's 8px on the quality row
+     below (which is real .prog-tab markup got the tan treatment the same
+     half-swapped way), makes both rows read as the SAME shape family as
+     their Progressions counterparts, not just the same color. */
+  border-radius: 12px;
 }
 #wpl-chord-position-row .n-top,
 #wpl-chord-position-row .n-bottom {
@@ -292,6 +303,7 @@ body {
   padding: 8px 6px 6px;
   background: var(--wpl-tan);
   border-color: var(--wpl-line);
+  border-radius: 8px;
 }
 #wpl-chord-quality-tabs .prog-tab .num { font-size: 16px; }
 #wpl-chord-quality-tabs .prog-tab .name { font-size: 10px; margin-top: 1px; }
