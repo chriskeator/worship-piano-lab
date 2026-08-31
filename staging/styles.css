@@ -225,6 +225,42 @@ body {
 .step-btn .n { font-weight: 700; color: var(--wpl-ink); font-size: 15px; line-height: 1.2; }
 .step-btn .l { font-size: 12px; color: var(--wpl-muted); line-height: 1.2; }
 
+/* ---------- Chords panel: Position row (top) & Quality row (bottom) ----------
+   Chris, 2026-08-31: swap which row is on top, and make the top row
+   (position) taller than the bottom row (quality). These two rows are the
+   ONLY thing scoped by #wpl-chord-position-row / #wpl-chord-quality-tabs
+   below — the shared .step-btn/.prog-tab base rules above are untouched so
+   every other row (Progressions' step-row, its own quality-less tabs,
+   Scales settings) keeps its original size.
+   Heights are deliberately swapped from the ORIGINAL values (desktop was
+   quality=78 / position=60) so the SUM stays identical at every
+   breakpoint (138 desktop, 103 @520px, 92 @340px) — this panel ties with
+   Progressions for the tallest .wpl-panel, and the whole shell is sized
+   off that pair, so the total must never grow even though the two rows
+   swapped places and heights ("the whole exterior of the shell cannot
+   change ever"). Verified via Playwright after every edit, not just
+   eyeballed. */
+#wpl-chord-position-row .step-btn {
+  min-height: 80px;
+  padding: 12px 4px 9px;
+}
+#wpl-chord-position-row .n-top,
+#wpl-chord-position-row .n-bottom {
+  font-weight: 700;
+  color: var(--wpl-ink);
+  font-size: 14px;
+  line-height: 1.15;
+}
+#wpl-chord-position-row .step-btn.active .n-top,
+#wpl-chord-position-row .step-btn.active .n-bottom { color: #fff; }
+
+#wpl-chord-quality-tabs .prog-tab {
+  min-height: 58px;
+  padding: 8px 6px 6px;
+}
+#wpl-chord-quality-tabs .prog-tab .num { font-size: 16px; }
+#wpl-chord-quality-tabs .prog-tab .name { font-size: 10px; margin-top: 1px; }
+
 /* ---------- Chord / number readout ---------- */
 /* Both boxes are a fixed width (not min-width) sized with buffer to fit the
    widest real value ("Root High"/"Root Low" on the Chords tab) so the row
@@ -349,6 +385,16 @@ body {
   grid-column: 1;
   visibility: hidden;
   pointer-events: none;
+  /* Without this, a grid item's default min-width:auto lets its own
+     content's min-content size force the shared grid COLUMN wider than
+     the wrapper — the width equivalent of the height "tallest wins"
+     trick above, but as a bug: one panel's non-wrapping row (e.g. the
+     Scales settings row) can blow out the column and drag every OTHER
+     panel to that same width, overflowing the card on narrow screens
+     (Chris, 2026-08-31 — caught via Playwright at 390px). min-width:0
+     lets the item shrink to the column's real size so its own flex/text
+     content wraps instead. */
+  min-width: 0;
 }
 .wpl-panel.active {
   visibility: visible;
@@ -475,7 +521,28 @@ body {
   .step-btn .n { font-size: 10px; }
   .step-btn .l { font-size: 10px; }
   #wpl-prog-tabs, #wpl-step-row, #wpl-chord-quality-tabs, #wpl-chord-position-row { gap: 4px !important; }
-  #wpl-prog-tabs, #wpl-chord-quality-tabs { margin-bottom: 6px !important; }
+  #wpl-prog-tabs { margin-bottom: 6px !important; }
+  /* Position (top, taller) / Quality (bottom, shorter) — same swapped-sum
+     rule as desktop, scaled down: 60+43=103, matching this breakpoint's
+     original 59+44=103 total exactly. */
+  #wpl-chord-position-row { margin-bottom: 6px !important; }
+  #wpl-chord-position-row .step-btn { min-height: 60px; padding: 8px 2px 6px; }
+  #wpl-chord-position-row .n-top, #wpl-chord-position-row .n-bottom { font-size: 9px; }
+  #wpl-chord-quality-tabs .prog-tab { min-height: 43px; padding: 5px 2px 4px; }
+  #wpl-chord-quality-tabs .prog-tab .num { font-size: 11px; }
+  #wpl-chord-quality-tabs .prog-tab .name { font-size: 6.5px; }
+  /* Scales settings row: Hand+Direction (5 buttons) fit one line at full
+     size, but Octaves needs its own second line at this width — the
+     break forces it there instead of an unreadable 8-buttons-in-one-row
+     squeeze (Chris, 2026-08-31). Kept compact (smaller min-height/font,
+     tighter margins) specifically so this row's mobile-only 2nd line
+     still fits Practice inside Chords/Progressions's shared shell height
+     — verified via Playwright, not just eyeballed. */
+  .wpl-scale-break { flex-basis: 100%; height: 0; }
+  .wpl-scale-divider { display: none; }
+  .wpl-scale-settings-row { gap: 5px !important; margin-bottom: 8px !important; }
+  .wpl-scale-settings-row .step-btn { min-height: 34px; padding: 3px 1px; }
+  .wpl-scale-settings-row .step-btn .n { font-size: 9.5px; }
   .wpl-readout-row { padding: 0 4px; margin: 4px 0 2px; gap: 20px; }
   .wpl-readout-row > div { width: 112px !important; height: 40px !important; }
   /* line-height is a fixed px value (not the desktop inline style's em-relative
@@ -537,6 +604,15 @@ body {
   .key-tab.key-tab-wide { letter-spacing: -0.4px; }
   #wpl-key-tabs { gap: 2px !important; }
   #wpl-prog-tabs, #wpl-step-row, #wpl-chord-quality-tabs, #wpl-chord-position-row { gap: 3px !important; }
+  /* Position (top, taller) / Quality (bottom, shorter) — 53+39=92, matching
+     this breakpoint's original 52+40=92 total exactly. margin-bottom is
+     left alone here (inherits the 6px !important set at 520px above) to
+     match the original, which never overrode it at this breakpoint either. */
+  #wpl-chord-position-row .step-btn { min-height: 53px; padding: 6px 1px 5px; }
+  #wpl-chord-position-row .n-top, #wpl-chord-position-row .n-bottom { font-size: 7.5px; }
+  #wpl-chord-quality-tabs .prog-tab { min-height: 39px; padding: 4px 1px 3px; }
+  #wpl-chord-quality-tabs .prog-tab .num { font-size: 9px; }
+  #wpl-chord-quality-tabs .prog-tab .name { font-size: 5.5px; }
   .wpl-readout-row { gap: 10px; padding: 0 2px; }
   .wpl-readout-row > div { width: 88px !important; height: 34px !important; }
   .wpl-readout-row #wpl-chord-name, .wpl-readout-row #wpl-step-label { font-size: 15px !important; }
