@@ -93,21 +93,33 @@
 
     <!-- Chords panel -->
     <div id="wpl-panel-chords" class="wpl-panel active">
-      <div class="section-label">2. Choose a chord</div>
-      <!-- Single row of all 6 qualities (Major/Minor/Sus2/Sus4/Maj7/Min7),
-           at full standard .prog-tab height. Two different 2-row layouts
-           were tried and reverted 2026-08-30: full-size 2 rows grew the
-           whole shell (all .wpl-panel's share one height via CSS Grid,
-           sized to the tallest — Chris: "NEVER CHANGE THE SHELL SIZE!");
-           a same-height COMPACT 2-row version kept the shell size but
-           Chris found the shrunk text "way too small" on his real phone.
-           Back to one row — buttons are narrower than the original 4-tab
-           row but at full readable height, and the shell height matches
-           the pre-Maj7/Min7 baseline exactly (verified via Playwright). -->
-      <div id="wpl-chord-quality-tabs" style="display:flex; gap:6px; margin-bottom:14px;"></div>
+      <!-- Position row moved ABOVE the quality row, and made the TALLER of
+           the two (Chris, 2026-08-31: swap so "Choose a position" is on
+           top, with its own button heights correct — top row taller than
+           the bottom row). Swapping which section is first doesn't change
+           the panel's total height (same two rows, same total), but making
+           position taller while quality got correspondingly shorter is a
+           REAL height change to each row — the two were deliberately
+           swapped (was quality=78/position=60 desktop) so the SUM per
+           breakpoint is identical to before (see styles.css), since this
+           panel ties with Progressions for the tallest and the whole
+           shell is sized off that pair ("the whole exterior of the shell
+           cannot change ever"). -->
+      <div class="section-label">2. Choose a position</div>
+      <div id="wpl-chord-position-row" style="display:flex; gap:8px; margin-bottom:14px;"></div>
 
-      <div class="section-label">3. Choose a position</div>
-      <div id="wpl-chord-position-row" style="display:flex; gap:8px;"></div>
+      <div class="section-label">3. Choose a chord</div>
+      <!-- Single row of all 6 qualities (Major/Minor/Sus2/Sus4/Maj7/Min7).
+           Two different 2-row layouts were tried and reverted 2026-08-30:
+           full-size 2 rows grew the whole shell (all .wpl-panel's share
+           one height via CSS Grid, sized to the tallest — Chris: "NEVER
+           CHANGE THE SHELL SIZE!"); a same-height COMPACT 2-row version
+           kept the shell size but Chris found the shrunk text "way too
+           small" on his real phone. One row it stays — now sized smaller
+           than before (see styles.css) since this is the bottom/shorter
+           row per the swap above; total height with the position row is
+           unchanged from the pre-swap baseline (verified via Playwright). -->
+      <div id="wpl-chord-quality-tabs" style="display:flex; gap:6px;"></div>
 
       <div class="wpl-playbar">
         <div class="wpl-bpm">
@@ -134,20 +146,36 @@
 
       <!-- Scales sub-panel -->
       <div id="wpl-practice-sub-scales" class="wpl-practice-subpanel active">
-        <!-- Three full-width stacked rows (Hand / Octaves / Direction),
-             each row's buttons filling the width just like every other
-             "choose an option" row in the app (Choose a Chord, Choose a
-             Position) — NOT one wrapping flex row of small pills side by
-             side, which read as a jumbled, uneven mess next to those rows
-             (Chris, 2026-08-31). -->
-        <div class="section-label">2. Hand</div>
-        <div id="wpl-scale-hands-row" style="display:flex; gap:8px; margin-bottom:12px;"></div>
-
-        <div class="section-label">3. Octaves</div>
-        <div id="wpl-scale-octaves-row" style="display:flex; gap:8px; margin-bottom:12px;"></div>
-
-        <div class="section-label">4. Direction</div>
-        <div id="wpl-scale-direction-row" style="display:flex; gap:8px; margin-bottom:14px;"></div>
+        <!-- ONE row, all 8 buttons (Hand/Octaves/Direction), same as every
+             other "choose an option" row in the app — the shell's overall
+             height is fixed by the CSS Grid tallest-wins trick on
+             .wpl-panels (see styles.css), so Practice's content can NEVER
+             be taller than Chords/Progressions's tallest row-pair or it
+             grows the shared shell for every tab, not just Practice
+             (Chris, 2026-08-31: "the whole exterior of the shell cannot
+             change ever"). A second stacked-rows attempt that added 3 full
+             label+row sections DID grow the shell (208px -> 343px content
+             height, confirmed via Playwright) and was reverted for this:
+             one row, three groups separated by the same kind of divider
+             used in the Choose-a-Key row above, all buttons sharing one
+             .step-btn height so nothing wraps or looks uneven. -->
+        <div class="section-label">2. Choose your scale settings</div>
+        <!-- Hand + Direction (5 buttons) share line 1; Octaves (3 buttons)
+             is forced onto its own line 2 ONLY below the 520px breakpoint
+             via .wpl-scale-break (flex-basis:100%, see styles.css) — on
+             desktop/tablet all 8 fit one line with no break. Two lines is
+             the one bit of mobile-only height growth this row is allowed:
+             it's already accounted for in Practice's mobile budget against
+             Chords/Progressions (verified via Playwright at 390px), unlike
+             the earlier 3-stacked-rows attempt which grew the shell at
+             every width. -->
+        <div class="wpl-scale-settings-row" style="display:flex; flex-wrap:wrap; align-items:stretch; gap:8px; margin-bottom:14px;">
+          <div id="wpl-scale-hands-row" style="display:contents;"></div>
+          <div class="wpl-scale-divider" style="width:3px; background:var(--wpl-line); border-radius:2px;"></div>
+          <div id="wpl-scale-direction-row" style="display:contents;"></div>
+          <div class="wpl-scale-break"></div>
+          <div id="wpl-scale-octaves-row" style="display:contents;"></div>
+        </div>
 
         <div class="wpl-playbar">
           <div class="wpl-bpm">
