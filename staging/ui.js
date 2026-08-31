@@ -507,19 +507,34 @@
     }
   }
 
+  // Chris, 2026-08-31: "the practice tab layout is horrible and looks
+  // nothing like the other 2 tabs" — Hand and Direction were built as
+  // .wpl-toggle-btn (the pill style meant for the Loop/Click playbar
+  // controls), while Octaves right next to them in the SAME row was
+  // .step-btn — two different button families side by side in one row,
+  // which is why this row never matched the clean one-family-per-row look
+  // every row on Chords/Progressions has. Both are now .step-btn, exactly
+  // like Octaves, so all 8 buttons in this row share one shape/color
+  // family — the same pattern as any single "choose an option" row
+  // elsewhere in the app. This does NOT touch row height/width: .step-btn's
+  // min-height at each breakpoint is unchanged, so the row's own footprint
+  // (and therefore the shell, verified via qa/check-dimensions.js) stays
+  // identical to before this edit.
   function buildScaleHandsRow() {
     const wrap = document.getElementById("wpl-scale-hands-row");
     wrap.innerHTML = "";
     [{ id: "right", label: "Right Hand" }, { id: "both", label: "Both Hands" }].forEach(opt => {
-      const b = document.createElement("button");
-      b.className = "wpl-toggle-btn" + (opt.id === scaleHands ? " active" : "");
-      b.textContent = opt.label;
-      b.addEventListener("click", () => {
+      const b = document.createElement("div");
+      b.className = "step-btn" + (opt.id === scaleHands ? " active" : "");
+      b.innerHTML = `<div class="n">${opt.label}</div>`;
+      const activate = () => {
         scaleHands = opt.id;
-        document.querySelectorAll("#wpl-scale-hands-row .wpl-toggle-btn").forEach(t => t.classList.remove("active"));
+        document.querySelectorAll("#wpl-scale-hands-row .step-btn").forEach(t => t.classList.remove("active"));
         b.classList.add("active");
         onScaleSettingChanged();
-      });
+      };
+      b.addEventListener("click", activate);
+      b.addEventListener("touchstart", (e) => { e.preventDefault(); activate(); }, { passive: false });
       wrap.appendChild(b);
     });
   }
@@ -552,15 +567,17 @@
     const wrap = document.getElementById("wpl-scale-direction-row");
     wrap.innerHTML = "";
     [{ id: "up", label: "Up" }, { id: "down", label: "Down" }, { id: "updown", label: "Up & Down" }].forEach(opt => {
-      const b = document.createElement("button");
-      b.className = "wpl-toggle-btn" + (opt.id === scaleDirection ? " active" : "");
-      b.textContent = opt.label;
-      b.addEventListener("click", () => {
+      const b = document.createElement("div");
+      b.className = "step-btn" + (opt.id === scaleDirection ? " active" : "");
+      b.innerHTML = `<div class="n">${opt.label}</div>`;
+      const activate = () => {
         scaleDirection = opt.id;
-        document.querySelectorAll("#wpl-scale-direction-row .wpl-toggle-btn").forEach(t => t.classList.remove("active"));
+        document.querySelectorAll("#wpl-scale-direction-row .step-btn").forEach(t => t.classList.remove("active"));
         b.classList.add("active");
         onScaleSettingChanged();
-      });
+      };
+      b.addEventListener("click", activate);
+      b.addEventListener("touchstart", (e) => { e.preventDefault(); activate(); }, { passive: false });
       wrap.appendChild(b);
     });
   }
