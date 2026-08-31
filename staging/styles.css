@@ -268,6 +268,24 @@ body {
 }
 #wpl-chord-position-row .step-btn.active .n-top,
 #wpl-chord-position-row .step-btn.active .n-bottom { color: #fff; }
+/* Chris, 2026-08-31: "the clicked buttons on the bottom 2 rows are not
+   turning blue like the progressions tab" — the rest-color override two
+   rules up (an ID + one class, specificity 1-1-0) was silently beating the
+   shared ".step-btn.active"/".prog-tab.active" rule up in the base section
+   (two classes, 0-2-0) — an ID selector always outranks any number of
+   plain classes, regardless of source order, so the tapped/active button
+   never actually got var(--wpl-accent); only its text went white (from the
+   .n-top/.n-bottom rule just above, which IS scoped to .active and so did
+   win). These two rules restore the accent background on tap by matching
+   ".active" at the same ID-scoped specificity, and the :hover pair below
+   does the same for the active+hover (darker accent) case — without it, a
+   real mouse hovering an already-active button would fall back to the
+   plain rest-hover color instead of staying the darker "pressed" blue. */
+#wpl-chord-position-row .step-btn.active,
+#wpl-chord-quality-tabs .prog-tab.active {
+  background: var(--wpl-accent);
+  border-color: var(--wpl-accent);
+}
 
 #wpl-chord-quality-tabs .prog-tab {
   min-height: 60px;
@@ -512,6 +530,16 @@ body {
      order also keeps this readable as "the override to the override." */
   #wpl-chord-position-row .step-btn:hover { background: var(--wpl-prog-hover); border-color: var(--wpl-prog-hover); }
   #wpl-chord-quality-tabs .prog-tab:hover { background: var(--wpl-tan-hover); border-color: var(--wpl-tan-hover); }
+  /* Same specificity fix as the active-state rules above, applied to the
+     hover case: without these, hovering an already-active button in this
+     row would fall back to the plain rest-hover (light blue / tan) instead
+     of staying the darker "pressed" accent the base .active:hover rule
+     intends. */
+  #wpl-chord-position-row .step-btn.active:hover,
+  #wpl-chord-quality-tabs .prog-tab.active:hover {
+    background: var(--wpl-accent-dark);
+    border-color: var(--wpl-accent-dark);
+  }
   .wpl-toggle-btn:hover { background: var(--wpl-tan-hover); border-color: var(--wpl-tan-hover); box-shadow: var(--wpl-lift-shadow); transform: translateY(-1.5px); }
   .wpl-toggle-btn.active:hover { background: var(--wpl-accent-dark); border-color: var(--wpl-accent-dark); }
   .wpl-play-btn:hover { background: var(--wpl-accent-dark); border-color: var(--wpl-accent-dark); transform: translateY(-1.5px); }
