@@ -500,16 +500,21 @@
   function buildScaleHandsRow() {
     const wrap = document.getElementById("wpl-scale-hands-row");
     wrap.innerHTML = "";
+    // .step-btn (not .wpl-toggle-btn — that's the compact Loop/Click
+    // playbar pill) so this row matches the same card look as every other
+    // "choose an option" row in the app (Choose a Position, Choose a Chord).
     [{ id: "right", label: "Right Hand" }, { id: "both", label: "Both Hands" }].forEach(opt => {
-      const b = document.createElement("button");
-      b.className = "wpl-toggle-btn" + (opt.id === scaleHands ? " active" : "");
-      b.textContent = opt.label;
-      b.addEventListener("click", () => {
+      const b = document.createElement("div");
+      b.className = "step-btn" + (opt.id === scaleHands ? " active" : "");
+      b.innerHTML = `<div class="n">${opt.label}</div>`;
+      const activate = () => {
         scaleHands = opt.id;
-        document.querySelectorAll("#wpl-scale-hands-row .wpl-toggle-btn").forEach(t => t.classList.remove("active"));
+        document.querySelectorAll("#wpl-scale-hands-row .step-btn").forEach(t => t.classList.remove("active"));
         b.classList.add("active");
         onScaleSettingChanged();
-      });
+      };
+      b.addEventListener("click", activate);
+      b.addEventListener("touchstart", (e) => { e.preventDefault(); activate(); }, { passive: false });
       wrap.appendChild(b);
     });
   }
@@ -534,16 +539,19 @@
   function buildScaleDirectionRow() {
     const wrap = document.getElementById("wpl-scale-direction-row");
     wrap.innerHTML = "";
+    // Same .step-btn card as buildScaleHandsRow above — see its comment.
     [{ id: "up", label: "Up" }, { id: "down", label: "Down" }, { id: "updown", label: "Up & Down" }].forEach(opt => {
-      const b = document.createElement("button");
-      b.className = "wpl-toggle-btn" + (opt.id === scaleDirection ? " active" : "");
-      b.textContent = opt.label;
-      b.addEventListener("click", () => {
+      const b = document.createElement("div");
+      b.className = "step-btn" + (opt.id === scaleDirection ? " active" : "");
+      b.innerHTML = `<div class="n">${opt.label}</div>`;
+      const activate = () => {
         scaleDirection = opt.id;
-        document.querySelectorAll("#wpl-scale-direction-row .wpl-toggle-btn").forEach(t => t.classList.remove("active"));
+        document.querySelectorAll("#wpl-scale-direction-row .step-btn").forEach(t => t.classList.remove("active"));
         b.classList.add("active");
         onScaleSettingChanged();
-      });
+      };
+      b.addEventListener("click", activate);
+      b.addEventListener("touchstart", (e) => { e.preventDefault(); activate(); }, { passive: false });
       wrap.appendChild(b);
     });
   }
