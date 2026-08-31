@@ -377,13 +377,23 @@
     });
   }
 
+  // Position labels are always two words ("Root Low", "1st Inversion"...)
+  // and render as two stacked lines on the button per Chris 2026-08-31,
+  // instead of the single-line ".n" every other row uses.
+  function positionLabelHTML(label) {
+    const spaceAt = label.indexOf(" ");
+    const top = label.slice(0, spaceAt);
+    const bottom = label.slice(spaceAt + 1);
+    return `<div class="n-top">${top}</div><div class="n-bottom">${bottom}</div>`;
+  }
+
   function buildChordPositionRow() {
     const wrap = document.getElementById("wpl-chord-position-row");
     wrap.innerHTML = "";
     getChordPositionNames(D.chordQualityNames[curQuality]).forEach((label, i) => {
       const btn = document.createElement("div");
       btn.className = "step-btn" + (i === curPosition ? " active" : "");
-      btn.innerHTML = `<div class="n">${label}</div>`;
+      btn.innerHTML = positionLabelHTML(label);
       const activate = () => {
         E.stopPlayThrough();
         resetChordsPlayButton();
@@ -403,7 +413,7 @@
   function updateChordPositionLabels() {
     const names = getChordPositionNames(D.chordQualityNames[curQuality]);
     document.querySelectorAll("#wpl-chord-position-row .step-btn").forEach((btn, i) => {
-      btn.querySelector(".n").textContent = names[i];
+      btn.innerHTML = positionLabelHTML(names[i]);
     });
   }
 
@@ -500,35 +510,13 @@
   function buildScaleHandsRow() {
     const wrap = document.getElementById("wpl-scale-hands-row");
     wrap.innerHTML = "";
-    // .step-btn (not .wpl-toggle-btn — that's the compact Loop/Click
-    // playbar pill) so this row matches the same card look as every other
-    // "choose an option" row in the app (Choose a Position, Choose a Chord).
     [{ id: "right", label: "Right Hand" }, { id: "both", label: "Both Hands" }].forEach(opt => {
-      const b = document.createElement("div");
-      b.className = "step-btn" + (opt.id === scaleHands ? " active" : "");
-      b.innerHTML = `<div class="n">${opt.label}</div>`;
-      const activate = () => {
-        scaleHands = opt.id;
-        document.querySelectorAll("#wpl-scale-hands-row .step-btn").forEach(t => t.classList.remove("active"));
-        b.classList.add("active");
-        onScaleSettingChanged();
-      };
-      b.addEventListener("click", activate);
-      b.addEventListener("touchstart", (e) => { e.preventDefault(); activate(); }, { passive: false });
-      wrap.appendChild(b);
-    });
-  }
-
-  function buildScaleOctavesRow() {
-    const wrap = document.getElementById("wpl-scale-octaves-row");
-    wrap.innerHTML = "";
-    [1, 2, 3].forEach(n => {
       const b = document.createElement("button");
-      b.className = "prog-tab" + (n === scaleOctaves ? " active" : "");
-      b.innerHTML = `<div class="num">${n}</div><div class="name">Octave${n > 1 ? "s" : ""}</div>`;
+      b.className = "wpl-toggle-btn" + (opt.id === scaleHands ? " active" : "");
+      b.textContent = opt.label;
       b.addEventListener("click", () => {
-        scaleOctaves = n;
-        document.querySelectorAll("#wpl-scale-octaves-row .prog-tab").forEach(t => t.classList.remove("active"));
+        scaleHands = opt.id;
+        document.querySelectorAll("#wpl-scale-hands-row .wpl-toggle-btn").forEach(t => t.classList.remove("active"));
         b.classList.add("active");
         onScaleSettingChanged();
       });
@@ -536,22 +524,43 @@
     });
   }
 
-  function buildScaleDirectionRow() {
-    const wrap = document.getElementById("wpl-scale-direction-row");
+  function buildScaleOctavesRow() {
+    const wrap = document.getElementById("wpl-scale-octaves-row");
     wrap.innerHTML = "";
-    // Same .step-btn card as buildScaleHandsRow above — see its comment.
-    [{ id: "up", label: "Up" }, { id: "down", label: "Down" }, { id: "updown", label: "Up & Down" }].forEach(opt => {
+    // .step-btn (single line), not .prog-tab's big-number style — this row
+    // sits in the SAME flex row as Hand and Direction (see index.html),
+    // and every button there needs to share one height so nothing looks
+    // uneven or wraps. The .prog-tab num+name look was reverted 2026-08-31
+    // for exactly that reason.
+    [1, 2, 3].forEach(n => {
       const b = document.createElement("div");
-      b.className = "step-btn" + (opt.id === scaleDirection ? " active" : "");
-      b.innerHTML = `<div class="n">${opt.label}</div>`;
+      b.className = "step-btn" + (n === scaleOctaves ? " active" : "");
+      b.innerHTML = `<div class="n">${n} Octave${n > 1 ? "s" : ""}</div>`;
       const activate = () => {
-        scaleDirection = opt.id;
-        document.querySelectorAll("#wpl-scale-direction-row .step-btn").forEach(t => t.classList.remove("active"));
+        scaleOctaves = n;
+        document.querySelectorAll("#wpl-scale-octaves-row .step-btn").forEach(t => t.classList.remove("active"));
         b.classList.add("active");
         onScaleSettingChanged();
       };
       b.addEventListener("click", activate);
       b.addEventListener("touchstart", (e) => { e.preventDefault(); activate(); }, { passive: false });
+      wrap.appendChild(b);
+    });
+  }
+
+  function buildScaleDirectionRow() {
+    const wrap = document.getElementById("wpl-scale-direction-row");
+    wrap.innerHTML = "";
+    [{ id: "up", label: "Up" }, { id: "down", label: "Down" }, { id: "updown", label: "Up & Down" }].forEach(opt => {
+      const b = document.createElement("button");
+      b.className = "wpl-toggle-btn" + (opt.id === scaleDirection ? " active" : "");
+      b.textContent = opt.label;
+      b.addEventListener("click", () => {
+        scaleDirection = opt.id;
+        document.querySelectorAll("#wpl-scale-direction-row .wpl-toggle-btn").forEach(t => t.classList.remove("active"));
+        b.classList.add("active");
+        onScaleSettingChanged();
+      });
       wrap.appendChild(b);
     });
   }
