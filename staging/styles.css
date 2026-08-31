@@ -232,17 +232,32 @@ body {
    below — the shared .step-btn/.prog-tab base rules above are untouched so
    every other row (Progressions' step-row, its own quality-less tabs,
    Scales settings) keeps its original size.
-   Heights are deliberately swapped from the ORIGINAL values (desktop was
-   quality=78 / position=60) so the SUM stays identical at every
-   breakpoint (138 desktop, 103 @520px, 92 @340px) — this panel ties with
-   Progressions for the tallest .wpl-panel, and the whole shell is sized
-   off that pair, so the total must never grow even though the two rows
-   swapped places and heights ("the whole exterior of the shell cannot
-   change ever"). Verified via Playwright after every edit, not just
-   eyeballed. */
+   Heights are the ORIGINAL two values, simply swapped between rows (desktop
+   was quality=78 / position=60, now position=78 / quality=60) — NOT new
+   numbers. That's deliberate: 78px is exactly Progressions' own .prog-tab
+   height (its 5-button row, untouched), so the Chords position row —
+   now the first/top row on this tab, same as Progressions' first row —
+   matches it exactly instead of being taller (Chris, 2026-08-31: "the 4
+   top buttons on the chords tab are taller than the top 5 buttons on the
+   progressions tab" — caught after an earlier pass used 80/58 here, close
+   but not an exact match). Swapping the exact values, not inventing new
+   ones, also keeps the SUM identical at every breakpoint (138 desktop,
+   103 @520px, 92 @340px) — this panel ties with Progressions for the
+   tallest .wpl-panel, and the whole shell is sized off that pair, so the
+   total must never grow ("the whole exterior of the shell cannot change
+   ever"). Verified via Playwright after every edit, not just eyeballed. */
+/* Colors are swapped the same way as the heights: position (top) now
+   gets prog-tab's light-blue rest look, quality (bottom) gets step-btn's
+   tan rest look — matching Progressions, where the TOP row (its 5
+   prog-tab buttons) is blue and the row below it is tan. Caught alongside
+   the height mismatch (Chris, 2026-08-31: "top buttons need to be blue,
+   not the bottom row of buttons") — .prog-tab/.step-btn's own rest colors
+   are left alone; only these two rows get overridden. */
 #wpl-chord-position-row .step-btn {
-  min-height: 80px;
+  min-height: 78px;
   padding: 12px 4px 9px;
+  background: var(--wpl-prog-bg);
+  border-color: var(--wpl-prog-border);
 }
 #wpl-chord-position-row .n-top,
 #wpl-chord-position-row .n-bottom {
@@ -255,8 +270,10 @@ body {
 #wpl-chord-position-row .step-btn.active .n-bottom { color: #fff; }
 
 #wpl-chord-quality-tabs .prog-tab {
-  min-height: 58px;
+  min-height: 60px;
   padding: 8px 6px 6px;
+  background: var(--wpl-tan);
+  border-color: var(--wpl-line);
 }
 #wpl-chord-quality-tabs .prog-tab .num { font-size: 16px; }
 #wpl-chord-quality-tabs .prog-tab .name { font-size: 10px; margin-top: 1px; }
@@ -485,6 +502,16 @@ body {
   .prog-tab:hover { background: var(--wpl-prog-hover); border-color: var(--wpl-prog-hover); }
   .key-tab:hover { background: var(--wpl-tan-hover); border-color: var(--wpl-tan-hover); }
   .step-btn:hover { background: var(--wpl-tan-hover); border-color: var(--wpl-tan-hover); }
+  /* Chords Position row is a .step-btn with its rest color overridden to
+     blue (matching .prog-tab); Quality row is a .prog-tab overridden to
+     tan (matching .step-btn) — see the swap above these rows' rules.
+     Without these, the base class rules just above would hover each one
+     to the WRONG color (position hovering tan, quality hovering blue).
+     These must come after the base .prog-tab:hover/.step-btn:hover rules
+     above so the ID-scoped selector wins on specificity anyway, but the
+     order also keeps this readable as "the override to the override." */
+  #wpl-chord-position-row .step-btn:hover { background: var(--wpl-prog-hover); border-color: var(--wpl-prog-hover); }
+  #wpl-chord-quality-tabs .prog-tab:hover { background: var(--wpl-tan-hover); border-color: var(--wpl-tan-hover); }
   .wpl-toggle-btn:hover { background: var(--wpl-tan-hover); border-color: var(--wpl-tan-hover); box-shadow: var(--wpl-lift-shadow); transform: translateY(-1.5px); }
   .wpl-toggle-btn.active:hover { background: var(--wpl-accent-dark); border-color: var(--wpl-accent-dark); }
   .wpl-play-btn:hover { background: var(--wpl-accent-dark); border-color: var(--wpl-accent-dark); transform: translateY(-1.5px); }
@@ -523,12 +550,13 @@ body {
   #wpl-prog-tabs, #wpl-step-row, #wpl-chord-quality-tabs, #wpl-chord-position-row { gap: 4px !important; }
   #wpl-prog-tabs { margin-bottom: 6px !important; }
   /* Position (top, taller) / Quality (bottom, shorter) — same swapped-sum
-     rule as desktop, scaled down: 60+43=103, matching this breakpoint's
-     original 59+44=103 total exactly. */
+     rule as desktop, scaled down: 59+44=103, matching this breakpoint's
+     original 59+44=103 total exactly (Progressions' own .prog-tab is 59px
+     here, so position matches it exactly, same exact-match fix as desktop). */
   #wpl-chord-position-row { margin-bottom: 6px !important; }
-  #wpl-chord-position-row .step-btn { min-height: 60px; padding: 8px 2px 6px; }
+  #wpl-chord-position-row .step-btn { min-height: 59px; padding: 8px 2px 6px; background: var(--wpl-prog-bg); border-color: var(--wpl-prog-border); }
   #wpl-chord-position-row .n-top, #wpl-chord-position-row .n-bottom { font-size: 9px; }
-  #wpl-chord-quality-tabs .prog-tab { min-height: 43px; padding: 5px 2px 4px; }
+  #wpl-chord-quality-tabs .prog-tab { min-height: 44px; padding: 5px 2px 4px; background: var(--wpl-tan); border-color: var(--wpl-line); }
   #wpl-chord-quality-tabs .prog-tab .num { font-size: 11px; }
   #wpl-chord-quality-tabs .prog-tab .name { font-size: 6.5px; }
   /* Scales settings row: Hand+Direction (5 buttons) fit one line at full
@@ -604,13 +632,14 @@ body {
   .key-tab.key-tab-wide { letter-spacing: -0.4px; }
   #wpl-key-tabs { gap: 2px !important; }
   #wpl-prog-tabs, #wpl-step-row, #wpl-chord-quality-tabs, #wpl-chord-position-row { gap: 3px !important; }
-  /* Position (top, taller) / Quality (bottom, shorter) — 53+39=92, matching
-     this breakpoint's original 52+40=92 total exactly. margin-bottom is
+  /* Position (top, taller) / Quality (bottom, shorter) — 52+40=92, matching
+     this breakpoint's original 52+40=92 total exactly (Progressions' own
+     .prog-tab is 52px here, so position matches it exactly). margin-bottom is
      left alone here (inherits the 6px !important set at 520px above) to
      match the original, which never overrode it at this breakpoint either. */
-  #wpl-chord-position-row .step-btn { min-height: 53px; padding: 6px 1px 5px; }
+  #wpl-chord-position-row .step-btn { min-height: 52px; padding: 6px 1px 5px; background: var(--wpl-prog-bg); border-color: var(--wpl-prog-border); }
   #wpl-chord-position-row .n-top, #wpl-chord-position-row .n-bottom { font-size: 7.5px; }
-  #wpl-chord-quality-tabs .prog-tab { min-height: 39px; padding: 4px 1px 3px; }
+  #wpl-chord-quality-tabs .prog-tab { min-height: 40px; padding: 4px 1px 3px; background: var(--wpl-tan); border-color: var(--wpl-line); }
   #wpl-chord-quality-tabs .prog-tab .num { font-size: 9px; }
   #wpl-chord-quality-tabs .prog-tab .name { font-size: 5.5px; }
   .wpl-readout-row { gap: 10px; padding: 0 2px; }
