@@ -197,6 +197,12 @@ body {
   flex: 1; border-radius: 8px; padding: 9px 0; font-weight: 600; font-size: 13px;
   background: var(--wpl-tan); color: var(--wpl-tan-text);
   white-space: nowrap;
+  /* Fixed (px, not ratio) line-height so box height depends only on
+     padding, never on font-size — .key-tab-wide sets a smaller
+     font-size for 2-letter labels (Db/Eb/F#/Ab/Bb) and, since it never
+     redeclares line-height, inherits this exact px value, keeping its
+     row the same height as the 1-letter keys next to it. */
+  line-height: 15px;
 }
 .key-tab.locked { opacity: 0.55; }
 
@@ -424,6 +430,7 @@ body {
    nothing left stuck afterward. */
 @media (hover: hover) and (pointer: fine) {
   .wpl-tab:hover { color: var(--wpl-ink); }
+  .wpl-tab.active:hover { color: var(--wpl-accent-dark); }
   .prog-tab:hover, .key-tab:hover, .step-btn:hover {
     box-shadow: var(--wpl-lift-shadow);
     transform: translateY(-1.5px);
@@ -457,12 +464,12 @@ body {
   .prog-tab { padding: 8px 2px; min-height: 59px; }
   .prog-tab .num { font-size: 14px; }
   .prog-tab .name { font-size: 8px; }
-  .key-tab { padding: 6px 0; font-size: 11px; }
-  /* 2-letter keys (Db/Eb/F#/Ab/Bb) get a touch smaller text than the
-     1-letter keys here — same box width for all (flex:1), but 2
-     characters at the 1-letter size crowd the box and read as
-     visibly narrower/more cramped than the naturals next to them. */
-  .key-tab.key-tab-wide { font-size: 9.5px; letter-spacing: -0.2px; }
+  .key-tab { padding: 6px 0; font-size: 11px; line-height: 12px; }
+  /* 2-letter keys (Db/Eb/F#/Ab/Bb) keep the SAME font-size as the
+     1-letter keys (Chris: text must match, not shrink) — only
+     letter-spacing tightens slightly so the extra character still fits
+     the same flex:1 box without wrapping. */
+  .key-tab.key-tab-wide { letter-spacing: -0.3px; }
   #wpl-key-tabs { gap: 3px !important; }
   .step-btn { padding: 5px 1px; min-height: 44px; }
   .step-btn .n { font-size: 10px; }
@@ -526,8 +533,8 @@ body {
   .prog-tab .name { font-size: 7px; }
   .step-btn { padding: 4px 1px; min-height: 40px; }
   .step-btn .n, .step-btn .l { font-size: 9px; }
-  .key-tab { font-size: 9.5px; padding: 5px 0; }
-  .key-tab.key-tab-wide { font-size: 8.5px; letter-spacing: -0.2px; }
+  .key-tab { font-size: 9.5px; padding: 5px 0; line-height: 11px; }
+  .key-tab.key-tab-wide { letter-spacing: -0.4px; }
   #wpl-key-tabs { gap: 2px !important; }
   #wpl-prog-tabs, #wpl-step-row, #wpl-chord-quality-tabs, #wpl-chord-position-row { gap: 3px !important; }
   .wpl-readout-row { gap: 10px; padding: 0 2px; }
