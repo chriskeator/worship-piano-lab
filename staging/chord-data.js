@@ -85,16 +85,20 @@
   // the bass player" rule) — only the right hand changes across positions.
   const chordQualityNames = ["Major", "Minor", "Sus2", "Sus4", "Maj7", "Min7"];
   const chordQualitySuffix = { Major: "", Minor: "m", Sus2: "2", Sus4: "4", Maj7: "maj7", Min7: "m7" };
-  const chordPositionNames = ["Root Low", "1st Inv", "2nd Inv", "Root High"];
+  // Full words (not "Inv" abbreviations), per Chris 2026-08-31 — ui.js
+  // splits each label on its first space and renders it as two stacked
+  // lines on the button ("1st" / "Inversion"), so every entry here must be
+  // exactly two words.
+  const chordPositionNames = ["Root Low", "1st Inversion", "2nd Inversion", "Root High"];
   // A 4-note 7th chord actually has a 4th inversion (bass on the 7th) where
   // a 3-note triad only has "root voiced an octave up" to fill that 4th
   // slot — so Maj7/Min7 reuse the same 4-button position row but swap its
-  // last label/voicing to a real 3rd Inv instead (Chris, 2026-08-30: "just
-  // change Root High to 3rd Inv when you click on the Maj7 or Min7 tabs").
-  // ui.js's getChordPositionNames(quality) is what picks between these two
-  // arrays — never read chordPositionNames directly for a quality-aware UI
-  // spot, always go through that helper.
-  const chordPositionNamesSeventh = ["Root Low", "1st Inv", "2nd Inv", "3rd Inv"];
+  // last label/voicing to a real 3rd Inversion instead (Chris, 2026-08-30:
+  // "just change Root High to 3rd Inv when you click on the Maj7 or Min7
+  // tabs"). ui.js's getChordPositionNames(quality) is what picks between
+  // these two arrays — never read chordPositionNames directly for a
+  // quality-aware UI spot, always go through that helper.
+  const chordPositionNamesSeventh = ["Root Low", "1st Inversion", "2nd Inversion", "3rd Inversion"];
   const seventhQualities = ["Maj7", "Min7"];
 
   const chordVoicings = {
