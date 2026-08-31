@@ -690,6 +690,22 @@ body {
   .wpl-playbar-controls { gap: 5px; flex-wrap: wrap; row-gap: 6px; }
   .wpl-toggle-btn, .wpl-play-btn { padding: 7px 5px; font-size: 10.5px; }
   .wpl-play-btn { min-width: 0; }
+  /* Chris, 2026-08-31: "make the practice tab match the other 2 tabs" —
+     Hand/Direction were converted from .wpl-toggle-btn to .step-btn (same
+     family as Octaves) in ui.js, so all 8 buttons in this row share one
+     shape/color. That unification made Hand/Direction the SAME height as
+     Octaves for the first time — previously they were shorter/mismatched,
+     which was part of what looked "horrible." The 34px min-height inherited
+     from the 520px rule above is correct at 390px (already inside that
+     breakpoint's height budget), but at this narrower ≤340px breakpoint
+     Chords/Progressions have only 1px of slack against the shared shell
+     height (qa/dimension-baseline.json), so reusing 34px here would grow
+     the shell by ~5px (caught by qa/check-dimensions.js). 30px keeps this
+     row's 2-line total within that 1px budget while single-line text still
+     fits comfortably (padding+line-height well under 30px at this
+     font-size) — re-verify with the dimension checker if this value ever
+     needs to move again. */
+  .wpl-scale-settings-row .step-btn { min-height: 30px; }
 }
 @media (max-height: 500px) {
   #wpl-piano { height: 95px !important; }
