@@ -297,6 +297,19 @@ body {
   background: var(--wpl-accent);
   border-color: var(--wpl-accent);
 }
+/* Same ID-vs-class specificity fix as the two rules above, needed here for
+   the same reason: #wpl-practice-subtabs .wpl-toggle-btn (the rest-color
+   override just below) is an ID + class selector (1-1-0), which beats the
+   shared .wpl-toggle-btn.active rule (0-2-0) despite .active coming later
+   in the file — without this, the active sub-tab would stay light blue
+   instead of turning the solid accent color like every other active button
+   in the app. Caught via a live background-color check after the initial
+   pass "looked right" in a screenshot but the accent blue wasn't actually
+   applying (2026-09-01). */
+#wpl-practice-subtabs .wpl-toggle-btn.active {
+  background: var(--wpl-accent);
+  border-color: var(--wpl-accent);
+}
 
 #wpl-chord-quality-tabs .prog-tab {
   min-height: 60px;
@@ -307,6 +320,37 @@ body {
 }
 #wpl-chord-quality-tabs .prog-tab .num { font-size: 16px; }
 #wpl-chord-quality-tabs .prog-tab .name { font-size: 10px; margin-top: 1px; }
+
+/* ---------- Practice sub-tabs row ----------
+   Chris, 2026-09-01, second follow-up: "the practice bottom 2 button lines
+   still arent the same size as the chords/progressions bottom 2 lines" —
+   row count already matched (2 rows) but this row was still the small
+   .wpl-toggle-btn pill (34px, meant for playbar Loop/Click), not the 78px
+   "top row" height/color Progressions' #wpl-prog-tabs .prog-tab and
+   Chords' #wpl-chord-position-row .step-btn both share. Scoped to this ID
+   only — Loop/Click elsewhere keep the original compact pill untouched.
+   flex:1/min-width:0 + the container's nowrap (index.html) make all 3
+   buttons share the row exactly like every other row's buttons, instead
+   of wrapping onto a 2nd line the way this row used to (flex-wrap:wrap). */
+#wpl-practice-subtabs .wpl-toggle-btn {
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+  justify-content: center;
+  min-height: 78px;
+  padding: 14px 4px;
+  background: var(--wpl-prog-bg);
+  border-color: var(--wpl-prog-border);
+  border-radius: 12px;
+}
+#wpl-practice-subtabs .wpl-subtab-label {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: normal;
+}
+#wpl-practice-subtabs .wpl-tab-soon { white-space: nowrap; }
 
 /* ---------- Chord / number readout ---------- */
 /* Both boxes are a fixed width (not min-width) sized with buffer to fit the
@@ -554,6 +598,12 @@ body {
   }
   .wpl-toggle-btn:hover { background: var(--wpl-tan-hover); border-color: var(--wpl-tan-hover); box-shadow: var(--wpl-lift-shadow); transform: translateY(-1.5px); }
   .wpl-toggle-btn.active:hover { background: var(--wpl-accent-dark); border-color: var(--wpl-accent-dark); }
+  /* Practice sub-tabs are recolored to the blue "top row" family above —
+     without this, the base .wpl-toggle-btn:hover rule just above would
+     hover them to the wrong (tan) color, same specificity fix pattern as
+     the Chords position/quality rows use for the same reason. */
+  #wpl-practice-subtabs .wpl-toggle-btn:hover { background: var(--wpl-prog-hover); border-color: var(--wpl-prog-hover); }
+  #wpl-practice-subtabs .wpl-toggle-btn.active:hover { background: var(--wpl-accent-dark); border-color: var(--wpl-accent-dark); }
   .wpl-play-btn:hover { background: var(--wpl-accent-dark); border-color: var(--wpl-accent-dark); transform: translateY(-1.5px); }
   .wpl-play-btn.playing:hover { background: #d97706; border-color: #d97706; }
   .wpl-lock-cta:hover { background: var(--wpl-accent-dark); border-color: var(--wpl-accent-dark); transform: translateY(-1.5px); }
@@ -587,8 +637,8 @@ body {
   .step-btn { padding: 5px 1px; min-height: 44px; }
   .step-btn .n { font-size: 10px; }
   .step-btn .l { font-size: 10px; }
-  #wpl-prog-tabs, #wpl-step-row, #wpl-chord-quality-tabs, #wpl-chord-position-row, .wpl-scale-settings-row { gap: 4px !important; }
-  #wpl-prog-tabs, .wpl-scale-settings-row { margin-bottom: 6px !important; }
+  #wpl-prog-tabs, #wpl-step-row, #wpl-chord-quality-tabs, #wpl-chord-position-row, .wpl-scale-settings-row, #wpl-practice-subtabs { gap: 4px !important; }
+  #wpl-prog-tabs, .wpl-scale-settings-row, #wpl-practice-subtabs { margin-bottom: 6px !important; }
   /* Position (top, taller) / Quality (bottom, shorter) — same swapped-sum
      rule as desktop, scaled down: 59+44=103, matching this breakpoint's
      original 59+44=103 total exactly (Progressions' own .prog-tab is 59px
@@ -599,6 +649,11 @@ body {
   #wpl-chord-quality-tabs .prog-tab { min-height: 44px; padding: 5px 2px 4px; background: var(--wpl-tan); border-color: var(--wpl-line); }
   #wpl-chord-quality-tabs .prog-tab .num { font-size: 11px; }
   #wpl-chord-quality-tabs .prog-tab .name { font-size: 6.5px; }
+  /* Matches #wpl-chord-position-row's 59px at this breakpoint (same "top
+     row" family — see the desktop rule above). */
+  #wpl-practice-subtabs .wpl-toggle-btn { min-height: 59px; padding: 8px 2px; }
+  #wpl-practice-subtabs .wpl-subtab-label { font-size: 9px; }
+  #wpl-practice-subtabs .wpl-tab-soon { font-size: 6.5px; padding: 1px 3px; }
   /* Chris, 2026-09-01: "why do you have 3 rows of buttons? make it
      identical to chords/progressions that have 2 rows" — this row (Hand +
      Direction + Octaves) used to force Octaves onto its own 2nd line here
@@ -671,7 +726,7 @@ body {
   .key-tab { font-size: 9.5px; padding: 5px 0; line-height: 11px; }
   .key-tab.key-tab-wide { letter-spacing: -0.4px; }
   #wpl-key-tabs { gap: 2px !important; }
-  #wpl-prog-tabs, #wpl-step-row, #wpl-chord-quality-tabs, #wpl-chord-position-row, .wpl-scale-settings-row { gap: 3px !important; }
+  #wpl-prog-tabs, #wpl-step-row, #wpl-chord-quality-tabs, #wpl-chord-position-row, .wpl-scale-settings-row, #wpl-practice-subtabs { gap: 3px !important; }
   /* Position (top, taller) / Quality (bottom, shorter) — 52+40=92, matching
      this breakpoint's original 52+40=92 total exactly (Progressions' own
      .prog-tab is 52px here, so position matches it exactly). margin-bottom is
@@ -682,6 +737,10 @@ body {
   #wpl-chord-quality-tabs .prog-tab { min-height: 40px; padding: 4px 1px 3px; background: var(--wpl-tan); border-color: var(--wpl-line); }
   #wpl-chord-quality-tabs .prog-tab .num { font-size: 9px; }
   #wpl-chord-quality-tabs .prog-tab .name { font-size: 5.5px; }
+  /* Matches #wpl-chord-position-row's 52px at this breakpoint. */
+  #wpl-practice-subtabs .wpl-toggle-btn { min-height: 52px; padding: 6px 1px; }
+  #wpl-practice-subtabs .wpl-subtab-label { font-size: 7.5px; }
+  #wpl-practice-subtabs .wpl-tab-soon { font-size: 5.5px; padding: 1px 2px; }
   .wpl-readout-row { gap: 10px; padding: 0 2px; }
   .wpl-readout-row > div { width: 88px !important; height: 34px !important; }
   .wpl-readout-row #wpl-chord-name, .wpl-readout-row #wpl-step-label { font-size: 15px !important; }
