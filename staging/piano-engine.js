@@ -21,6 +21,23 @@
     return newName + newOct;
   }
 
+  // Chris, 2026-09-01: "the flat character on the Min7 buttons is a real
+  // flat character. on the 5 buttons of flats, it looks like its just a
+  // 'b' symbol" — the interval numbers (♭3/♭7, see chordToneNumbers in
+  // ui.js) already use the real ♭ (U+266D), but note NAMES built from
+  // flatNames (above) use plain ASCII "b" ("Ab", "Bb"...), and that ASCII
+  // form isn't just display text: transposeNote's return value is also fed
+  // straight into noteToPc[] for audio (sample selection, playChordSound)
+  // elsewhere in this file, so flatNames itself has to stay ASCII or every
+  // flat-key chord goes silent. toDisplayFlat() converts only a string
+  // that's about to be shown to the user and is never round-tripped back
+  // through noteToPc — used here, and again in triggerKey()/renderChord()
+  // below wherever a note name is about to hit a label instead of the
+  // audio engine.
+  function toDisplayFlat(noteLetter) {
+    return noteLetter.replace("b", "♭");
+  }
+
   function transposeChordName(name, semitones, useFlats) {
     const has4 = name.includes("⁴");
     const has2 = name.includes("²");
@@ -34,15 +51,15 @@
       const [top, bass] = clean.split("/");
       const t = splitRootQuality(top);
       const b = splitRootQuality(bass);
-      const tRoot = transposeNote(t.root + "4", semitones, useFlats).replace(/[0-9]/g, "");
-      const tBass = transposeNote(b.root + "4", semitones, useFlats).replace(/[0-9]/g, "");
+      const tRoot = toDisplayFlat(transposeNote(t.root + "4", semitones, useFlats).replace(/[0-9]/g, ""));
+      const tBass = toDisplayFlat(transposeNote(b.root + "4", semitones, useFlats).replace(/[0-9]/g, ""));
       let result = tRoot + t.quality;
       if (has4) result += "⁴";
       if (has2) result += "²";
       return result + "/" + tBass + b.quality;
     }
     const t = splitRootQuality(clean);
-    let result = transposeNote(t.root + "4", semitones, useFlats).replace(/[0-9]/g, "") + t.quality;
+    let result = toDisplayFlat(transposeNote(t.root + "4", semitones, useFlats).replace(/[0-9]/g, "")) + t.quality;
     if (has4) result += "⁴";
     if (has2) result += "²";
     return result;
@@ -330,9 +347,12 @@
       lastDragEl.current = el;
       const pc = +el.dataset.pc;
       const oct = +el.dataset.oct + 2;
+      // `name` feeds playSingleNote's noteToPc lookup below and must stay
+      // the raw ASCII flatNames/sharpNames value — only the flashed on-key
+      // label (pure display) gets the real ♭ (Chris, 2026-09-01).
       const name = (preferFlats.includes(pc) && useFlats) ? flatNames[pc] : sharpNames[pc];
       playSingleNote(name + oct);
-      flashKey(el, name);
+      flashKey(el, toDisplayFlat(name));
     }
     function keyElAtPoint(x, y) {
       const target = document.elementFromPoint(x, y);
@@ -411,6 +431,9 @@
     const rightKeys = new Set();
     const keyMeta = {};
     function keyId(pc, oct) { return pc + ":" + oct; }
+    // `name` still keys noteToPc[] below (must stay ASCII) — only the copy
+    // stored on keyMeta for the on-key label (drawn via light(), pure
+    // display) gets the real ♭ (Chris, 2026-09-01).
     ch.left.forEach(note => {
       const tNote = transposeNote(note, keyPc, useFlatsArg);
       const name = tNote.replace(/[0-9]/g, "");
@@ -418,7 +441,7 @@
       const pc = noteToPc[name];
       const id = keyId(pc, oct);
       leftKeys.add(id);
-      keyMeta[id] = { name, pc, oct, isWhite: [0, 2, 4, 5, 7, 9, 11].includes(pc) };
+      keyMeta[id] = { name: toDisplayFlat(name), pc, oct, isWhite: [0, 2, 4, 5, 7, 9, 11].includes(pc) };
     });
     ch.right.forEach(note => {
       const tNote = transposeNote(note, keyPc, useFlatsArg);
@@ -427,7 +450,7 @@
       const pc = noteToPc[name];
       const id = keyId(pc, oct);
       rightKeys.add(id);
-      keyMeta[id] = { name, pc, oct, isWhite: [0, 2, 4, 5, 7, 9, 11].includes(pc) };
+      keyMeta[id] = { name: toDisplayFlat(name), pc, oct, isWhite: [0, 2, 4, 5, 7, 9, 11].includes(pc) };
     });
     const allIds = new Set([...leftKeys, ...rightKeys]);
     const usePurple = (progIndex === 3 && stepIndex === 7 && (keyPc === 10 || keyPc === 11));
