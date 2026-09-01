@@ -587,8 +587,8 @@ body {
   .step-btn { padding: 5px 1px; min-height: 44px; }
   .step-btn .n { font-size: 10px; }
   .step-btn .l { font-size: 10px; }
-  #wpl-prog-tabs, #wpl-step-row, #wpl-chord-quality-tabs, #wpl-chord-position-row { gap: 4px !important; }
-  #wpl-prog-tabs { margin-bottom: 6px !important; }
+  #wpl-prog-tabs, #wpl-step-row, #wpl-chord-quality-tabs, #wpl-chord-position-row, .wpl-scale-settings-row { gap: 4px !important; }
+  #wpl-prog-tabs, .wpl-scale-settings-row { margin-bottom: 6px !important; }
   /* Position (top, taller) / Quality (bottom, shorter) — same swapped-sum
      rule as desktop, scaled down: 59+44=103, matching this breakpoint's
      original 59+44=103 total exactly (Progressions' own .prog-tab is 59px
@@ -599,18 +599,18 @@ body {
   #wpl-chord-quality-tabs .prog-tab { min-height: 44px; padding: 5px 2px 4px; background: var(--wpl-tan); border-color: var(--wpl-line); }
   #wpl-chord-quality-tabs .prog-tab .num { font-size: 11px; }
   #wpl-chord-quality-tabs .prog-tab .name { font-size: 6.5px; }
-  /* Scales settings row: Hand+Direction (5 buttons) fit one line at full
-     size, but Octaves needs its own second line at this width — the
-     break forces it there instead of an unreadable 8-buttons-in-one-row
-     squeeze (Chris, 2026-08-31). Kept compact (smaller min-height/font,
-     tighter margins) specifically so this row's mobile-only 2nd line
-     still fits Practice inside Chords/Progressions's shared shell height
-     — verified via Playwright, not just eyeballed. */
-  .wpl-scale-break { flex-basis: 100%; height: 0; }
-  .wpl-scale-divider { display: none; }
-  .wpl-scale-settings-row { gap: 5px !important; margin-bottom: 8px !important; }
-  .wpl-scale-settings-row .step-btn { min-height: 34px; padding: 3px 1px; }
-  .wpl-scale-settings-row .step-btn .n { font-size: 9.5px; }
+  /* Chris, 2026-09-01: "why do you have 3 rows of buttons? make it
+     identical to chords/progressions that have 2 rows" — this row (Hand +
+     Direction + Octaves) used to force Octaves onto its own 2nd line here
+     via .wpl-scale-break, with its own compact min-height/font tuned just
+     to fit that 2-line layout in Practice's height budget. Now that
+     index.html removed the forced break, this row is a single line of 8
+     .step-btns exactly like Progressions' #wpl-step-row / Chords' two
+     rows — it inherits their shared .step-btn sizing above (gap/margin
+     folded into the same selectors) instead of a bespoke override, and
+     with only ONE line instead of two, Practice's total height only
+     shrinks further below Chords/Progressions's shared max, so there's
+     no shell-height risk (confirmed via qa/check-dimensions.js). */
   .wpl-readout-row { padding: 0 4px; margin: 4px 0 2px; gap: 20px; }
   .wpl-readout-row > div { width: 112px !important; height: 40px !important; }
   /* line-height is a fixed px value (not the desktop inline style's em-relative
@@ -671,7 +671,7 @@ body {
   .key-tab { font-size: 9.5px; padding: 5px 0; line-height: 11px; }
   .key-tab.key-tab-wide { letter-spacing: -0.4px; }
   #wpl-key-tabs { gap: 2px !important; }
-  #wpl-prog-tabs, #wpl-step-row, #wpl-chord-quality-tabs, #wpl-chord-position-row { gap: 3px !important; }
+  #wpl-prog-tabs, #wpl-step-row, #wpl-chord-quality-tabs, #wpl-chord-position-row, .wpl-scale-settings-row { gap: 3px !important; }
   /* Position (top, taller) / Quality (bottom, shorter) — 52+40=92, matching
      this breakpoint's original 52+40=92 total exactly (Progressions' own
      .prog-tab is 52px here, so position matches it exactly). margin-bottom is
@@ -690,22 +690,6 @@ body {
   .wpl-playbar-controls { gap: 5px; flex-wrap: wrap; row-gap: 6px; }
   .wpl-toggle-btn, .wpl-play-btn { padding: 7px 5px; font-size: 10.5px; }
   .wpl-play-btn { min-width: 0; }
-  /* Chris, 2026-08-31: "make the practice tab match the other 2 tabs" —
-     Hand/Direction were converted from .wpl-toggle-btn to .step-btn (same
-     family as Octaves) in ui.js, so all 8 buttons in this row share one
-     shape/color. That unification made Hand/Direction the SAME height as
-     Octaves for the first time — previously they were shorter/mismatched,
-     which was part of what looked "horrible." The 34px min-height inherited
-     from the 520px rule above is correct at 390px (already inside that
-     breakpoint's height budget), but at this narrower ≤340px breakpoint
-     Chords/Progressions have only 1px of slack against the shared shell
-     height (qa/dimension-baseline.json), so reusing 34px here would grow
-     the shell by ~5px (caught by qa/check-dimensions.js). 30px keeps this
-     row's 2-line total within that 1px budget while single-line text still
-     fits comfortably (padding+line-height well under 30px at this
-     font-size) — re-verify with the dimension checker if this value ever
-     needs to move again. */
-  .wpl-scale-settings-row .step-btn { min-height: 30px; }
 }
 @media (max-height: 500px) {
   #wpl-piano { height: 95px !important; }
