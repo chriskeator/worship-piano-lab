@@ -152,11 +152,17 @@
     "F": 5, "F#": 6, "Gb": 6, "G": 7, "G#": 8, "Ab": 8,
     "A": 9, "A#": 10, "Bb": 10, "B": 11
   };
+  // Chris, 2026-09-01: "the flat character on the Min7 buttons is a real
+  // flat character... on the 5 buttons of flats it looks like just a 'b'
+  // symbol" — these are pure display labels (never used for lookups; `pc`
+  // is what the rest of the app keys off of), so switching them to the
+  // real ♭ (U+266D) is a safe, display-only change. F# is left as "F#"
+  // (a sharp, not a flat — not part of what was asked).
   const keyList = [
     { pc: 0, label: "C" }, { pc: 2, label: "D" }, { pc: 4, label: "E" },
     { pc: 5, label: "F" }, { pc: 7, label: "G" }, { pc: 9, label: "A" },
-    { pc: 11, label: "B" }, { pc: 1, label: "Db" }, { pc: 3, label: "Eb" },
-    { pc: 6, label: "F#" }, { pc: 8, label: "Ab" }, { pc: 10, label: "Bb" }
+    { pc: 11, label: "B" }, { pc: 1, label: "D♭" }, { pc: 3, label: "E♭" },
+    { pc: 6, label: "F#" }, { pc: 8, label: "A♭" }, { pc: 10, label: "B♭" }
   ];
 
   // ---------- Scales (Practice tab) ----------
