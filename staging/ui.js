@@ -439,13 +439,23 @@
     { id: "progdrills", label: "Progression Drills", soon: true }
   ];
 
+  // Chris, 2026-09-01, second follow-up: "the practice bottom 2 button
+  // lines still arent the same size as the chords/progressions bottom 2
+  // lines" — this row is now sized/colored (see styles.css) to match
+  // Progressions' #wpl-prog-tabs / Chords' #wpl-chord-position-row (the
+  // "top row" of each tab's 2-row layout). Those rows stack a big label
+  // over a small caption (.num/.name, .n-top/.n-bottom); this one stacks
+  // the sub-tab name over its own "Soon" badge (or nothing, for Scales)
+  // the same way, via .wpl-subtab-label, instead of the old single
+  // inline line — a stacked block wraps predictably (each is a normal
+  // word-by-word wrap) where one long nowrap line would just overflow.
   function buildPracticeSubTabs() {
     const wrap = document.getElementById("wpl-practice-subtabs");
     wrap.innerHTML = "";
     PRACTICE_SUBS.forEach(sub => {
       const btn = document.createElement("button");
       btn.className = "wpl-toggle-btn" + (sub.id === activePracticeSub ? " active" : "");
-      btn.innerHTML = sub.label + (sub.soon ? ' <span class="wpl-tab-soon">Soon</span>' : "");
+      btn.innerHTML = `<span class="wpl-subtab-label">${sub.label}</span>` + (sub.soon ? '<span class="wpl-tab-soon">Soon</span>' : "");
       btn.addEventListener("click", () => {
         activePracticeSub = sub.id;
         document.querySelectorAll("#wpl-practice-subtabs .wpl-toggle-btn").forEach(t => t.classList.remove("active"));
