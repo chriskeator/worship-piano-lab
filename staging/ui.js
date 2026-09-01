@@ -516,14 +516,17 @@
   // every row on Chords/Progressions has. Both are now .step-btn, exactly
   // like Octaves, so all 8 buttons in this row share one shape/color
   // family — the same pattern as any single "choose an option" row
-  // elsewhere in the app. This does NOT touch row height/width: .step-btn's
-  // min-height at each breakpoint is unchanged, so the row's own footprint
-  // (and therefore the shell, verified via qa/check-dimensions.js) stays
-  // identical to before this edit.
+  // elsewhere in the app.
+  // Chris, 2026-09-01, follow-up: "why do you have 3 rows of buttons?
+  // make it identical to chords/progressions that have 2 rows" — labels
+  // here are shortened ("Right Hand" -> "Right", "Both Hands" -> "Both")
+  // now that this row shares one line with Direction+Octaves (8 buttons
+  // total, no forced 2nd line — see index.html) instead of getting its
+  // own line to spell things out in full.
   function buildScaleHandsRow() {
     const wrap = document.getElementById("wpl-scale-hands-row");
     wrap.innerHTML = "";
-    [{ id: "right", label: "Right Hand" }, { id: "both", label: "Both Hands" }].forEach(opt => {
+    [{ id: "right", label: "Right" }, { id: "both", label: "Both" }].forEach(opt => {
       const b = document.createElement("div");
       b.className = "step-btn" + (opt.id === scaleHands ? " active" : "");
       b.innerHTML = `<div class="n">${opt.label}</div>`;
@@ -546,11 +549,15 @@
     // sits in the SAME flex row as Hand and Direction (see index.html),
     // and every button there needs to share one height so nothing looks
     // uneven or wraps. The .prog-tab num+name look was reverted 2026-08-31
-    // for exactly that reason.
+    // for exactly that reason. Labels shortened to "N 8ve" (no plural "s")
+    // 2026-09-01 alongside Hand/Direction — measured via Playwright at the
+    // 320px breakpoint: "2 8ves" only cleared this row's ~28px-per-button
+    // budget by 0.9px, which rounding/kerning in real rendering still blew
+    // (it visibly wrapped to 2 lines), where "2 8ve" clears it by ~6px.
     [1, 2, 3].forEach(n => {
       const b = document.createElement("div");
       b.className = "step-btn" + (n === scaleOctaves ? " active" : "");
-      b.innerHTML = `<div class="n">${n} Octave${n > 1 ? "s" : ""}</div>`;
+      b.innerHTML = `<div class="n">${n} 8ve</div>`;
       const activate = () => {
         scaleOctaves = n;
         document.querySelectorAll("#wpl-scale-octaves-row .step-btn").forEach(t => t.classList.remove("active"));
@@ -566,7 +573,13 @@
   function buildScaleDirectionRow() {
     const wrap = document.getElementById("wpl-scale-direction-row");
     wrap.innerHTML = "";
-    [{ id: "up", label: "Up" }, { id: "down", label: "Down" }, { id: "updown", label: "Up & Down" }].forEach(opt => {
+    // "Up/Dn" not "Up+Down": measured via Playwright at the 320px
+    // breakpoint (Chris, 2026-09-01 follow-up) — "Up+Down" has no natural
+    // line-break point (no space) and its 42px natural width doesn't fit
+    // this row's ~28px-per-button budget at 320px, so it silently overflows
+    // into the next button instead of wrapping. "Up/Dn" measures ~26.5px,
+    // comfortably inside budget at every breakpoint.
+    [{ id: "up", label: "Up" }, { id: "down", label: "Down" }, { id: "updown", label: "Up/Dn" }].forEach(opt => {
       const b = document.createElement("div");
       b.className = "step-btn" + (opt.id === scaleDirection ? " active" : "");
       b.innerHTML = `<div class="n">${opt.label}</div>`;
