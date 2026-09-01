@@ -146,34 +146,35 @@
 
       <!-- Scales sub-panel -->
       <div id="wpl-practice-sub-scales" class="wpl-practice-subpanel active">
-        <!-- ONE row, all 8 buttons (Hand/Octaves/Direction), same as every
-             other "choose an option" row in the app — the shell's overall
-             height is fixed by the CSS Grid tallest-wins trick on
-             .wpl-panels (see styles.css), so Practice's content can NEVER
-             be taller than Chords/Progressions's tallest row-pair or it
-             grows the shared shell for every tab, not just Practice
-             (Chris, 2026-08-31: "the whole exterior of the shell cannot
-             change ever"). A second stacked-rows attempt that added 3 full
-             label+row sections DID grow the shell (208px -> 343px content
-             height, confirmed via Playwright) and was reverted for this:
-             one row, three groups separated by the same kind of divider
-             used in the Choose-a-Key row above, all buttons sharing one
-             .step-btn height so nothing wraps or looks uneven. -->
+        <!-- ONE row, all 8 buttons (Hand/Direction/Octaves), laid out
+             exactly like every other "choose an option" row in the app
+             (Progressions' 8-button Chord row, Chords' Position/Quality
+             rows): plain flex + gap, no flex-wrap (defaults to nowrap), so
+             .step-btn's flex:1 + min-width:0 shrinks each button to fit
+             instead of ever wrapping to a 2nd line — same mechanism, same
+             row, no per-row height tuning needed.
+             Chris, 2026-09-01, comparing screenshots: "why do you have 3
+             rows of buttons? make it identical to chords/progressions that
+             have 2 rows" — this row used to force Octaves onto its own 2nd
+             line below 520px (via a .wpl-scale-break spacer), making
+             Practice read as Sub-tabs + Hand/Direction + Octaves = 3 rows
+             where Progressions is only Progression + Chord = 2. Removing
+             the forced break drops this back to Sub-tabs + Settings = 2,
+             matching. Labels are shortened (Right/Both, Up/Dn, N 8ve) so
+             8 buttons stay legible once they're sharing one row at mobile
+             widths instead of getting a whole line to themselves. Two
+             dividers (same style as the Choose-a-Key row's) mark the 3
+             logical groups — Hand | Direction | Octaves — the way that row
+             separates naturals from accidentals. Because this is now
+             SHORTER than the old 2-line version, not taller, there's no
+             shell-height risk (Chords/Progressions stay the tallest pair
+             regardless) — confirmed via qa/check-dimensions.js. -->
         <div class="section-label">2. Choose your scale settings</div>
-        <!-- Hand + Direction (5 buttons) share line 1; Octaves (3 buttons)
-             is forced onto its own line 2 ONLY below the 520px breakpoint
-             via .wpl-scale-break (flex-basis:100%, see styles.css) — on
-             desktop/tablet all 8 fit one line with no break. Two lines is
-             the one bit of mobile-only height growth this row is allowed:
-             it's already accounted for in Practice's mobile budget against
-             Chords/Progressions (verified via Playwright at 390px), unlike
-             the earlier 3-stacked-rows attempt which grew the shell at
-             every width. -->
-        <div class="wpl-scale-settings-row" style="display:flex; flex-wrap:wrap; align-items:stretch; gap:8px; margin-bottom:14px;">
+        <div class="wpl-scale-settings-row" style="display:flex; align-items:stretch; gap:8px; margin-bottom:14px;">
           <div id="wpl-scale-hands-row" style="display:contents;"></div>
           <div class="wpl-scale-divider" style="width:3px; background:var(--wpl-line); border-radius:2px;"></div>
           <div id="wpl-scale-direction-row" style="display:contents;"></div>
-          <div class="wpl-scale-break"></div>
+          <div class="wpl-scale-divider" style="width:3px; background:var(--wpl-line); border-radius:2px;"></div>
           <div id="wpl-scale-octaves-row" style="display:contents;"></div>
         </div>
 
