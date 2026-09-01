@@ -142,7 +142,18 @@
          rest are "Soon" placeholders using the content already filmed
          in the Practice Videos folder (12 drill categories, ~57 videos). -->
     <div id="wpl-panel-practice" class="wpl-panel">
-      <div id="wpl-practice-subtabs" style="display:flex; gap:6px; margin-bottom:14px; flex-wrap:wrap;"></div>
+      <!-- Chris, 2026-09-01, second follow-up: "the practice bottom 2
+           button lines still arent the same size as the chords/progressions
+           bottom 2 lines" — row COUNT already matched (2 rows, see the
+           settings-row comment below) but this top row was still the small
+           34px .wpl-toggle-btn pill meant for playbar Loop/Click controls,
+           not the 78px "top row" height Progressions' #wpl-prog-tabs /
+           Chords' #wpl-chord-position-row both use. flex-wrap:wrap is
+           dropped (defaults to nowrap, matching every other row) and gap
+           unified to 8px so it's in the same shared gap-override list as
+           those rows at the mobile breakpoints (see styles.css) — the
+           actual height/color match is scoped CSS there, keyed off this ID. -->
+      <div id="wpl-practice-subtabs" style="display:flex; gap:8px; margin-bottom:14px;"></div>
 
       <!-- Scales sub-panel -->
       <div id="wpl-practice-sub-scales" class="wpl-practice-subpanel active">
@@ -160,7 +171,7 @@
              Practice read as Sub-tabs + Hand/Direction + Octaves = 3 rows
              where Progressions is only Progression + Chord = 2. Removing
              the forced break drops this back to Sub-tabs + Settings = 2,
-             matching. Labels are shortened (Right/Both, Up/Dn, N 8ve) so
+             matching. Labels are shortened (Right/Both, Up+Down, N 8ve) so
              8 buttons stay legible once they're sharing one row at mobile
              widths instead of getting a whole line to themselves. Two
              dividers (same style as the Choose-a-Key row's) mark the 3
