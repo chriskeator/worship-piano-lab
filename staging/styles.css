@@ -680,9 +680,22 @@ body {
      screens (the badge is position:absolute, so it doesn't reserve space
      on its own). */
   #wpl-wrapper.wpl-has-trial-badge .wpl-header { padding-right: 100px; }
-  #wpl-piano { height: 55px !important; }
+  /* Chris, 2026-09-02: "the black border around the piano on mobile seems
+     too thick. it looks more proportionate on desktop." Desktop's frame
+     padding-to-frame-height ratio is 5/(118+2*5) ≈ 3.9%; mobile's old 4px
+     padding on a 55px piano (frame = 55+2*4 = 63px) was ≈ 6.3% — visibly
+     chunkier. Padding drops to 2.5px here to bring that back to ≈ 4.0%,
+     matching desktop's proportions. "don't want that to move everything up
+     in the shell" — so the piano itself grows from 55px to 58px in the same
+     move, keeping the FRAME's total height exactly the same (55+2*4=63,
+     58+2*2.5=63) — the border reads thinner, the keys get a couple extra
+     px of height, and nothing below the piano shifts. border-radius stays
+     8px (unchanged) since it already matches #wpl-piano's own fixed inline
+     border-radius:8px (index.html) — shrinking it would make the outer
+     frame corner tighter than the inner piano's corner, which looks wrong. */
+  #wpl-piano { height: 58px !important; }
   #wpl-piano span { font-size: 6px !important; }
-  #wpl-piano-frame { padding: 4px !important; border-radius: 8px !important; }
+  #wpl-piano-frame { padding: 2.5px !important; border-radius: 8px !important; }
   .wpl-title { font-size: 22px; }
   .prog-tab { padding: 8px 2px; min-height: 59px; }
   .prog-tab .num { font-size: 14px; }
