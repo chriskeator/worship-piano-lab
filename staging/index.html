@@ -135,6 +135,39 @@
       </div>
     </div>
 
+    <!-- Chords v2 panel (TEMP — Chris, 2026-09-02: build a brand-new tab
+         straight from Progressions' own markup/classes instead of
+         refactoring the working Chords panel above in place, so there's
+         zero risk to it while this gets checked out. Top row = 4 position
+         buttons using plain .prog-tab (num/name — exactly Progressions'
+         own top-row shape, no overrides); bottom row = 6 quality buttons
+         using plain .step-btn (n/l — exactly Progressions' own step-row
+         shape, no overrides). No #wpl-panel-chords2-scoped CSS at all;
+         every size/color comes straight from the shared .prog-tab/.step-btn
+         base rules already used everywhere else. Once Chris confirms this
+         looks/works right, this panel replaces the original Chords panel
+         and the old one + its "Chords" tab entry get deleted. -->
+    <div id="wpl-panel-chords2" class="wpl-panel">
+      <div class="section-label">2. Choose a position</div>
+      <div id="wpl-position-tabs2" style="display:flex; gap:8px; margin-bottom:14px;"></div>
+
+      <div class="section-label">3. Choose a chord</div>
+      <div id="wpl-quality-row2" style="display:flex; gap:8px;"></div>
+
+      <div class="wpl-playbar">
+        <div class="wpl-bpm">
+          <span class="wpl-bpm-label">TEMPO</span>
+          <input type="range" id="wpl-chords2-bpm-slider" min="40" max="160" value="80" />
+          <span class="wpl-bpm-value" id="wpl-chords2-bpm-value">80</span>
+        </div>
+        <div class="wpl-playbar-controls">
+          <button class="wpl-toggle-btn" id="wpl-chords2-loop-btn"><span class="wpl-icon">&#8635;</span>Loop</button>
+          <button class="wpl-toggle-btn" id="wpl-chords2-click-btn"><span class="wpl-icon">&#9679;</span>Click</button>
+          <button class="wpl-play-btn" id="wpl-chords2-play-btn"><span class="wpl-icon">&#9654;</span><span id="wpl-chords2-play-label">Practice</span></button>
+        </div>
+      </div>
+    </div>
+
     <!-- Practice panel: umbrella tab for Scales plus future drill
          categories (replaces the old separate Scales/Riffs top-level
          tabs — see project notes, 2026-08-30). Its own sub-tab row picks
