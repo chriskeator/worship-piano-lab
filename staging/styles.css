@@ -340,7 +340,23 @@ body {
    of this button's width even at 12px (Playwright nowrap-probe: ~50px
    natural vs ~148px available at desktop), so it can go all the way to the
    same 12px with no wrapping risk. */
-#wpl-chord-quality-tabs .prog-tab .name { font-size: 12px; margin-top: 1px; }
+#wpl-chord-quality-tabs .prog-tab .name { font-size: 12px; margin-top: 1px; color: var(--wpl-muted); font-weight: 400; opacity: 1; }
+/* Chris, 2026-09-02, follow-up: "should the sub text on these be the same
+   color?" (comparing Chords' quality-row captions to Progressions' step-row
+   captions) — .name is a shared class also used by Progressions' OWN
+   5-button prog-tab row (the "Foundation"/"Smooth" progression names),
+   which is meant to read as a bold, near-full-strength caption (color:
+   var(--wpl-ink) inherited, opacity:0.9, font-weight:600 from the base
+   .prog-tab .name rule above). This row borrows .prog-tab markup for its
+   shape/recolor but its captions ("1-3-5" etc) are functionally the SAME
+   kind of quiet interval caption as Progressions' step-row .l elements
+   (var(--wpl-muted), normal weight) — so it's re-pointed here to match
+   that quieter treatment instead of inheriting the bold-name one. */
+#wpl-chord-quality-tabs .prog-tab.active .name { color: rgba(255,255,255,0.85); }
+/* Same reasoning as .step-btn.active .l above: on the active (accent-blue)
+   background, full-white .name would look inconsistent with how every
+   other "quiet caption" in the app dims slightly against an active
+   background (see .step-btn.active .l a few rules up). */
 
 /* ---------- Practice sub-tabs row ----------
    Chris, 2026-09-01, second follow-up: "the practice bottom 2 button lines
