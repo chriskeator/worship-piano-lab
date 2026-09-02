@@ -148,7 +148,6 @@
           headingLabel.textContent = "Degree";
           renderScale();
         }
-        repositionStatus();
       });
       bar.appendChild(btn);
     });
@@ -473,7 +472,6 @@
           document.getElementById("wpl-step-heading-label").textContent = "Degree";
           renderScale();
         }
-        repositionStatus();
       });
       wrap.appendChild(btn);
     });
@@ -876,8 +874,6 @@
   // shorter than Chords/Scales/Riffs on mobile once Chords stopped sharing
   // the same trick). Keeping it in one place, always, is what actually
   // guarantees the shell is identical across every tab.
-  function repositionStatus() {}
-  function wireMobileStatusReposition() {}
 
   // ---------- Init ----------
   function init() {
@@ -904,7 +900,6 @@
       render();
     }
     wireAutoResize();
-    wireMobileStatusReposition();
   }
 
   if (document.readyState === "loading") {
