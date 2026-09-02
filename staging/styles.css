@@ -182,7 +182,13 @@ body {
   min-height: 78px;
 }
 .prog-tab .num { font-weight: 800; font-size: 22px; line-height: 1.2; }
-.prog-tab .name { font-size: 12px; font-weight: 600; opacity: 0.9; margin-top: 2px; }
+/* margin-top: 4px matches the vertical gap every other "label + caption"
+   pairing in the app uses (.step-btn's flex gap:4px, both for the
+   Progressions step-row and the Chords position row) — Chris, 2026-09-02:
+   "make it all equal" after comparing this row's spacing to the step-row's
+   and finding this one tighter (was 2px here, 1px on the Chords quality
+   row's override below — now both 4px, one shared standard). */
+.prog-tab .name { font-size: 12px; font-weight: 600; opacity: 0.9; margin-top: 4px; }
 
 /* ---------- Practice tab sub-panels (Scales / Speed Drills / Progression
    Drills) — plain show/hide, not the CSS-Grid tallest-wins stacking the
@@ -340,7 +346,7 @@ body {
    of this button's width even at 12px (Playwright nowrap-probe: ~50px
    natural vs ~148px available at desktop), so it can go all the way to the
    same 12px with no wrapping risk. */
-#wpl-chord-quality-tabs .prog-tab .name { font-size: 12px; margin-top: 1px; color: var(--wpl-muted); font-weight: 400; opacity: 1; }
+#wpl-chord-quality-tabs .prog-tab .name { font-size: 12px; margin-top: 4px; color: var(--wpl-muted); font-weight: 400; opacity: 1; }
 /* Chris, 2026-09-02, follow-up: "should the sub text on these be the same
    color?" (comparing Chords' quality-row captions to Progressions' step-row
    captions) — .name is a shared class also used by Progressions' OWN
