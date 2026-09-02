@@ -684,18 +684,27 @@ body {
      too thick. it looks more proportionate on desktop." Desktop's frame
      padding-to-frame-height ratio is 5/(118+2*5) ≈ 3.9%; mobile's old 4px
      padding on a 55px piano (frame = 55+2*4 = 63px) was ≈ 6.3% — visibly
-     chunkier. Padding drops to 2.5px here to bring that back to ≈ 4.0%,
-     matching desktop's proportions. "don't want that to move everything up
-     in the shell" — so the piano itself grows from 55px to 58px in the same
-     move, keeping the FRAME's total height exactly the same (55+2*4=63,
-     58+2*2.5=63) — the border reads thinner, the keys get a couple extra
-     px of height, and nothing below the piano shifts. border-radius stays
-     8px (unchanged) since it already matches #wpl-piano's own fixed inline
-     border-radius:8px (index.html) — shrinking it would make the outer
-     frame corner tighter than the inner piano's corner, which looks wrong. */
-  #wpl-piano { height: 58px !important; }
+     chunkier. "don't want that to move everyting up in the shell" — so the
+     FRAME's total height must stay exactly 63px while the padding shrinks.
+     First pass used padding:2.5px + piano height:58px (58+2*2.5=63) which
+     matched the ratio, but Chris then noticed "why does the left border
+     seem thicker than the right border" — a real, measured artifact: a
+     2.5px (half-pixel) padding lands asymmetrically on the device pixel
+     grid, rendering 2 solid dark pixels on the left edge vs only 1 on the
+     right (confirmed via pixel-level screenshot scanning). Switching to a
+     whole-number padding:2px + piano height:59px (59+2*2=63, frame height
+     still exactly preserved) removed the fractional pixel and made both
+     edges render identically: 1 solid dark pixel + symmetric antialiased
+     transition on each side. Ratio is now 2/63 ≈ 3.2% (vs desktop's 3.9%)
+     — slightly thinner than an exact ratio match, but pixel-symmetric,
+     which matters more visually than the last fraction of a percent.
+     border-radius stays 8px (unchanged) since it already matches
+     #wpl-piano's own fixed inline border-radius:8px (index.html) —
+     shrinking it would make the outer frame corner tighter than the inner
+     piano's corner, which looks wrong. */
+  #wpl-piano { height: 59px !important; }
   #wpl-piano span { font-size: 6px !important; }
-  #wpl-piano-frame { padding: 2.5px !important; border-radius: 8px !important; }
+  #wpl-piano-frame { padding: 2px !important; border-radius: 8px !important; }
   .wpl-title { font-size: 22px; }
   .prog-tab { padding: 8px 2px; min-height: 59px; }
   .prog-tab .num { font-size: 14px; }
