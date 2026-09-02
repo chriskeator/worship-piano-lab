@@ -230,6 +230,22 @@ body {
 .step-btn.playing { border-color: #f59e0b; box-shadow: 0 0 0 2px rgba(245,158,11,0.35); }
 .step-btn .n { font-weight: 700; color: var(--wpl-ink); font-size: 15px; line-height: 1.2; }
 .step-btn .l { font-size: 12px; color: var(--wpl-muted); line-height: 1.2; }
+/* Chris, 2026-09-02, follow-up (after reviewing Chords v2): "the Major/Minor
+   titles on the OLD Chords tab's bottom row look bigger/bolder than Chords
+   v2's... make that change on chords2 to match" + "make the progressions
+   tab lower row title match... so the shell fonts are the same size." Both
+   rows here — #wpl-quality-row2 (Chords v2's plain .step-btn quality row)
+   and #wpl-step-row (Progressions' own plain .step-btn step row) — share
+   the base .step-btn .n rule just above (700/15px). This scoped override
+   brings just their MAIN title text up to match the OLD Chords tab's
+   #wpl-chord-quality-tabs .prog-tab .num sizing exactly (800/16px desktop,
+   see that rule further down), so all three "bottom row" titles across the
+   whole app read at the same weight/size. Captions (.l) are untouched —
+   Chris only asked about the titles. */
+#wpl-quality-row2 .step-btn .n, #wpl-step-row .step-btn .n {
+  font-weight: 800;
+  font-size: 16px;
+}
 
 /* ---------- Chords panel: Position row (top) & Quality row (bottom) ----------
    Chris, 2026-08-31: swap which row is on top, and make the top row
@@ -669,7 +685,16 @@ body {
   .wpl-title { font-size: 22px; }
   .prog-tab { padding: 8px 2px; min-height: 59px; }
   .prog-tab .num { font-size: 14px; }
-  .prog-tab .name { font-size: 8px; }
+  /* Chris, 2026-09-02: "the sub fonts on the top row can be a little
+     bigger... make sure 'foundation' text looks good cause that's the
+     longest text" — shared by Progressions' own top row (5 buttons, the
+     tighter fit) and Chords v2's position row (4 buttons, more room per
+     button). Playwright nowrap-probe against Progressions' narrower
+     buttons — the binding case — at this breakpoint: "Foundation" fits up
+     to 10.5px (57.16px natural vs 58.41px available) and wraps at 10.75px;
+     10px keeps a real ~4px margin below that, still a clear step up from
+     the old 8px. */
+  .prog-tab .name { font-size: 10px; }
   .key-tab { padding: 6px 0; font-size: 11px; line-height: 12px; }
   /* 2-letter keys (Db/Eb/F#/Ab/Bb) keep the SAME font-size as the
      1-letter keys (Chris: text must match, not shrink) — only
@@ -680,6 +705,10 @@ body {
   .step-btn { padding: 5px 1px; min-height: 44px; }
   .step-btn .n { font-size: 10px; }
   .step-btn .l { font-size: 10px; }
+  /* Matches #wpl-chord-quality-tabs .prog-tab .num's 11px at this
+     breakpoint (see the desktop rule pairing these two rows with it,
+     above) — same "bigger/bolder to match the old Chords tab" request. */
+  #wpl-quality-row2 .step-btn .n, #wpl-step-row .step-btn .n { font-size: 11px; }
   #wpl-prog-tabs, #wpl-step-row, #wpl-chord-quality-tabs, #wpl-chord-position-row, .wpl-scale-settings-row, #wpl-practice-subtabs { gap: 4px !important; }
   #wpl-prog-tabs, .wpl-scale-settings-row, #wpl-practice-subtabs, #wpl-position-tabs2 { margin-bottom: 6px !important; }
   /* Position (top, taller) / Quality (bottom, shorter) — same swapped-sum
@@ -769,9 +798,21 @@ body {
   #wpl-wrapper.wpl-has-trial-badge .wpl-subtitle { font-size: 11px; margin-top: 3px; }
   .prog-tab { padding: 6px 1px; min-height: 52px; }
   .prog-tab .num { font-size: 12px; }
-  .prog-tab .name { font-size: 7px; }
+  /* Same "a little bigger, keep Foundation on one line" request as the 520px
+     rule above — Playwright nowrap-probe at this narrower breakpoint:
+     "Foundation" fits up to 8.75px (47.64px natural vs 48.80px available,
+     ~1.2px margin) and wraps at 9px, so 8.5px keeps a real ~2.5px margin
+     while still stepping up from the old 7px. */
+  .prog-tab .name { font-size: 8.5px; }
   .step-btn { padding: 4px 1px; min-height: 40px; }
   .step-btn .n, .step-btn .l { font-size: 9px; }
+  /* Re-declared at 9px (same as the shared rule just above) only because
+     the 520px override for these two rows (an ID+class selector) would
+     otherwise keep beating the plain-class rule here on specificity even
+     at this narrower breakpoint — same cascade fix pattern used elsewhere
+     in this file (e.g. #wpl-chord-position-row below). Matches
+     #wpl-chord-quality-tabs .prog-tab .num's 9px here too. */
+  #wpl-quality-row2 .step-btn .n, #wpl-step-row .step-btn .n { font-size: 9px; }
   .key-tab { font-size: 9.5px; padding: 5px 0; line-height: 11px; }
   .key-tab.key-tab-wide { letter-spacing: -0.4px; }
   #wpl-key-tabs { gap: 2px !important; }
