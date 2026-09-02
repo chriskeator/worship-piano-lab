@@ -102,12 +102,22 @@
   let scalesBpm = 100;
   let scalesLoopOn = false;
   let scalesClickOn = false;
+  // Chords v2 (TEMP — see index.html comment above #wpl-panel-chords2):
+  // fully separate state from the original curQuality/curPosition so
+  // nothing about the working Chords tab is touched while this is built
+  // and checked out.
+  let curQuality2 = 0;
+  let curPosition2 = 0;
+  let chords2Bpm = 80;
+  let chords2LoopOn = false;
+  let chords2ClickOn = false;
 
   // ---------- Tabs ----------
   const TABS = [
     { id: "chords", label: "Chords", soon: false },
     { id: "progressions", label: "Progressions", soon: false },
-    { id: "practice", label: "Practice", soon: false }
+    { id: "practice", label: "Practice", soon: false },
+    { id: "chords2", label: "Chords 2", soon: false } // TEMP — delete once approved
   ];
 
   function buildTabBar() {
@@ -133,6 +143,7 @@
         resetPlayButton();
         resetChordsPlayButton();
         resetScalesPlayButton();
+        resetChords2PlayButton(); // TEMP — see #wpl-panel-chords2
         activeTabId = tab.id;
         const headingLabel = document.getElementById("wpl-step-heading-label");
         if (tab.id === "chords") {
@@ -147,6 +158,10 @@
           // same as switching into any other not-yet-built tab always has.
           headingLabel.textContent = "Degree";
           renderScale();
+        } else if (tab.id === "chords2") {
+          // TEMP — see #wpl-panel-chords2
+          headingLabel.textContent = "Position";
+          renderChords2();
         }
       });
       bar.appendChild(btn);
@@ -190,6 +205,10 @@
         } else if (activeTabId === "chords") {
           renderChords();
           E.playChordSound(D.chordVoicings[D.chordQualityNames[curQuality]][curPosition], curKeyPc, useFlats);
+        } else if (activeTabId === "chords2") {
+          // TEMP — see #wpl-panel-chords2
+          renderChords2();
+          E.playChordSound(D.chordVoicings[D.chordQualityNames[curQuality2]][curPosition2], curKeyPc, useFlats);
         } else if (activeTabId === "practice") {
           // "Soon" sub-tabs (Speed Drills, Progression Drills) have nothing
           // built yet to render/play — only react to key changes on Scales.
@@ -429,6 +448,165 @@
     });
     E.renderChord(ch, curKeyPc, useFlats, -1, -1);
     document.getElementById("wpl-either-legend").style.display = "none";
+  }
+
+  // ---------- Chords v2 (TEMP — see #wpl-panel-chords2 in index.html) ----------
+  // Built straight from Progressions' own markup: position row is plain
+  // .prog-tab (num/name), quality row is plain .step-btn (n/l). No
+  // ID-scoped color/size overrides anywhere — everything here inherits
+  // its look from the shared base rules, same as Progressions itself.
+  function buildPositionTabs2() {
+    const wrap = document.getElementById("wpl-position-tabs2");
+    wrap.innerHTML = "";
+    getChordPositionNames(D.chordQualityNames[curQuality2]).forEach((label, i) => {
+      const b = document.createElement("button");
+      b.className = "prog-tab" + (i === curPosition2 ? " active" : "");
+      const spaceAt = label.indexOf(" ");
+      b.innerHTML = `<div class="num">${label.slice(0, spaceAt)}</div><div class="name">${label.slice(spaceAt + 1)}</div>`;
+      b.addEventListener("click", () => {
+        curPosition2 = i;
+        document.querySelectorAll("#wpl-position-tabs2 .prog-tab").forEach(t => t.classList.remove("active"));
+        b.classList.add("active");
+        if (E.isPlaying()) {
+          E.updatePlayback({ progArray: D.chordVoicings[D.chordQualityNames[curQuality2]] });
+        } else {
+          renderChords2();
+          E.playChordSound(D.chordVoicings[D.chordQualityNames[curQuality2]][curPosition2], curKeyPc, useFlats);
+        }
+      });
+      wrap.appendChild(b);
+    });
+  }
+
+  function updatePositionTabs2Labels() {
+    const names = getChordPositionNames(D.chordQualityNames[curQuality2]);
+    document.querySelectorAll("#wpl-position-tabs2 .prog-tab").forEach((b, i) => {
+      const spaceAt = names[i].indexOf(" ");
+      b.querySelector(".num").textContent = names[i].slice(0, spaceAt);
+      b.querySelector(".name").textContent = names[i].slice(spaceAt + 1);
+    });
+  }
+
+  function buildQualityRow2() {
+    const wrap = document.getElementById("wpl-quality-row2");
+    wrap.innerHTML = "";
+    D.chordQualityNames.forEach((name, i) => {
+      const btn = document.createElement("div");
+      btn.className = "step-btn" + (i === curQuality2 ? " active" : "");
+      const nums = chordToneNumbers(D.chordVoicings[name][curPosition2].right).join("-");
+      btn.innerHTML = `<div class="n">${name}</div><div class="l">${nums}</div>`;
+      const activate = () => {
+        curQuality2 = i;
+        document.querySelectorAll("#wpl-quality-row2 .step-btn").forEach(t => t.classList.remove("active"));
+        btn.classList.add("active");
+        updatePositionTabs2Labels();
+        if (E.isPlaying()) {
+          E.updatePlayback({ progArray: D.chordVoicings[D.chordQualityNames[curQuality2]] });
+        } else {
+          renderChords2();
+          E.playChordSound(D.chordVoicings[D.chordQualityNames[curQuality2]][curPosition2], curKeyPc, useFlats);
+        }
+      };
+      btn.addEventListener("click", activate);
+      btn.addEventListener("touchstart", (e) => { e.preventDefault(); activate(); }, { passive: false });
+      wrap.appendChild(btn);
+    });
+  }
+
+  function updateQualityRow2Numbers() {
+    document.querySelectorAll("#wpl-quality-row2 .step-btn").forEach((b, i) => {
+      const qName = D.chordQualityNames[i];
+      const nums = chordToneNumbers(D.chordVoicings[qName][curPosition2].right).join("-");
+      b.querySelector(".l").textContent = nums;
+    });
+  }
+
+  function renderChords2(highlightPosition) {
+    const voicings = D.chordVoicings[D.chordQualityNames[curQuality2]];
+    const posToShow = highlightPosition != null ? highlightPosition : curPosition2;
+    const ch = voicings[posToShow];
+    setReadoutValue(document.getElementById("wpl-chord-name"), ch.name, E.formatLabel(E.transposeChordName(ch.name, curKeyPc, useFlats)));
+    const posName = getChordPositionNames(D.chordQualityNames[curQuality2])[posToShow];
+    setReadoutValue(document.getElementById("wpl-step-label"), posName, posName);
+    updateQualityRow2Numbers();
+    document.querySelectorAll("#wpl-position-tabs2 .prog-tab").forEach((b, i) => {
+      b.classList.toggle("active", i === posToShow);
+    });
+    E.renderChord(ch, curKeyPc, useFlats, -1, -1);
+    document.getElementById("wpl-either-legend").style.display = "none";
+  }
+
+  function updateChords2BpmFill() {
+    const slider = document.getElementById("wpl-chords2-bpm-slider");
+    const pct = ((chords2Bpm - 40) / (160 - 40)) * 100;
+    slider.style.setProperty("--pct", pct + "%");
+  }
+
+  function resetChords2PlayButton() {
+    const btn = document.getElementById("wpl-chords2-play-btn");
+    if (!btn) return;
+    btn.classList.remove("playing");
+    document.getElementById("wpl-chords2-play-label").textContent = "Practice";
+    btn.querySelector(".wpl-icon").innerHTML = "&#9654;";
+    document.querySelectorAll("#wpl-position-tabs2 .prog-tab.playing").forEach(b => b.classList.remove("playing"));
+  }
+
+  function startChords2Practice() {
+    const playBtn = document.getElementById("wpl-chords2-play-btn");
+    playBtn.classList.add("playing");
+    document.getElementById("wpl-chords2-play-label").textContent = "Stop";
+    playBtn.querySelector(".wpl-icon").innerHTML = "&#9632;";
+    E.playThrough(D.chordVoicings[D.chordQualityNames[curQuality2]], curKeyPc, useFlats, {
+      bpm: chords2Bpm,
+      loop: chords2LoopOn,
+      click: chords2ClickOn,
+      beatsPerChord: 2,
+      onStep: (i) => {
+        curPosition2 = i;
+        document.querySelectorAll("#wpl-position-tabs2 .prog-tab").forEach((b, idx) => b.classList.toggle("playing", idx === i));
+        renderChords2(i);
+      },
+      onDone: () => {
+        resetChords2PlayButton();
+      }
+    });
+  }
+
+  function wireChords2Playbar() {
+    const slider = document.getElementById("wpl-chords2-bpm-slider");
+    const valueEl = document.getElementById("wpl-chords2-bpm-value");
+    slider.addEventListener("input", () => {
+      chords2Bpm = parseInt(slider.value, 10);
+      valueEl.textContent = chords2Bpm;
+      updateChords2BpmFill();
+      if (E.isPlaying()) E.updatePlayback({ bpm: chords2Bpm });
+    });
+    updateChords2BpmFill();
+
+    const loopBtn = document.getElementById("wpl-chords2-loop-btn");
+    loopBtn.addEventListener("click", () => {
+      chords2LoopOn = !chords2LoopOn;
+      loopBtn.classList.toggle("active", chords2LoopOn);
+      if (E.isPlaying()) E.updatePlayback({ loop: chords2LoopOn });
+    });
+
+    const clickBtn = document.getElementById("wpl-chords2-click-btn");
+    clickBtn.addEventListener("click", () => {
+      chords2ClickOn = !chords2ClickOn;
+      clickBtn.classList.toggle("active", chords2ClickOn);
+      if (E.isPlaying()) E.updatePlayback({ click: chords2ClickOn });
+    });
+
+    const playBtn = document.getElementById("wpl-chords2-play-btn");
+    playBtn.addEventListener("click", () => {
+      if (E.isPlaying()) {
+        E.stopPlayThrough();
+        resetChords2PlayButton();
+        renderChords2();
+        return;
+      }
+      startChords2Practice();
+    });
   }
 
   // ---------- Practice tab ----------
@@ -887,11 +1065,14 @@
     buildScaleHandsRow();
     buildScaleOctavesRow();
     buildScaleDirectionRow();
+    buildPositionTabs2(); // TEMP — see #wpl-panel-chords2
+    buildQualityRow2(); // TEMP — see #wpl-panel-chords2
     E.buildKeyboard(document.getElementById("wpl-piano"), document.getElementById("wpl-status"));
     buildStepButtons();
     wirePlaybar();
     wireChordsPlaybar();
     wireScalesPlaybar();
+    wireChords2Playbar(); // TEMP — see #wpl-panel-chords2
     if (activeTabId === "chords") {
       renderChords();
     } else if (activeTabId === "practice" && activePracticeSub === "scales") {
