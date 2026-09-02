@@ -681,7 +681,7 @@ body {
   .step-btn .n { font-size: 10px; }
   .step-btn .l { font-size: 10px; }
   #wpl-prog-tabs, #wpl-step-row, #wpl-chord-quality-tabs, #wpl-chord-position-row, .wpl-scale-settings-row, #wpl-practice-subtabs { gap: 4px !important; }
-  #wpl-prog-tabs, .wpl-scale-settings-row, #wpl-practice-subtabs { margin-bottom: 6px !important; }
+  #wpl-prog-tabs, .wpl-scale-settings-row, #wpl-practice-subtabs, #wpl-position-tabs2 { margin-bottom: 6px !important; }
   /* Position (top, taller) / Quality (bottom, shorter) — same swapped-sum
      rule as desktop, scaled down: 59+44=103, matching this breakpoint's
      original 59+44=103 total exactly (Progressions' own .prog-tab is 59px
@@ -792,6 +792,19 @@ body {
      real rendering for "2 8ves" earlier (2026-09-01), so this stays one
      notch down at 8.5px (~4.6px margin) instead of the full 9px match. */
   #wpl-chord-quality-tabs .prog-tab .name { font-size: 8.5px; }
+  /* Chords v2 (TEMP, #wpl-panel-chords2): quality row's captions are plain
+     .step-btn .l, which is 9px at this breakpoint (shared rule above) —
+     fine for Progressions' own short captions ("2m", "1/3"), but Min7's
+     "1-♭3-5-♭7" wraps to a 2nd line at 9px in this row's slightly
+     different padding (Playwright probe: needs ≤8.25px to clear 35.3px of
+     available width; wraps at 8.5px). Chris, 2026-09-02: "reduce text
+     size only as much as to prevent wrapping... only on a smaller phone"
+     — so this ONLY overrides the caption size, ONLY at this narrowest
+     breakpoint (nothing changes at 340–520px or desktop, where it already
+     fits at the shared 10px/12px sizes with room to spare), and only down
+     to 8px — 2px of real margin below the exact 8.25px threshold, not
+     shaved to the bone. */
+  #wpl-quality-row2 .step-btn .l { font-size: 8px; }
   /* Matches #wpl-chord-position-row's 52px at this breakpoint. */
   #wpl-practice-subtabs .wpl-toggle-btn { min-height: 52px; padding: 6px 1px; }
   #wpl-practice-subtabs .wpl-subtab-label { font-size: 7.5px; }
