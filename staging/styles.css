@@ -228,24 +228,25 @@ body {
 .step-btn.active .n { color: #fff; }
 .step-btn.active .l { color: rgba(255,255,255,0.85); }
 .step-btn.playing { border-color: #f59e0b; box-shadow: 0 0 0 2px rgba(245,158,11,0.35); }
-.step-btn .n { font-weight: 700; color: var(--wpl-ink); font-size: 15px; line-height: 1.2; }
-.step-btn .l { font-size: 12px; color: var(--wpl-muted); line-height: 1.2; }
 /* Chris, 2026-09-02, follow-up (after reviewing Chords v2): "the Major/Minor
    titles on the OLD Chords tab's bottom row look bigger/bolder than Chords
    v2's... make that change on chords2 to match" + "make the progressions
-   tab lower row title match... so the shell fonts are the same size." Both
-   rows here — #wpl-quality-row2 (Chords v2's plain .step-btn quality row)
-   and #wpl-step-row (Progressions' own plain .step-btn step row) — share
-   the base .step-btn .n rule just above (700/15px). This scoped override
-   brings just their MAIN title text up to match the OLD Chords tab's
-   #wpl-chord-quality-tabs .prog-tab .num sizing exactly (800/16px desktop,
-   see that rule further down), so all three "bottom row" titles across the
-   whole app read at the same weight/size. Captions (.l) are untouched —
-   Chris only asked about the titles. */
-#wpl-quality-row2 .step-btn .n, #wpl-step-row .step-btn .n {
-  font-weight: 800;
-  font-size: 16px;
-}
+   tab lower row title match... so the shell fonts are the same size" +
+   later, after a scoped fix still left Practice's row out: "why do I keep
+   having to tell you to resize text? they should be the same on all the
+   tabs... unless the text on a button is too long." So this is the BASE
+   rule now (not a per-ID override) — every consumer of plain .step-btn .n
+   automatically gets the same weight/size with no per-tab patching needed:
+   Progressions' #wpl-step-row, Chords v2's #wpl-quality-row2, AND
+   Practice's #wpl-scale-hands-row/#wpl-scale-direction-row/
+   #wpl-scale-octaves-row (Right/Both, Up/Down/Up-Dn, 1-2-3 8ve) all share
+   this one rule. Matches the OLD Chords tab's #wpl-chord-quality-tabs
+   .prog-tab .num sizing exactly (800/16px desktop, see that rule further
+   down) — that's the one row this whole family is modeled on. Captions
+   (.l) are untouched; only rows that use them (step-row, quality-row2) are
+   affected, at 12px as before. */
+.step-btn .n { font-weight: 800; color: var(--wpl-ink); font-size: 16px; line-height: 1.2; }
+.step-btn .l { font-size: 12px; color: var(--wpl-muted); line-height: 1.2; }
 
 /* ---------- Chords panel: Position row (top) & Quality row (bottom) ----------
    Chris, 2026-08-31: swap which row is on top, and make the top row
@@ -703,13 +704,20 @@ body {
   .key-tab.key-tab-wide { letter-spacing: -0.3px; }
   #wpl-key-tabs { gap: 3px !important; }
   .step-btn { padding: 5px 1px; min-height: 44px; }
-  .step-btn .n { font-size: 10px; }
-  .step-btn .l { font-size: 10px; }
   /* Matches #wpl-chord-quality-tabs .prog-tab .num's 11px at this
-     breakpoint (see the desktop rule pairing these two rows with it,
-     above) — same "bigger/bolder to match the old Chords tab" request. */
-  #wpl-quality-row2 .step-btn .n, #wpl-step-row .step-btn .n { font-size: 11px; }
-  #wpl-prog-tabs, #wpl-step-row, #wpl-chord-quality-tabs, #wpl-chord-position-row, .wpl-scale-settings-row, #wpl-practice-subtabs { gap: 4px !important; }
+     breakpoint — base rule now (see the desktop rule above), so every
+     .step-btn .n consumer (step-row, quality-row2, Practice's Hand/
+     Direction/Octaves) moves together automatically. */
+  .step-btn .n { font-size: 11px; }
+  .step-btn .l { font-size: 10px; }
+  /* #wpl-position-tabs2 / #wpl-quality-row2 (Chords v2's own two rows)
+     added to this shared list — Chris, 2026-09-02: "the mobile horizontal
+     spacing between the buttons are not the same on progressions, practice
+     and chords2" — these two rows were left out when this rule was first
+     written (before Chords v2 existed) and were still falling back to
+     their own 8px inline gap (index.html) at this breakpoint instead of
+     shrinking with every other row's buttons. */
+  #wpl-prog-tabs, #wpl-step-row, #wpl-chord-quality-tabs, #wpl-chord-position-row, .wpl-scale-settings-row, #wpl-practice-subtabs, #wpl-position-tabs2, #wpl-quality-row2 { gap: 4px !important; }
   #wpl-prog-tabs, .wpl-scale-settings-row, #wpl-practice-subtabs, #wpl-position-tabs2 { margin-bottom: 6px !important; }
   /* Position (top, taller) / Quality (bottom, shorter) — same swapped-sum
      rule as desktop, scaled down: 59+44=103, matching this breakpoint's
@@ -805,18 +813,17 @@ body {
      while still stepping up from the old 7px. */
   .prog-tab .name { font-size: 8.5px; }
   .step-btn { padding: 4px 1px; min-height: 40px; }
+  /* Base rule (matches #wpl-chord-quality-tabs .prog-tab .num's 9px here
+     too) — same value the shared 520px rule above already uses, so no
+     change is needed stepping down into this breakpoint. */
   .step-btn .n, .step-btn .l { font-size: 9px; }
-  /* Re-declared at 9px (same as the shared rule just above) only because
-     the 520px override for these two rows (an ID+class selector) would
-     otherwise keep beating the plain-class rule here on specificity even
-     at this narrower breakpoint — same cascade fix pattern used elsewhere
-     in this file (e.g. #wpl-chord-position-row below). Matches
-     #wpl-chord-quality-tabs .prog-tab .num's 9px here too. */
-  #wpl-quality-row2 .step-btn .n, #wpl-step-row .step-btn .n { font-size: 9px; }
   .key-tab { font-size: 9.5px; padding: 5px 0; line-height: 11px; }
   .key-tab.key-tab-wide { letter-spacing: -0.4px; }
   #wpl-key-tabs { gap: 2px !important; }
-  #wpl-prog-tabs, #wpl-step-row, #wpl-chord-quality-tabs, #wpl-chord-position-row, .wpl-scale-settings-row, #wpl-practice-subtabs { gap: 3px !important; }
+  /* Same fix as the 520px rule above: #wpl-position-tabs2 / #wpl-quality-row2
+     added so Chords v2's own two rows shrink their gap along with every
+     other row at this breakpoint too. */
+  #wpl-prog-tabs, #wpl-step-row, #wpl-chord-quality-tabs, #wpl-chord-position-row, .wpl-scale-settings-row, #wpl-practice-subtabs, #wpl-position-tabs2, #wpl-quality-row2 { gap: 3px !important; }
   /* Position (top, taller) / Quality (bottom, shorter) — 52+40=92, matching
      this breakpoint's original 52+40=92 total exactly (Progressions' own
      .prog-tab is 52px here, so position matches it exactly). margin-bottom is
