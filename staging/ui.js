@@ -88,12 +88,7 @@
   let loopOn = false;
   let clickOn = false;
   let playingDisplayedProg = null; // which progression the step row currently shows while playing
-  let activeTabId = "chords"; // Chords is now the first tab, and the default shown on load
-  let curQuality = 0;
-  let curPosition = 0;
-  let chordsBpm = 80;
-  let chordsLoopOn = false;
-  let chordsClickOn = false;
+  let activeTabId = "chords2"; // Chords is the first tab, and the default shown on load
   let activePracticeSub = "scales";
   let scaleOctaves = 1;
   let scaleDirection = "up";
@@ -102,10 +97,11 @@
   let scalesBpm = 100;
   let scalesLoopOn = false;
   let scalesClickOn = false;
-  // Chords v2 (TEMP — see index.html comment above #wpl-panel-chords2):
-  // fully separate state from the original curQuality/curPosition so
-  // nothing about the working Chords tab is touched while this is built
-  // and checked out.
+  // Chords tab state (position/quality selectors, BPM, loop/click). Names
+  // keep the "2" suffix from when this was built as a separate, in-progress
+  // "Chords v2" next to the original Chords tab — now promoted to be the
+  // only Chords tab, but renaming every id/variable here would be a much
+  // larger, riskier change for no functional benefit.
   let curQuality2 = 0;
   let curPosition2 = 0;
   let chords2Bpm = 80;
@@ -114,10 +110,9 @@
 
   // ---------- Tabs ----------
   const TABS = [
-    { id: "chords", label: "Chords", soon: false },
+    { id: "chords2", label: "Chords", soon: false },
     { id: "progressions", label: "Progressions", soon: false },
-    { id: "practice", label: "Practice", soon: false },
-    { id: "chords2", label: "Chords 2", soon: false } // TEMP — delete once approved
+    { id: "practice", label: "Practice", soon: false }
   ];
 
   function buildTabBar() {
@@ -141,14 +136,13 @@
         document.getElementById("wpl-panel-" + tab.id).classList.add("active");
         E.stopPlayThrough();
         resetPlayButton();
-        resetChordsPlayButton();
         resetScalesPlayButton();
-        resetChords2PlayButton(); // TEMP — see #wpl-panel-chords2
+        resetChords2PlayButton();
         activeTabId = tab.id;
         const headingLabel = document.getElementById("wpl-step-heading-label");
-        if (tab.id === "chords") {
+        if (tab.id === "chords2") {
           headingLabel.textContent = "Position";
-          renderChords();
+          renderChords2();
         } else if (tab.id === "progressions") {
           headingLabel.textContent = "Number";
           render();
@@ -158,10 +152,6 @@
           // same as switching into any other not-yet-built tab always has.
           headingLabel.textContent = "Degree";
           renderScale();
-        } else if (tab.id === "chords2") {
-          // TEMP — see #wpl-panel-chords2
-          headingLabel.textContent = "Position";
-          renderChords2();
         }
       });
       bar.appendChild(btn);
@@ -202,11 +192,7 @@
           // Don't cut the beat off or restart it — the running play-through
           // picks up the new key on its next scheduled step (see startPlayThrough).
           E.updatePlayback({ keyPc: curKeyPc, useFlats });
-        } else if (activeTabId === "chords") {
-          renderChords();
-          E.playChordSound(D.chordVoicings[D.chordQualityNames[curQuality]][curPosition], curKeyPc, useFlats);
         } else if (activeTabId === "chords2") {
-          // TEMP — see #wpl-panel-chords2
           renderChords2();
           E.playChordSound(D.chordVoicings[D.chordQualityNames[curQuality2]][curPosition2], curKeyPc, useFlats);
         } else if (activeTabId === "practice") {
@@ -331,7 +317,7 @@
     document.getElementById("wpl-either-legend").style.display = usePurple ? "" : "none";
   }
 
-  // ---------- Chords tab ----------
+  // ---------- Chords tab: shared helpers ----------
   // Scale-degree numbers relative to the chord's OWN root (not the song
   // key) — e.g. Major root position is always "1-3-5" regardless of which
   // key-tab is selected. All chordVoicings shapes are written with root=C,
@@ -352,109 +338,15 @@
     return D.seventhQualities.includes(quality) ? D.chordPositionNamesSeventh : D.chordPositionNames;
   }
 
-  // Single-row container for all 6 quality buttons (see index.html comment
-  // — both 2-row attempts were reverted 2026-08-30: one grew the shell,
-  // the compact one was too small to read on Chris's phone).
-  const CHORD_QUALITY_TAB_SELECTOR = "#wpl-chord-quality-tabs .prog-tab";
-
-  function buildChordQualityTabs() {
-    const wrap = document.getElementById("wpl-chord-quality-tabs");
-    wrap.innerHTML = "";
-    D.chordQualityNames.forEach((name, i) => {
-      const b = document.createElement("button");
-      b.className = "prog-tab" + (i === 0 ? " active" : "");
-      b.innerHTML = `<div class="num">${name}</div><div class="name">${chordToneNumbers(D.chordVoicings[name][curPosition].right).join("-")}</div>`;
-      b.addEventListener("click", () => {
-        curQuality = i;
-        document.querySelectorAll(CHORD_QUALITY_TAB_SELECTOR).forEach(t => t.classList.remove("active"));
-        b.classList.add("active");
-        // Position row's labels/voicing depend on the quality just picked
-        // (triad "Root High" vs 7th-chord "3rd Inv") — curPosition (the
-        // selected index) stays the same, only what that index MEANS
-        // changes, so no need to reset curPosition here.
-        updateChordPositionLabels();
-        if (E.isPlaying()) {
-          E.updatePlayback({ progArray: D.chordVoicings[D.chordQualityNames[curQuality]] });
-        } else {
-          renderChords();
-          E.playChordSound(D.chordVoicings[D.chordQualityNames[curQuality]][curPosition], curKeyPc, useFlats);
-        }
-      });
-      wrap.appendChild(b);
-    });
-  }
-
-  // Refreshes the small "1-3-5"-style caption on all quality buttons for
-  // whichever position is currently selected — every button shows its OWN
-  // quality's numbers at that position, not just the active one.
-  function updateChordQualityNumbers() {
-    document.querySelectorAll(CHORD_QUALITY_TAB_SELECTOR).forEach((b, i) => {
-      const qName = D.chordQualityNames[i];
-      const nums = chordToneNumbers(D.chordVoicings[qName][curPosition].right).join("-");
-      b.querySelector(".name").textContent = nums;
-    });
-  }
-
-  // Position labels are always two words ("Root Low", "1st Inversion"...)
-  // and render as two stacked lines on the button per Chris 2026-08-31,
-  // instead of the single-line ".n" every other row uses.
-  function positionLabelHTML(label) {
-    const spaceAt = label.indexOf(" ");
-    const top = label.slice(0, spaceAt);
-    const bottom = label.slice(spaceAt + 1);
-    return `<div class="n-top">${top}</div><div class="n-bottom">${bottom}</div>`;
-  }
-
-  function buildChordPositionRow() {
-    const wrap = document.getElementById("wpl-chord-position-row");
-    wrap.innerHTML = "";
-    getChordPositionNames(D.chordQualityNames[curQuality]).forEach((label, i) => {
-      const btn = document.createElement("div");
-      btn.className = "step-btn" + (i === curPosition ? " active" : "");
-      btn.innerHTML = positionLabelHTML(label);
-      const activate = () => {
-        E.stopPlayThrough();
-        resetChordsPlayButton();
-        curPosition = i;
-        renderChords();
-        E.playChordSound(D.chordVoicings[D.chordQualityNames[curQuality]][curPosition], curKeyPc, useFlats);
-      };
-      btn.addEventListener("click", activate);
-      btn.addEventListener("touchstart", (e) => { e.preventDefault(); activate(); }, { passive: false });
-      wrap.appendChild(btn);
-    });
-  }
-
-  // Swaps the 4 position button LABELS in place (no rebuild/rewiring) when
-  // the selected quality's position-name set changes — e.g. "Root High"
-  // <-> "3rd Inv" when toggling into/out of Maj7 or Min7.
-  function updateChordPositionLabels() {
-    const names = getChordPositionNames(D.chordQualityNames[curQuality]);
-    document.querySelectorAll("#wpl-chord-position-row .step-btn").forEach((btn, i) => {
-      btn.innerHTML = positionLabelHTML(names[i]);
-    });
-  }
-
-  function renderChords(highlightPosition) {
-    const voicings = D.chordVoicings[D.chordQualityNames[curQuality]];
-    const posToShow = highlightPosition != null ? highlightPosition : curPosition;
-    const ch = voicings[posToShow];
-    setReadoutValue(document.getElementById("wpl-chord-name"), ch.name, E.formatLabel(E.transposeChordName(ch.name, curKeyPc, useFlats)));
-    const posName = getChordPositionNames(D.chordQualityNames[curQuality])[posToShow];
-    setReadoutValue(document.getElementById("wpl-step-label"), posName, posName);
-    updateChordQualityNumbers();
-    document.querySelectorAll("#wpl-chord-position-row .step-btn").forEach((b, i) => {
-      b.classList.toggle("active", i === posToShow);
-    });
-    E.renderChord(ch, curKeyPc, useFlats, -1, -1);
-    document.getElementById("wpl-either-legend").style.display = "none";
-  }
-
-  // ---------- Chords v2 (TEMP — see #wpl-panel-chords2 in index.html) ----------
-  // Built straight from Progressions' own markup: position row is plain
-  // .prog-tab (num/name), quality row is plain .step-btn (n/l). No
-  // ID-scoped color/size overrides anywhere — everything here inherits
-  // its look from the shared base rules, same as Progressions itself.
+  // ---------- Chords tab: position/quality rows ----------
+  // Built from Progressions' own markup: position row is plain .prog-tab
+  // (num/name), quality row is plain .step-btn (n/l). No ID-scoped color/
+  // size overrides anywhere — everything here inherits its look from the
+  // shared base rules, same as Progressions itself. Function/variable names
+  // keep the "2" suffix from this tab's original build as a separate,
+  // in-progress "Chords v2" — now promoted to be the only Chords tab (the
+  // original position/quality-tab implementation was deleted 2026-09-03),
+  // but a full rename would touch a lot of ids for no functional benefit.
   function buildPositionTabs2() {
     const wrap = document.getElementById("wpl-position-tabs2");
     wrap.innerHTML = "";
@@ -619,7 +511,7 @@
   // Chris, 2026-09-01, second follow-up: "the practice bottom 2 button
   // lines still arent the same size as the chords/progressions bottom 2
   // lines" — this row is now sized/colored (see styles.css) to match
-  // Progressions' #wpl-prog-tabs / Chords' #wpl-chord-position-row (the
+  // Progressions' #wpl-prog-tabs / Chords' #wpl-position-tabs2 (the
   // "top row" of each tab's 2-row layout). Those rows stack a big label
   // over a small caption (.num/.name, .n-top/.n-bottom); this one stacks
   // the sub-tab name over its own "Soon" badge (or nothing, for Scales)
@@ -641,7 +533,7 @@
         document.getElementById("wpl-practice-sub-" + sub.id).classList.add("active");
         E.stopPlayThrough();
         resetPlayButton();
-        resetChordsPlayButton();
+        resetChords2PlayButton();
         resetScalesPlayButton();
         // "Soon" sub-tabs leave the heading/keyboard exactly as they were
         // (nothing built yet to show) instead of relabeling to something
@@ -934,80 +826,6 @@
     });
   }
 
-  // ---------- Chords playback bar ("Practice") ----------
-  function updateChordsBpmFill() {
-    const slider = document.getElementById("wpl-chords-bpm-slider");
-    const pct = ((chordsBpm - 40) / (160 - 40)) * 100;
-    slider.style.setProperty("--pct", pct + "%");
-  }
-
-  function resetChordsPlayButton() {
-    const btn = document.getElementById("wpl-chords-play-btn");
-    if (!btn) return;
-    btn.classList.remove("playing");
-    document.getElementById("wpl-chords-play-label").textContent = "Practice";
-    btn.querySelector(".wpl-icon").innerHTML = "&#9654;";
-    document.querySelectorAll("#wpl-chord-position-row .step-btn.playing").forEach(b => b.classList.remove("playing"));
-  }
-
-  function startChordsPractice() {
-    const playBtn = document.getElementById("wpl-chords-play-btn");
-    playBtn.classList.add("playing");
-    document.getElementById("wpl-chords-play-label").textContent = "Stop";
-    playBtn.querySelector(".wpl-icon").innerHTML = "&#9632;";
-    E.playThrough(D.chordVoicings[D.chordQualityNames[curQuality]], curKeyPc, useFlats, {
-      bpm: chordsBpm,
-      loop: chordsLoopOn,
-      click: chordsClickOn,
-      beatsPerChord: 2,
-      onStep: (i) => {
-        curPosition = i;
-        document.querySelectorAll("#wpl-chord-position-row .step-btn").forEach((b, idx) => b.classList.toggle("playing", idx === i));
-        renderChords(i);
-      },
-      onDone: () => {
-        resetChordsPlayButton();
-      }
-    });
-  }
-
-  function wireChordsPlaybar() {
-    const slider = document.getElementById("wpl-chords-bpm-slider");
-    const valueEl = document.getElementById("wpl-chords-bpm-value");
-    slider.addEventListener("input", () => {
-      chordsBpm = parseInt(slider.value, 10);
-      valueEl.textContent = chordsBpm;
-      updateChordsBpmFill();
-      if (E.isPlaying()) E.updatePlayback({ bpm: chordsBpm });
-    });
-    updateChordsBpmFill();
-
-    const loopBtn = document.getElementById("wpl-chords-loop-btn");
-    loopBtn.addEventListener("click", () => {
-      chordsLoopOn = !chordsLoopOn;
-      loopBtn.classList.toggle("active", chordsLoopOn);
-      if (E.isPlaying()) E.updatePlayback({ loop: chordsLoopOn });
-    });
-
-    const clickBtn = document.getElementById("wpl-chords-click-btn");
-    clickBtn.addEventListener("click", () => {
-      chordsClickOn = !chordsClickOn;
-      clickBtn.classList.toggle("active", chordsClickOn);
-      if (E.isPlaying()) E.updatePlayback({ click: chordsClickOn });
-    });
-
-    const playBtn = document.getElementById("wpl-chords-play-btn");
-    playBtn.addEventListener("click", () => {
-      if (E.isPlaying()) {
-        E.stopPlayThrough();
-        resetChordsPlayButton();
-        renderChords();
-        return;
-      }
-      startChordsPractice();
-    });
-  }
-
   // ---------- Auto-resize (for iframe embeds) ----------
   // Tells the parent page (Squarespace/ThriveCart) exactly how tall this
   // page is, so the embed script can size the iframe to fit with no dead
@@ -1059,22 +877,19 @@
     startTrialCountdown();
     buildKeyTabs();
     buildProgTabs();
-    buildChordQualityTabs();
-    buildChordPositionRow();
     buildPracticeSubTabs();
     buildScaleHandsRow();
     buildScaleOctavesRow();
     buildScaleDirectionRow();
-    buildPositionTabs2(); // TEMP — see #wpl-panel-chords2
-    buildQualityRow2(); // TEMP — see #wpl-panel-chords2
+    buildPositionTabs2();
+    buildQualityRow2();
     E.buildKeyboard(document.getElementById("wpl-piano"), document.getElementById("wpl-status"));
     buildStepButtons();
     wirePlaybar();
-    wireChordsPlaybar();
     wireScalesPlaybar();
-    wireChords2Playbar(); // TEMP — see #wpl-panel-chords2
-    if (activeTabId === "chords") {
-      renderChords();
+    wireChords2Playbar();
+    if (activeTabId === "chords2") {
+      renderChords2();
     } else if (activeTabId === "practice" && activePracticeSub === "scales") {
       renderScale();
     } else {
