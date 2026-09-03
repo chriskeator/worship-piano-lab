@@ -685,26 +685,35 @@ body {
      padding-to-frame-height ratio is 5/(118+2*5) ≈ 3.9%; mobile's old 4px
      padding on a 55px piano (frame = 55+2*4 = 63px) was ≈ 6.3% — visibly
      chunkier. "don't want that to move everyting up in the shell" — so the
-     FRAME's total height must stay exactly 63px while the padding shrinks.
+     FRAME's total height must stay exactly 63px through every pass below.
      First pass used padding:2.5px + piano height:58px (58+2*2.5=63) which
      matched the ratio, but Chris then noticed "why does the left border
      seem thicker than the right border" — a real, measured artifact: a
      2.5px (half-pixel) padding lands asymmetrically on the device pixel
      grid, rendering 2 solid dark pixels on the left edge vs only 1 on the
-     right (confirmed via pixel-level screenshot scanning). Switching to a
-     whole-number padding:2px + piano height:59px (59+2*2=63, frame height
-     still exactly preserved) removed the fractional pixel and made both
-     edges render identically: 1 solid dark pixel + symmetric antialiased
-     transition on each side. Ratio is now 2/63 ≈ 3.2% (vs desktop's 3.9%)
-     — slightly thinner than an exact ratio match, but pixel-symmetric,
-     which matters more visually than the last fraction of a percent.
-     border-radius stays 8px (unchanged) since it already matches
-     #wpl-piano's own fixed inline border-radius:8px (index.html) —
-     shrinking it would make the outer frame corner tighter than the inner
-     piano's corner, which looks wrong. */
-  #wpl-piano { height: 59px !important; }
+     right (confirmed via pixel-level screenshot scanning). Second pass
+     went to a whole-number padding:2px + piano height:59px (59+2*2=63,
+     frame height still exactly preserved), which fixed the left/right
+     symmetry — but Chris then noticed "the rounded corners are getting
+     cut off" on mobile: with only 2px of dark material and an 8px
+     border-radius shared by both the frame and the inner piano, there was
+     barely any dark corner left to show the curve — the piano's own key
+     content pokes almost right up to the rounded edge (confirmed via a
+     15x cropped zoom of the top-left corner: the blue highlighted key's
+     rounded top corner is nearly flush with the frame's own curve, with
+     only a sliver of dark pixels between them). Chris: "make the mobile
+     border 1px bigger all the way around" — padding goes to 3px (still a
+     whole number, so the left/right pixel-symmetry fix above is
+     unaffected) and piano height compensates down to 57px (57+2*3=63,
+     frame height still exactly the same 63px as every prior pass — "don't
+     want that to move everyting up in the shell" still holds). border-
+     radius stays 8px (unchanged) since it already matches #wpl-piano's
+     own fixed inline border-radius:8px (index.html) — shrinking it would
+     make the outer frame corner tighter than the inner piano's corner,
+     which looks wrong. */
+  #wpl-piano { height: 57px !important; }
   #wpl-piano span { font-size: 6px !important; }
-  #wpl-piano-frame { padding: 2px !important; border-radius: 8px !important; }
+  #wpl-piano-frame { padding: 3px !important; border-radius: 8px !important; }
   .wpl-title { font-size: 22px; }
   .prog-tab { padding: 8px 2px; min-height: 59px; }
   .prog-tab .num { font-size: 14px; }
