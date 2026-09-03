@@ -91,63 +91,19 @@
       </div>
     </div>
 
-    <!-- Chords panel -->
-    <div id="wpl-panel-chords" class="wpl-panel active">
-      <!-- Position row moved ABOVE the quality row, and made the TALLER of
-           the two (Chris, 2026-08-31: swap so "Choose a position" is on
-           top, with its own button heights correct — top row taller than
-           the bottom row). Swapping which section is first doesn't change
-           the panel's total height (same two rows, same total), but making
-           position taller while quality got correspondingly shorter is a
-           REAL height change to each row — the two were deliberately
-           swapped (was quality=78/position=60 desktop) so the SUM per
-           breakpoint is identical to before (see styles.css), since this
-           panel ties with Progressions for the tallest and the whole
-           shell is sized off that pair ("the whole exterior of the shell
-           cannot change ever"). -->
-      <div class="section-label">2. Choose a position</div>
-      <div id="wpl-chord-position-row" style="display:flex; gap:8px; margin-bottom:14px;"></div>
-
-      <div class="section-label">3. Choose a chord</div>
-      <!-- Single row of all 6 qualities (Major/Minor/Sus2/Sus4/Maj7/Min7).
-           Two different 2-row layouts were tried and reverted 2026-08-30:
-           full-size 2 rows grew the whole shell (all .wpl-panel's share
-           one height via CSS Grid, sized to the tallest — Chris: "NEVER
-           CHANGE THE SHELL SIZE!"); a same-height COMPACT 2-row version
-           kept the shell size but Chris found the shrunk text "way too
-           small" on his real phone. One row it stays — now sized smaller
-           than before (see styles.css) since this is the bottom/shorter
-           row per the swap above; total height with the position row is
-           unchanged from the pre-swap baseline (verified via Playwright). -->
-      <div id="wpl-chord-quality-tabs" style="display:flex; gap:8px;"></div>
-
-      <div class="wpl-playbar">
-        <div class="wpl-bpm">
-          <span class="wpl-bpm-label">TEMPO</span>
-          <input type="range" id="wpl-chords-bpm-slider" min="40" max="160" value="80" />
-          <span class="wpl-bpm-value" id="wpl-chords-bpm-value">80</span>
-        </div>
-        <div class="wpl-playbar-controls">
-          <button class="wpl-toggle-btn" id="wpl-chords-loop-btn"><span class="wpl-icon">&#8635;</span>Loop</button>
-          <button class="wpl-toggle-btn" id="wpl-chords-click-btn"><span class="wpl-icon">&#9679;</span>Click</button>
-          <button class="wpl-play-btn" id="wpl-chords-play-btn"><span class="wpl-icon">&#9654;</span><span id="wpl-chords-play-label">Practice</span></button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Chords v2 panel (TEMP — Chris, 2026-09-02: build a brand-new tab
-         straight from Progressions' own markup/classes instead of
-         refactoring the working Chords panel above in place, so there's
-         zero risk to it while this gets checked out. Top row = 4 position
-         buttons using plain .prog-tab (num/name — exactly Progressions'
-         own top-row shape, no overrides); bottom row = 6 quality buttons
-         using plain .step-btn (n/l — exactly Progressions' own step-row
-         shape, no overrides). No #wpl-panel-chords2-scoped CSS at all;
-         every size/color comes straight from the shared .prog-tab/.step-btn
-         base rules already used everywhere else. Once Chris confirms this
-         looks/works right, this panel replaces the original Chords panel
-         and the old one + its "Chords" tab entry get deleted. -->
-    <div id="wpl-panel-chords2" class="wpl-panel">
+    <!-- Chords panel (built from Progressions' own markup/classes: top row
+         = 4 position buttons using plain .prog-tab (num/name — exactly
+         Progressions' own top-row shape, no overrides); bottom row = 6
+         quality buttons using plain .step-btn (n/l — exactly Progressions'
+         own step-row shape, no overrides). No #wpl-panel-chords2-scoped CSS
+         at all; every size/color comes straight from the shared
+         .prog-tab/.step-btn base rules already used everywhere else. IDs/
+         classes here keep the "2"/"chords2" naming from when this was built
+         as a separate, in-progress "Chords v2" alongside the original
+         Chords panel — it's now the only Chords panel (the original was
+         deleted 2026-09-03), but renaming every id here would be a much
+         larger, riskier change for no functional benefit. -->
+    <div id="wpl-panel-chords2" class="wpl-panel active">
       <div class="section-label">2. Choose a position</div>
       <div id="wpl-position-tabs2" style="display:flex; gap:8px; margin-bottom:14px;"></div>
 
@@ -181,7 +137,7 @@
            settings-row comment below) but this top row was still the small
            34px .wpl-toggle-btn pill meant for playbar Loop/Click controls,
            not the 78px "top row" height Progressions' #wpl-prog-tabs /
-           Chords' #wpl-chord-position-row both use. flex-wrap:wrap is
+           Chords' #wpl-position-tabs2 both use. flex-wrap:wrap is
            dropped (defaults to nowrap, matching every other row) and gap
            unified to 8px so it's in the same shared gap-override list as
            those rows at the mobile breakpoints (see styles.css) — the
