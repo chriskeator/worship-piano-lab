@@ -526,13 +526,6 @@
       loop: !!opts.loop,
       click: !!opts.click,
       beatsPerChord: opts.beatsPerChord || 2,
-      // Scales-only (Chris, 2026-09-04: "cut the click hits in half, and
-      // accent the 1st hit and every other hit" -- since each scale note is
-      // already its own 0.5-beat step, clicking every step is a click per
-      // note; halfClick drops that to a click every OTHER note, with every
-      // other one of those accented, instead of Chords/Progressions' normal
-      // per-beatsPerChord click loop below.
-      halfClick: !!opts.halfClick,
       direction: 1,
       stepIndex: 0,
       progArray: progArray,
@@ -549,14 +542,8 @@
       const secPerBeat = 60 / state.bpm;
       if (state.click) {
         const ctx = getAudioCtx();
-        if (state.halfClick) {
-          if (state.stepIndex % 2 === 0) {
-            playClick(ctx.currentTime, state.stepIndex % 4 === 0);
-          }
-        } else {
-          for (let b = 0; b < state.beatsPerChord; b++) {
-            playClick(ctx.currentTime + b * secPerBeat, b === 0);
-          }
+        for (let b = 0; b < state.beatsPerChord; b++) {
+          playClick(ctx.currentTime + b * secPerBeat, b === 0);
         }
       }
       let next = state.stepIndex + state.direction;

@@ -566,12 +566,22 @@
       // used, which is why those views already had the completing root note
       // and only Notes/Numbers (which used to read `tones` directly) didn't.
       D.buildScaleAscent(scaleKey, 1).forEach(step => {
+        // Spell each tone as sharp/flat based on how ITS OWN entry in
+        // SCALE_DEFS is written (e.g. minor's "Eb"), not the globally
+        // selected key's useFlats -- Chris, 2026-09-04: Minor/Pentatonic
+        // Minor/Blues Minor's b3/b6/b7 tones were showing as D#/G#/A# on
+        // the Note Names view even though the Number Degrees view (which
+        // reads the degree label directly, untouched by this) correctly
+        // called them flats. useFlats is tied to the selected KEY tab
+        // (only true for keys that themselves prefer flats), which is the
+        // wrong thing to key display spelling off of here.
+        const wantsFlat = /^[A-G]b$/.test(step.name);
         // +step.octaveOffset (0 for the 7 scale tones, 1 for the appended
         // top root) so the completing root note lands one on-screen octave
         // to the right instead of re-lighting the same key as the bottom
         // root -- oct is derived from the transposed note's own octave
         // (same pattern the RH/LH Fingers branch below uses), not hardcoded.
-        const tNote = E.transposeNote(step.name + (NOTES_VIEW_OCT + 2 + step.octaveOffset), curKeyPc, useFlats);
+        const tNote = E.transposeNote(step.name + (NOTES_VIEW_OCT + 2 + step.octaveOffset), curKeyPc, wantsFlat);
         const name = tNote.replace(/[0-9]/g, "");
         const oct = parseInt(tNote.replace(/[^0-9]/g, ""), 10) - 2;
         const pc = D.noteToPc[name];
@@ -739,9 +749,6 @@
       // for max speed on a scale... just do 1/2 notes... to double the
       // speed" rather than raising the slider's own max past 160.
       beatsPerChord: 0.5,
-      // Scales-only click behavior -- see piano-engine.js's playThrough for
-      // the half-rate/accent logic (Chris, 2026-09-04).
-      halfClick: true,
       onStep: (i) => {
         scaleStepIndex = i;
         renderScale(i);

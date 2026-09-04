@@ -227,7 +227,7 @@
     bluesMajor: {
       displayName: "Blues Major",
       tones: [
-        { note: "C", degree: "1" }, { note: "D", degree: "2" }, { note: "D#", degree: "♭3" },
+        { note: "C", degree: "1" }, { note: "D", degree: "2" }, { note: "Eb", degree: "♭3" },
         { note: "E", degree: "3" }, { note: "G", degree: "5" }, { note: "A", degree: "6" }
       ],
       rhFingers: { 1: [1, 2, 3, 1, 2, 3, 5], 2: [1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 5] },
