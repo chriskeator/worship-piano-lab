@@ -190,6 +190,41 @@ body {
    row's override below — now both 4px, one shared standard). */
 .prog-tab .name { font-size: 12px; font-weight: 600; opacity: 0.9; margin-top: 4px; }
 
+/* ---------- Scales panel: "Choose a view" row ----------
+   This row mixes 1-line buttons (Note Names, Scale Degrees have no caption
+   on wide screens) with 2-line buttons (Right Hand / 1 Octave, etc.) —
+   centering would put those titles at different heights (a 1-line block
+   centers higher within the shared row height than a 2-line block does),
+   so this row top-aligns its buttons instead of using the shared .prog-tab
+   center rule above — same fix as the Progressions number-alignment issue.
+   Chris, 2026-09-04: "titles should be all on the same plane." */
+#wpl-scale-view-row .prog-tab { justify-content: flex-start; }
+/* Type row's buttons are all title+subtitle uniformly, so no flex-start
+   override needed there -- center alignment already puts every button's
+   content on the same plane. */
+/* Full label ("Right Hand", "1 Octave", "Note Names") vs short label
+   ("RH", "1 8ve", "Note") — short is the default/safe-everywhere text;
+   full only takes over once the row is confirmed wide enough to fit it
+   (see the min-width query further down). Chris, 2026-09-04: wants the
+   long names on desktop when they fit, short names on mobile ("mobile RH
+   is fine"). Threshold below is a starting estimate — Playwright-verified
+   against the real rendered row before shipping. */
+.wpl-lbl-full { display: none; }
+.wpl-lbl-short { display: inline; }
+/* 1000px, not 760px: Playwright-verified -- "Note Names"/"Scale Degrees"
+   wrap to 2 lines right at 760-800px where the swap used to kick in.
+   Dropping the view row's full-label title to 19px (below) and widening
+   the columns fixed every label except "Scale Degrees", which still
+   wrapped everywhere from 900px up to 990px and only cleared at exactly
+   1000px -- so that's the threshold, for both rows' full labels (also
+   covers #wpl-scale-type-row's Pentatonic buttons, see SCALE_TYPES
+   comment in ui.js). */
+@media (min-width: 1000px) {
+  #wpl-scale-view-row .wpl-lbl-full, #wpl-scale-type-row .wpl-lbl-full { display: inline; }
+  #wpl-scale-view-row .wpl-lbl-short, #wpl-scale-type-row .wpl-lbl-short { display: none; }
+  #wpl-scale-view-row .prog-tab .num { font-size: 19px; }
+}
+
 /* ---------- Practice tab sub-panels (Scales / Speed Drills / Progression
    Drills) — plain show/hide, not the CSS-Grid tallest-wins stacking the
    top-level .wpl-panel's use. That trick exists to keep the TOP tab bar
@@ -748,8 +783,8 @@ body {
      written (before Chords v2 existed) and were still falling back to
      their own 8px inline gap (index.html) at this breakpoint instead of
      shrinking with every other row's buttons. */
-  #wpl-prog-tabs, #wpl-step-row, #wpl-chord-quality-tabs, #wpl-chord-position-row, .wpl-scale-settings-row, #wpl-practice-subtabs, #wpl-position-tabs2, #wpl-quality-row2 { gap: 4px !important; }
-  #wpl-prog-tabs, .wpl-scale-settings-row, #wpl-practice-subtabs, #wpl-position-tabs2 { margin-bottom: 6px !important; }
+  #wpl-prog-tabs, #wpl-step-row, #wpl-chord-quality-tabs, #wpl-chord-position-row, #wpl-scale-type-row, #wpl-scale-view-row, #wpl-practice-subtabs, #wpl-position-tabs2, #wpl-quality-row2 { gap: 4px !important; }
+  #wpl-prog-tabs, #wpl-scale-type-row, #wpl-practice-subtabs, #wpl-position-tabs2 { margin-bottom: 6px !important; }
   /* Position (top, taller) / Quality (bottom, shorter) — same swapped-sum
      rule as desktop, scaled down: 59+44=103, matching this breakpoint's
      original 59+44=103 total exactly (Progressions' own .prog-tab is 59px
@@ -854,7 +889,7 @@ body {
   /* Same fix as the 520px rule above: #wpl-position-tabs2 / #wpl-quality-row2
      added so Chords v2's own two rows shrink their gap along with every
      other row at this breakpoint too. */
-  #wpl-prog-tabs, #wpl-step-row, #wpl-chord-quality-tabs, #wpl-chord-position-row, .wpl-scale-settings-row, #wpl-practice-subtabs, #wpl-position-tabs2, #wpl-quality-row2 { gap: 3px !important; }
+  #wpl-prog-tabs, #wpl-step-row, #wpl-chord-quality-tabs, #wpl-chord-position-row, #wpl-scale-type-row, #wpl-scale-view-row, #wpl-practice-subtabs, #wpl-position-tabs2, #wpl-quality-row2 { gap: 3px !important; }
   /* Position (top, taller) / Quality (bottom, shorter) — 52+40=92, matching
      this breakpoint's original 52+40=92 total exactly (Progressions' own
      .prog-tab is 52px here, so position matches it exactly). margin-bottom is
