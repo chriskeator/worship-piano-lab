@@ -256,14 +256,13 @@ body {
    Chords v2's quality-row2, Scales' view-row. */
 .step-btn .l { font-size: 12px; opacity: 0.9; line-height: 1.2; }
 
-/* Choose a View row: "Note Names"/"Scale Degrees" have no subtitle,
-   the other 4 buttons do -- .step-btn's shared justify-content:center
-   would center each button's own content independently, putting these
-   2 titles lower than the other 4 (no subtitle line below to push
-   against). Chris, discussed earlier for this exact row: "titles
-   should be all on the same plane" -- top-align instead so every
-   title sits at the same y regardless of what follows it. */
-#wpl-scale-view-row .step-btn { justify-content: flex-start; }
+/* Choose a View row: every button now has both a title and a subtitle
+   (Note/Names, Scale/Degrees, RH/1 Octave, etc, 2026-09-04) so plain
+   .step-btn centering (shared rule above) already puts every title on
+   the same plane -- no per-row override needed, same as Progressions'
+   own step-row. (Earlier attempt used flex-start to compensate for 2
+   of the 6 buttons having no subtitle; not needed once the labels
+   were split.) */
 
 /* ---------- Chords panel: Position row (top) & Quality row (bottom) ----------
    Chris, 2026-08-31: swap which row is on top, and make the top row

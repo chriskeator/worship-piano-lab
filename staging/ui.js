@@ -93,7 +93,7 @@
   let scaleDirection = "up";
   let scaleHands = "right";
   let scaleStepIndex = 0;
-  let scalesBpm = 100;
+  let scalesBpm = 80;
   let scalesLoopOn = false;
   let scalesClickOn = false;
   // Chords tab state (position/quality selectors, BPM, loop/click). Names
@@ -543,8 +543,8 @@
   const SCALE_TYPES = [
     { num: "Major", name: "Scale" },
     { num: "Minor", name: "Scale" },
-    { num: "Pentatonic", name: "Major" },
-    { num: "Pentatonic", name: "Minor" },
+    { num: "Pent", name: "Major" },
+    { num: "Pent", name: "Minor" },
     { num: "Blues", name: "Major" },
     { num: "Blues", name: "Minor" }
   ];
@@ -571,10 +571,10 @@
   // source differs (a fixed array here instead of the current
   // progression's chords).
   const SCALE_VIEWS = [
-    { n: "Note Names", l: "" },
-    { n: "Scale Degrees", l: "" },
-    { n: "Right Hand", l: "1 Octave" },
-    { n: "Right Hand", l: "2 Octaves" },
+    { n: "Note", l: "Names" },
+    { n: "Scale", l: "Degrees" },
+    { n: "RH", l: "1 Octave" },
+    { n: "RH", l: "2 Octaves" },
     { n: "Left Hand", l: "1 Octave" },
     { n: "Left Hand", l: "2 Octaves" }
   ];
