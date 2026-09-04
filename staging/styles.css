@@ -258,19 +258,43 @@ body {
 
 /* Full label ("Pentatonic", "Right Hand", "Left Hand") vs short label
    ("Pent", "RH", "LH") -- Chris, 2026-09-04: short only on mobile, full
-   on desktop. Short is the default/safe-everywhere text; full only
-   switches on at the min-width query further down. That threshold is
-   900px, not the app's usual 520px mobile cutoff: Playwright-verified
-   that "Pentatonic" overflows its column and "Right Hand"/"Left Hand"
-   wrap to 2 lines (growing that row taller than its paired row --
-   exactly what Chris ruled out, "that row shell size can never
-   change") anywhere from 521px up to ~880px. 900px is the first width
-   both clear cleanly on one line. */
+   on desktop. Short is the default/safe-everywhere text; full switches
+   on at each row's own min-width query below. Split into two separate
+   thresholds because the two rows have different root causes:
+   - Choose a Scale row: "Pentatonic" at the shared 22px .prog-tab .num
+     size (sized for Progressions' 1-5 digits, way oversized for a
+     10-letter word -- Chris, 2026-09-04: "make the font smaller...
+     I only increased the font size in the Progressions tab cause it
+     was 1,2,3,4,5") overflowed from 521px up to ~880px. Scoping this
+     row's .num down to 16px (same fix already used for the old Chords
+     tab's word-based quality row, #wpl-chord-quality-tabs .prog-tab
+     .num below) lets it switch to full text at the normal 521px
+     breakpoint with no overflow.
+   - Choose a View row: "Right Hand"/"Left Hand" already use the
+     standard (never enlarged) 16px .step-btn .n size, and still wrap
+     to 2 lines from 521px up to ~880px -- that's word length, not an
+     oversized font, so this row keeps the later 900px threshold
+     instead (the first width they fit on one line). */
 .wpl-lbl-full { display: none; }
 .wpl-lbl-short { display: inline; }
+/* font-size scoped inside min-width:521px (not unconditional) so it
+   doesn't outrank the max-width:520px/340px .prog-tab .num mobile
+   rules (plain class selectors would otherwise lose to this row's
+   ID-scoped one regardless of source order). Text-swap threshold
+   (720px) is a separate, stricter query nested on top: even at 16px,
+   "Pentatonic" only fits from 720px up (Playwright-verified) --
+   smaller still would need ~10px to fit at 521px, visibly tiny next
+   to Major/Minor/Blues in the same row at 16px. */
+@media (min-width: 521px) {
+  #wpl-scale-type-row .prog-tab .num { font-size: 16px; }
+}
+@media (min-width: 720px) {
+  #wpl-scale-type-row .wpl-lbl-full { display: inline; }
+  #wpl-scale-type-row .wpl-lbl-short { display: none; }
+}
 @media (min-width: 900px) {
-  .wpl-lbl-full { display: inline; }
-  .wpl-lbl-short { display: none; }
+  #wpl-scale-view-row .wpl-lbl-full { display: inline; }
+  #wpl-scale-view-row .wpl-lbl-short { display: none; }
 }
 
 /* Choose a View row: every button now has both a title and a subtitle
