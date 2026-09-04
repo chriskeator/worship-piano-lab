@@ -8,7 +8,7 @@
     "Foundation",
     "Smooth",
     "Soft",
-    "Big",
+    "Loud",
     "Full"
   ];
 

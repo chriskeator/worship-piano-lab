@@ -292,6 +292,14 @@ body {
   #wpl-scale-type-row .wpl-lbl-full { display: inline; }
   #wpl-scale-type-row .wpl-lbl-short { display: none; }
 }
+/* Desktop-only bump so the top row (Choose a Scale) reads slightly
+   bigger than the bottom row (Choose a View, .step-btn .n stays at
+   its standard 16px) -- matching the size relationship already in
+   place on mobile (14px/11px, 12px/9px). 780px is the first width
+   'Pentatonic' fits on one line at 18px (Playwright-verified). */
+@media (min-width: 780px) {
+  #wpl-scale-type-row .prog-tab .num { font-size: 18px; }
+}
 @media (min-width: 900px) {
   #wpl-scale-view-row .wpl-lbl-full { display: inline; }
   #wpl-scale-view-row .wpl-lbl-short { display: none; }
