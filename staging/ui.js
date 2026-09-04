@@ -540,13 +540,16 @@
   // Copied verbatim from buildProgTabs()'s .prog-tab pattern (button,
   // num/name divs, same active-class toggle) -- only the data source
   // differs (a fixed array here instead of D.progressionNames).
+  // "Pentatonic" is the only title here too long to keep spelled out on
+  // mobile (Chris, 2026-09-04: "Pent" on mobile, "Pentatonic" on desktop) --
+  // same full/short span pattern as the view row below, same breakpoint.
   const SCALE_TYPES = [
-    { num: "Major", name: "Scale" },
-    { num: "Minor", name: "Scale" },
-    { num: "Pent", name: "Major" },
-    { num: "Pent", name: "Minor" },
-    { num: "Blues", name: "Major" },
-    { num: "Blues", name: "Minor" }
+    { numFull: "Major", numShort: "Major", name: "Scale" },
+    { numFull: "Minor", numShort: "Minor", name: "Scale" },
+    { numFull: "Pentatonic", numShort: "Pent", name: "Major" },
+    { numFull: "Pentatonic", numShort: "Pent", name: "Minor" },
+    { numFull: "Blues", numShort: "Blues", name: "Major" },
+    { numFull: "Blues", numShort: "Blues", name: "Minor" }
   ];
   let curScaleType = 0;
   function buildScaleTypeRow() {
@@ -555,7 +558,7 @@
     SCALE_TYPES.forEach((opt, i) => {
       const b = document.createElement("button");
       b.className = "prog-tab" + (i === curScaleType ? " active" : "");
-      b.innerHTML = `<div class="num">${opt.num}</div><div class="name">${opt.name}</div>`;
+      b.innerHTML = `<div class="num"><span class="wpl-lbl-full">${opt.numFull}</span><span class="wpl-lbl-short">${opt.numShort}</span></div><div class="name">${opt.name}</div>`;
       b.addEventListener("click", () => {
         curScaleType = i;
         document.querySelectorAll("#wpl-scale-type-row .prog-tab").forEach(t => t.classList.remove("active"));
@@ -570,13 +573,19 @@
   // button; n/l divs; touchstart handled the same way) -- only the data
   // source differs (a fixed array here instead of the current
   // progression's chords).
+  // "Right Hand"/"Left Hand" wrap to 2 lines on mobile (2 words, narrow
+  // column), which grows that button taller than its neighbors and, since
+  // flex rows stretch every button to the tallest one, grows the WHOLE
+  // row -- Chris, 2026-09-04: "that row shell size can never change."
+  // "RH"/"LH" on mobile, spelled out on desktop -- same full/short span
+  // pattern and breakpoint as the type row above.
   const SCALE_VIEWS = [
-    { n: "Note", l: "Names" },
-    { n: "Scale", l: "Degrees" },
-    { n: "RH", l: "1 Octave" },
-    { n: "RH", l: "2 Octaves" },
-    { n: "Left Hand", l: "1 Octave" },
-    { n: "Left Hand", l: "2 Octaves" }
+    { nFull: "Note", nShort: "Note", l: "Names" },
+    { nFull: "Scale", nShort: "Scale", l: "Degrees" },
+    { nFull: "Right Hand", nShort: "RH", l: "1 Octave" },
+    { nFull: "Right Hand", nShort: "RH", l: "2 Octaves" },
+    { nFull: "Left Hand", nShort: "LH", l: "1 Octave" },
+    { nFull: "Left Hand", nShort: "LH", l: "2 Octaves" }
   ];
   let curScaleView = 0;
   function buildScaleViewRow() {
@@ -585,7 +594,7 @@
     SCALE_VIEWS.forEach((opt, i) => {
       const btn = document.createElement("div");
       btn.className = "step-btn" + (i === curScaleView ? " active" : "");
-      btn.innerHTML = `<div class="n">${opt.n}</div><div class="l">${opt.l}</div>`;
+      btn.innerHTML = `<div class="n"><span class="wpl-lbl-full">${opt.nFull}</span><span class="wpl-lbl-short">${opt.nShort}</span></div><div class="l">${opt.l}</div>`;
       const activate = () => {
         curScaleView = i;
         document.querySelectorAll("#wpl-scale-view-row .step-btn").forEach(t => t.classList.remove("active"));

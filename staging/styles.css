@@ -256,6 +256,23 @@ body {
    Chords v2's quality-row2, Scales' view-row. */
 .step-btn .l { font-size: 12px; opacity: 0.9; line-height: 1.2; }
 
+/* Full label ("Pentatonic", "Right Hand", "Left Hand") vs short label
+   ("Pent", "RH", "LH") -- Chris, 2026-09-04: short only on mobile, full
+   on desktop. Short is the default/safe-everywhere text; full only
+   switches on at the min-width query further down. That threshold is
+   900px, not the app's usual 520px mobile cutoff: Playwright-verified
+   that "Pentatonic" overflows its column and "Right Hand"/"Left Hand"
+   wrap to 2 lines (growing that row taller than its paired row --
+   exactly what Chris ruled out, "that row shell size can never
+   change") anywhere from 521px up to ~880px. 900px is the first width
+   both clear cleanly on one line. */
+.wpl-lbl-full { display: none; }
+.wpl-lbl-short { display: inline; }
+@media (min-width: 900px) {
+  .wpl-lbl-full { display: inline; }
+  .wpl-lbl-short { display: none; }
+}
+
 /* Choose a View row: every button now has both a title and a subtitle
    (Note/Names, Scale/Degrees, RH/1 Octave, etc, 2026-09-04) so plain
    .step-btn centering (shared rule above) already puts every title on
