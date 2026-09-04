@@ -565,28 +565,27 @@
       // the scale") -- same helper the RH/LH Fingers branch below already
       // used, which is why those views already had the completing root note
       // and only Notes/Numbers (which used to read `tones` directly) didn't.
+      // Real key spelling, not a global sharp/flat table: a scale's letter
+      // pattern (how many letters up from the root each degree sits) is
+      // fixed regardless of key, but the ACCIDENTAL needed to land on the
+      // right pitch depends on the actual root -- e.g. minor's b3 is Ab in
+      // F minor (F major's 3rd, A, is natural) but G natural in E minor (E
+      // major's 3rd, G#, just loses its sharp). spellScaleToneInKey derives
+      // this correctly for any of the 12 keys (see chord-data.js) --
+      // replacing the old approach of picking a name from one global
+      // sharp-or-flat table, which got Minor/Pentatonic Minor/Blues Minor's
+      // flat degrees wrong in most keys and the plain Major scale wrong in
+      // F/D♭/E♭/A♭/B♭ (Chris, 2026-09-04/05).
+      const rootLabel = D.keyList.find(k => k.pc === curKeyPc).label;
       D.buildScaleAscent(scaleKey, 1).forEach(step => {
-        // Spell each tone as sharp/flat based on how ITS OWN entry in
-        // SCALE_DEFS is written (e.g. minor's "Eb"), not the globally
-        // selected key's useFlats -- Chris, 2026-09-04: Minor/Pentatonic
-        // Minor/Blues Minor's b3/b6/b7 tones were showing as D#/G#/A# on
-        // the Note Names view even though the Number Degrees view (which
-        // reads the degree label directly, untouched by this) correctly
-        // called them flats. useFlats is tied to the selected KEY tab
-        // (only true for keys that themselves prefer flats), which is the
-        // wrong thing to key display spelling off of here.
-        const wantsFlat = /^[A-G]b$/.test(step.name);
-        // +step.octaveOffset (0 for the 7 scale tones, 1 for the appended
-        // top root) so the completing root note lands one on-screen octave
-        // to the right instead of re-lighting the same key as the bottom
-        // root -- oct is derived from the transposed note's own octave
-        // (same pattern the RH/LH Fingers branch below uses), not hardcoded.
-        const tNote = E.transposeNote(step.name + (NOTES_VIEW_OCT + 2 + step.octaveOffset), curKeyPc, wantsFlat);
-        const name = tNote.replace(/[0-9]/g, "");
-        const oct = parseInt(tNote.replace(/[^0-9]/g, ""), 10) - 2;
-        const pc = D.noteToPc[name];
-        const label = curScaleView === 0 ? E.toDisplayFlat(name) : D.degreeLabelForNote(scaleKey, step.name);
-        entries.push({ pc, oct, label, color: KEY_COLOR_RIGHT });
+        const spelled = D.spellScaleToneInKey(step.name, rootLabel);
+        // oct is just the on-screen octave slot -- NOTES_VIEW_OCT for the
+        // scale's own tones, one slot higher for the appended top root
+        // (step.octaveOffset is 1 only for that final entry) -- not tied to
+        // any acoustic register since this view doesn't play audio.
+        const oct = NOTES_VIEW_OCT + step.octaveOffset;
+        const label = curScaleView === 0 ? E.toDisplayFlat(spelled.name) : D.degreeLabelForNote(scaleKey, step.name);
+        entries.push({ pc: spelled.pc, oct, label, color: KEY_COLOR_RIGHT });
       });
     } else {
       const octaves = (curScaleView === 3 || curScaleView === 5) ? 2 : 1;

@@ -262,6 +262,73 @@
     return t ? t.degree : "1";
   }
 
+  // ---------- Correct scale-tone spelling in any of the 12 keys ----------
+  // Chris, 2026-09-04/05: the Note Names view was spelling minor-scale
+  // "flat" degrees (b3/b6/b7 etc) as sharps in some keys, and separately
+  // spelling the plain Major scale wrong in F/Db/Eb/Ab/Bb. Root cause: note
+  // names were being picked from a single global sharp-or-flat table keyed
+  // only off which KEY is selected (or, briefly, off whether the tone's own
+  // C-written spelling happened to contain a "b"), neither of which is how
+  // real key spelling works. A scale's letter names always run through each
+  // of the 7 letters once with no repeats/skips (its "shape" — how many
+  // letters up from the root each degree is — is fixed no matter the key),
+  // and the ACCIDENTAL on each letter is whatever's needed to land on the
+  // right pitch, which can be a flat, a sharp, or nothing depending on the
+  // key: e.g. F minor's b3 is Ab (letter must be A, the 3rd letter from F),
+  // while E minor's b3 is G natural (E major's 3rd is G#, so lowering it a
+  // semitone removes the sharp instead of adding a flat).
+  const NATURAL_LETTERS = ["C", "D", "E", "F", "G", "A", "B"];
+  const NATURAL_LETTER_PC = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+
+  function parseLetterAccidental(noteStr) {
+    const letter = noteStr[0];
+    let acc = 0;
+    if (noteStr.length > 1) {
+      const c = noteStr[1];
+      if (c === "#") acc = 1;
+      else if (c === "b" || c === "♭") acc = -1;
+    }
+    return { letter, acc };
+  }
+
+  // How many letters up from the root (0-6) a scale tone sits, and how many
+  // semitones up from the root it sits -- both fixed, key-independent
+  // properties of the scale's shape, read directly off its C-written tones
+  // (root=C=letter index 0, so a tone's own letter index IS its letterOffset,
+  // and its own pc IS its semitoneOffset).
+  function toneShape(noteInC) {
+    const { letter, acc } = parseLetterAccidental(noteInC);
+    return {
+      letterOffset: NATURAL_LETTERS.indexOf(letter),
+      semitoneOffset: (NATURAL_LETTER_PC[letter] + acc + 12) % 12
+    };
+  }
+
+  // Spells a scale tone (given as a letter/semitone offset from the root --
+  // see toneShape above) correctly for any root key label from keyList
+  // ("C", "F#", "B♭", ...). Returns both the correctly-spelled name (ASCII
+  // "b" for flats -- pass through toDisplayFlat for the real ♭ glyph) and
+  // its pitch class (for lighting the right piano key).
+  function spellScaleTone(rootLabel, letterOffset, semitoneOffset) {
+    const root = parseLetterAccidental(rootLabel);
+    const rootLetterIdx = NATURAL_LETTERS.indexOf(root.letter);
+    const targetLetter = NATURAL_LETTERS[(rootLetterIdx + letterOffset) % 7];
+    const rootPc = (NATURAL_LETTER_PC[root.letter] + root.acc + 12) % 12;
+    const targetPc = (rootPc + semitoneOffset) % 12;
+    let accidental = targetPc - NATURAL_LETTER_PC[targetLetter];
+    if (accidental > 6) accidental -= 12;
+    if (accidental < -6) accidental += 12;
+    const accStr = accidental > 0 ? "#".repeat(accidental) : accidental < 0 ? "b".repeat(-accidental) : "";
+    return { name: targetLetter + accStr, pc: targetPc };
+  }
+
+  // Convenience: spell a scale tone that's written in C (i.e. one of
+  // SCALE_DEFS's own `tones[].note` values) in whatever key is selected.
+  function spellScaleToneInKey(noteInC, rootLabel) {
+    const shape = toneShape(noteInC);
+    return spellScaleTone(rootLabel, shape.letterOffset, shape.semitoneOffset);
+  }
+
   global.WPL_DATA = {
     progressionNames,
     progressionBlurbs,
@@ -279,6 +346,7 @@
     chordVoicings,
     scaleDefs: SCALE_DEFS,
     buildScaleAscent,
-    degreeLabelForNote
+    degreeLabelForNote,
+    spellScaleToneInKey
   };
 })(window);

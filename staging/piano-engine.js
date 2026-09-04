@@ -35,7 +35,11 @@
   // below wherever a note name is about to hit a label instead of the
   // audio engine.
   function toDisplayFlat(noteLetter) {
-    return noteLetter.replace("b", "♭");
+    // Global replace (not just the first "b") -- Db minor's b6 is the one
+    // legitimate double-flat ("Bbb") the correct-spelling scale logic in
+    // chord-data.js produces (Chris, 2026-09-05); every other caller here
+    // only ever has at most one "b" anyway, so this is a safe broadening.
+    return noteLetter.replace(/b/g, "♭");
   }
 
   function transposeChordName(name, semitones, useFlats) {
