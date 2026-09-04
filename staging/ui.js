@@ -84,13 +84,18 @@
   let useFlats = false;
   let curProg = 0;
   let curStep = 0;
-  let bpm = 80;
+  // Every tab's tempo now defaults to the slider's max (160) -- Chris,
+  // 2026-09-04: "max out the speed slider on all of the tabs... let
+  // students slow it down if needed, don't start at 80." index.html's
+  // slider value="" attributes and value spans must stay in sync with
+  // these (the native thumb position isn't set from JS on load).
+  let bpm = 160;
   let loopOn = false;
   let clickOn = false;
   let playingDisplayedProg = null; // which progression the step row currently shows while playing
   let activeTabId = "chords2"; // Chords is the first tab, and the default shown on load
   let scaleStepIndex = 0;
-  let scalesBpm = 80;
+  let scalesBpm = 160;
   let scalesLoopOn = false;
   let scalesClickOn = false;
   // Chords tab state (position/quality selectors, BPM, loop/click). Names
@@ -100,7 +105,7 @@
   // larger, riskier change for no functional benefit.
   let curQuality2 = 0;
   let curPosition2 = 0;
-  let chords2Bpm = 80;
+  let chords2Bpm = 160;
   let chords2LoopOn = false;
   let chords2ClickOn = false;
 
@@ -540,25 +545,28 @@
     });
   }
 
+  // Notes/Numbers light just this one on-screen octave (index 2 = note-
+  // octave 4, the keyboard's visual middle) -- Chris, 2026-09-04: "don't
+  // highlight the entire piano, just do 1 octave for the note and number
+  // buttons."
+  const NOTES_VIEW_OCT = 2;
+
   // Lights the on-screen keyboard for the current scale + view. Notes/
-  // Degrees light every octave (5 on-screen octaves) with the same label
-  // repeating; RH/LH Fingers light only that hand's specific 1- or 2-octave
-  // run, labeled with finger numbers. Also shows/hides the Bass note/Chord
-  // tones legend rows to match which color(s) actually appear.
+  // Numbers light one octave; RH/LH Fingers light only that hand's specific
+  // 1- or 2-octave run, labeled with finger numbers. Also shows/hides the
+  // Bass note/Chord tones legend rows to match which color(s) actually appear.
   function renderScaleKeyMap() {
     const scaleKey = curScaleKey();
     const entries = [];
     if (curScaleView === 0 || curScaleView === 1) {
       const tones = D.scaleDefs[scaleKey].tones;
-      for (let oct = 0; oct < 5; oct++) {
-        tones.forEach(t => {
-          const tNote = E.transposeNote(t.note + (oct + 2), curKeyPc, useFlats);
-          const name = tNote.replace(/[0-9]/g, "");
-          const pc = D.noteToPc[name];
-          const label = curScaleView === 0 ? E.toDisplayFlat(name) : t.degree;
-          entries.push({ pc, oct, label, color: KEY_COLOR_RIGHT });
-        });
-      }
+      tones.forEach(t => {
+        const tNote = E.transposeNote(t.note + (NOTES_VIEW_OCT + 2), curKeyPc, useFlats);
+        const name = tNote.replace(/[0-9]/g, "");
+        const pc = D.noteToPc[name];
+        const label = curScaleView === 0 ? E.toDisplayFlat(name) : t.degree;
+        entries.push({ pc, oct: NOTES_VIEW_OCT, label, color: KEY_COLOR_RIGHT });
+      });
     } else {
       const octaves = (curScaleView === 3 || curScaleView === 5) ? 2 : 1;
       const isLeft = curScaleView === 4 || curScaleView === 5;
@@ -580,22 +588,26 @@
     document.getElementById("wpl-chord-legend").style.display = hasRight ? "" : "none";
   }
 
+  // Readout above the piano: Chris, 2026-09-04 -- don't spell out Major/
+  // Minor, fold minor into the root itself ("Cm" not "C Minor") and drop
+  // "Major" entirely (it's the unmarked case): C, Cm, C Pentatonic,
+  // Cm Pentatonic, C Blues, Cm Blues. Indexed by curScaleType, so this must
+  // stay in lockstep with SCALE_TYPE_KEYS/SCALE_TYPES order.
+  const SCALE_READOUT_SUFFIX = ["", "m", " Pentatonic", "m Pentatonic", " Blues", "m Blues"];
+  // The View readout is a fixed-size 140x50px box (sized for short values
+  // like "Root High") kept independent of the view row's own button text
+  // (which now reads "RH Fingers"/"LH Fingers" in full) so a future button
+  // relabel can't reopen the overflow "Right Hand 2 Octaves" caused before.
+  const VIEW_READOUT_LABELS = ["Note Names", "Numbers", "RH 1 Octave", "RH 2 Octaves", "LH 1 Octave", "LH 2 Octaves"];
+
   // highlightStep is accepted (playback passes the current step index) but
   // only affects nothing visual right now -- the key map above is a static
   // reference chart for the current scale+view, not a per-note flash.
   function renderScale(highlightStep) {
     const rootName = E.toDisplayFlat(E.transposeNote("C4", curKeyPc, useFlats).replace(/[0-9]/g, ""));
-    // Reuse the Choose-a-Scale/View rows' own SHORT label pieces here (not
-    // the full desktop spelling) -- this readout box is a fixed 140x50px
-    // sized for short values like "Root High"/"1st Inv", and full text like
-    // "Right Hand 2 Octaves" or "Pentatonic Major" overflows it. "Pent
-    // Major"/"RH 2 Octaves" etc. read fine at that size and are already the
-    // exact abbreviations shown on mobile, so nothing new to learn.
-    const scaleType = SCALE_TYPES[curScaleType];
-    const scaleLabel = rootName + " " + scaleType.numShort + " " + scaleType.name;
+    const scaleLabel = rootName + SCALE_READOUT_SUFFIX[curScaleType];
     setReadoutValue(document.getElementById("wpl-chord-name"), scaleLabel, scaleLabel);
-    const view = SCALE_VIEWS[curScaleView];
-    const viewLabel = view.nShort + " " + view.l;
+    const viewLabel = VIEW_READOUT_LABELS[curScaleView];
     setReadoutValue(document.getElementById("wpl-step-label"), viewLabel, viewLabel);
     renderScaleKeyMap();
   }
@@ -651,19 +663,19 @@
   // button; n/l divs; touchstart handled the same way) -- only the data
   // source differs (a fixed array here instead of the current
   // progression's chords).
-  // "Right Hand"/"Left Hand" wrap to 2 lines on mobile (2 words, narrow
-  // column), which grows that button taller than its neighbors and, since
-  // flex rows stretch every button to the tallest one, grows the WHOLE
-  // row -- Chris, 2026-09-04: "that row shell size can never change."
-  // "RH"/"LH" on mobile, spelled out on desktop -- same full/short span
-  // pattern and breakpoint as the type row above.
+  // "RH Fingers"/"LH Fingers" (Chris, 2026-09-04, replacing the original
+  // "Right Hand"/"Left Hand") are the same length as what they replace, so
+  // they use the same nFull===nShort treatment as "Note"/"Number" below --
+  // no separate short mobile text needed; styles.css still has a font-size
+  // fallback for this row if a width is ever found where it wraps (see the
+  // "that row shell size can never change" rule).
   const SCALE_VIEWS = [
     { nFull: "Note", nShort: "Note", l: "Names" },
-    { nFull: "Scale", nShort: "Scale", l: "Degrees" },
-    { nFull: "Right Hand", nShort: "RH", l: "1 Octave" },
-    { nFull: "Right Hand", nShort: "RH", l: "2 Octaves" },
-    { nFull: "Left Hand", nShort: "LH", l: "1 Octave" },
-    { nFull: "Left Hand", nShort: "LH", l: "2 Octaves" }
+    { nFull: "Number", nShort: "Number", l: "Degrees" },
+    { nFull: "RH Fingers", nShort: "RH Fingers", l: "1 Octave" },
+    { nFull: "RH Fingers", nShort: "RH Fingers", l: "2 Octaves" },
+    { nFull: "LH Fingers", nShort: "LH Fingers", l: "1 Octave" },
+    { nFull: "LH Fingers", nShort: "LH Fingers", l: "2 Octaves" }
   ];
   let curScaleView = 0;
   function buildScaleViewRow() {
@@ -708,7 +720,11 @@
       bpm: scalesBpm,
       loop: scalesLoopOn,
       click: scalesClickOn,
-      beatsPerChord: 1,
+      // Half a beat per note (eighth-note pacing), not a full beat like
+      // Chords/Progressions -- Chris, 2026-09-04: "160 is still kinda slow
+      // for max speed on a scale... just do 1/2 notes... to double the
+      // speed" rather than raising the slider's own max past 160.
+      beatsPerChord: 0.5,
       onStep: (i) => {
         scaleStepIndex = i;
         renderScale(i);
