@@ -89,6 +89,7 @@
   let clickOn = false;
   let playingDisplayedProg = null; // which progression the step row currently shows while playing
   let activeTabId = "chords2"; // Chords is the first tab, and the default shown on load
+  let activePracticeSub = "scales";
   let scaleOctaves = 1;
   let scaleDirection = "up";
   let scaleHands = "right";
@@ -111,8 +112,7 @@
   const TABS = [
     { id: "chords2", label: "Chords", soon: false },
     { id: "progressions", label: "Progressions", soon: false },
-    { id: "scales", label: "Scales", soon: false },
-    { id: "practice", label: "Practice", soon: true }
+    { id: "practice", label: "Practice", soon: false }
   ];
 
   function buildTabBar() {
@@ -146,12 +146,13 @@
         } else if (tab.id === "progressions") {
           headingLabel.textContent = "Number";
           render();
-        } else if (tab.id === "scales") {
+        } else if (tab.id === "practice" && activePracticeSub === "scales") {
+          // "Soon" sub-tabs (Speed Drills, Progression Drills) have nothing
+          // to show yet — leave the heading/keyboard exactly as they were,
+          // same as switching into any other not-yet-built tab always has.
           headingLabel.textContent = "Degree";
           renderScale();
         }
-        // "practice" is a "Soon" placeholder tab — nothing to render yet,
-        // leave the heading/keyboard exactly as they were.
       });
       bar.appendChild(btn);
     });
@@ -194,11 +195,13 @@
         } else if (activeTabId === "chords2") {
           renderChords2();
           E.playChordSound(D.chordVoicings[D.chordQualityNames[curQuality2]][curPosition2], curKeyPc, useFlats);
-        } else if (activeTabId === "scales") {
-          renderScale(0);
-          E.playChordSound(currentScaleSteps()[0], curKeyPc, useFlats);
         } else if (activeTabId === "practice") {
-          // "Soon" placeholder — nothing built yet to render/play.
+          // "Soon" sub-tabs (Speed Drills, Progression Drills) have nothing
+          // built yet to render/play — only react to key changes on Scales.
+          if (activePracticeSub === "scales") {
+            renderScale(0);
+            E.playChordSound(currentScaleSteps()[0], curKeyPc, useFlats);
+          }
         } else {
           buildStepButtons();
           render();
@@ -498,7 +501,53 @@
     });
   }
 
-  // ---------- Scales panel ----------
+  // ---------- Practice tab ----------
+  const PRACTICE_SUBS = [
+    { id: "scales", label: "Scales", soon: false },
+    { id: "drills", label: "Speed Drills", soon: true },
+    { id: "progdrills", label: "Progression Drills", soon: true }
+  ];
+
+  // Chris, 2026-09-01, second follow-up: "the practice bottom 2 button
+  // lines still arent the same size as the chords/progressions bottom 2
+  // lines" — this row is now sized/colored (see styles.css) to match
+  // Progressions' #wpl-prog-tabs / Chords' #wpl-position-tabs2 (the
+  // "top row" of each tab's 2-row layout). Those rows stack a big label
+  // over a small caption (.num/.name, .n-top/.n-bottom); this one stacks
+  // the sub-tab name over its own "Soon" badge (or nothing, for Scales)
+  // the same way, via .wpl-subtab-label, instead of the old single
+  // inline line — a stacked block wraps predictably (each is a normal
+  // word-by-word wrap) where one long nowrap line would just overflow.
+  function buildPracticeSubTabs() {
+    const wrap = document.getElementById("wpl-practice-subtabs");
+    wrap.innerHTML = "";
+    PRACTICE_SUBS.forEach(sub => {
+      const btn = document.createElement("button");
+      btn.className = "wpl-toggle-btn" + (sub.id === activePracticeSub ? " active" : "");
+      btn.innerHTML = `<span class="wpl-subtab-label">${sub.label}</span>` + (sub.soon ? '<span class="wpl-tab-soon">Soon</span>' : "");
+      btn.addEventListener("click", () => {
+        activePracticeSub = sub.id;
+        document.querySelectorAll("#wpl-practice-subtabs .wpl-toggle-btn").forEach(t => t.classList.remove("active"));
+        btn.classList.add("active");
+        document.querySelectorAll(".wpl-practice-subpanel").forEach(p => p.classList.remove("active"));
+        document.getElementById("wpl-practice-sub-" + sub.id).classList.add("active");
+        E.stopPlayThrough();
+        resetPlayButton();
+        resetChords2PlayButton();
+        resetScalesPlayButton();
+        // "Soon" sub-tabs leave the heading/keyboard exactly as they were
+        // (nothing built yet to show) instead of relabeling to something
+        // that doesn't correspond to anything on screen.
+        if (sub.id === "scales") {
+          document.getElementById("wpl-step-heading-label").textContent = "Degree";
+          renderScale();
+        }
+      });
+      wrap.appendChild(btn);
+    });
+  }
+
+  // ---------- Scales sub-panel ----------
   // Diatonic scale-degree labels for the readout's second box — pitch-class
   // based (not step-index based) so it stays correct regardless of
   // direction/octave: e.g. G in any octave is always "5".
@@ -828,6 +877,7 @@
     startTrialCountdown();
     buildKeyTabs();
     buildProgTabs();
+    buildPracticeSubTabs();
     buildScaleHandsRow();
     buildScaleOctavesRow();
     buildScaleDirectionRow();
@@ -840,7 +890,7 @@
     wireChords2Playbar();
     if (activeTabId === "chords2") {
       renderChords2();
-    } else if (activeTabId === "scales") {
+    } else if (activeTabId === "practice" && activePracticeSub === "scales") {
       renderScale();
     } else {
       render();

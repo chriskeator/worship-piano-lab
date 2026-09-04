@@ -124,56 +124,91 @@
       </div>
     </div>
 
-    <!-- Scales panel: scale practice settings (Hand/Direction/Octaves),
-         promoted from Practice's old "Scales" sub-tab to its own top-level
-         tab, 2026-09-04, per Chris: wanted Scales next to Chords and
-         Progressions instead of buried a level deeper inside Practice. -->
-    <div id="wpl-panel-scales" class="wpl-panel">
-      <!-- ONE row, all 8 buttons (Hand/Direction/Octaves), laid out
-           exactly like every other "choose an option" row in the app
-           (Progressions' 8-button Chord row, Chords' Position/Quality
-           rows): plain flex + gap, no flex-wrap (defaults to nowrap), so
-           .step-btn's flex:1 + min-width:0 shrinks each button to fit
-           instead of ever wrapping to a 2nd line — same mechanism, same
-           row, no per-row height tuning needed. Two dividers (same style
-           as the Choose-a-Key row's) mark the 3 logical groups — Hand |
-           Direction | Octaves — the way that row separates naturals from
-           accidentals. -->
-      <div class="section-label">2. Choose your scale settings</div>
-      <div class="wpl-scale-settings-row" style="display:flex; align-items:stretch; gap:8px; margin-bottom:14px;">
-        <div id="wpl-scale-hands-row" style="display:contents;"></div>
-        <div style="width:3px; background:var(--wpl-line); border-radius:2px;"></div>
-        <div id="wpl-scale-direction-row" style="display:contents;"></div>
-        <div style="width:3px; background:var(--wpl-line); border-radius:2px;"></div>
-        <div id="wpl-scale-octaves-row" style="display:contents;"></div>
-      </div>
-
-      <div class="wpl-playbar">
-        <div class="wpl-bpm">
-          <span class="wpl-bpm-label">TEMPO</span>
-          <input type="range" id="wpl-scales-bpm-slider" min="40" max="160" value="100" />
-          <span class="wpl-bpm-value" id="wpl-scales-bpm-value">100</span>
-        </div>
-        <div class="wpl-playbar-controls">
-          <button class="wpl-toggle-btn" id="wpl-scales-loop-btn"><span class="wpl-icon">&#8635;</span>Loop</button>
-          <button class="wpl-toggle-btn" id="wpl-scales-click-btn"><span class="wpl-icon">&#9679;</span>Click</button>
-          <button class="wpl-play-btn" id="wpl-scales-play-btn"><span class="wpl-icon">&#9654;</span><span id="wpl-scales-play-label">Play</span></button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Practice panel: umbrella tab for future drill categories (Speed
-         Drills, Progression Drills). Scales moved out to its own
-         top-level tab (see above), 2026-09-04 — Chris: "leave the
-         practice tab as coming soon for now". Content already filmed in
-         the Practice Videos folder (12 drill categories, ~57 videos) will
-         populate this once built; for now it's a single placeholder,
-         same pattern the old "Soon" sub-panels used. -->
+    <!-- Practice panel: umbrella tab for Scales plus future drill
+         categories (replaces the old separate Scales/Riffs top-level
+         tabs — see project notes, 2026-08-30). Its own sub-tab row picks
+         which practice mode is shown; only Scales is built so far, the
+         rest are "Soon" placeholders using the content already filmed
+         in the Practice Videos folder (12 drill categories, ~57 videos). -->
     <div id="wpl-panel-practice" class="wpl-panel">
-      <div class="wpl-soon">
-        <div class="wpl-soon-icon">&#127925;</div>
-        <div class="wpl-soon-title">Practice drills — coming soon</div>
-        <div class="wpl-soon-text">Timed speed drills and tempo-building progression drills for every key, for building finger independence and speed.</div>
+      <!-- Chris, 2026-09-01, second follow-up: "the practice bottom 2
+           button lines still arent the same size as the chords/progressions
+           bottom 2 lines" — row COUNT already matched (2 rows, see the
+           settings-row comment below) but this top row was still the small
+           34px .wpl-toggle-btn pill meant for playbar Loop/Click controls,
+           not the 78px "top row" height Progressions' #wpl-prog-tabs /
+           Chords' #wpl-position-tabs2 both use. flex-wrap:wrap is
+           dropped (defaults to nowrap, matching every other row) and gap
+           unified to 8px so it's in the same shared gap-override list as
+           those rows at the mobile breakpoints (see styles.css) — the
+           actual height/color match is scoped CSS there, keyed off this ID. -->
+      <div class="section-label">2. Choose a mode</div>
+      <div id="wpl-practice-subtabs" style="display:flex; gap:8px; margin-bottom:14px;"></div>
+
+      <!-- Scales sub-panel -->
+      <div id="wpl-practice-sub-scales" class="wpl-practice-subpanel active">
+        <!-- ONE row, all 8 buttons (Hand/Direction/Octaves), laid out
+             exactly like every other "choose an option" row in the app
+             (Progressions' 8-button Chord row, Chords' Position/Quality
+             rows): plain flex + gap, no flex-wrap (defaults to nowrap), so
+             .step-btn's flex:1 + min-width:0 shrinks each button to fit
+             instead of ever wrapping to a 2nd line — same mechanism, same
+             row, no per-row height tuning needed.
+             Chris, 2026-09-01, comparing screenshots: "why do you have 3
+             rows of buttons? make it identical to chords/progressions that
+             have 2 rows" — this row used to force Octaves onto its own 2nd
+             line below 520px (via a .wpl-scale-break spacer), making
+             Practice read as Sub-tabs + Hand/Direction + Octaves = 3 rows
+             where Progressions is only Progression + Chord = 2. Removing
+             the forced break drops this back to Sub-tabs + Settings = 2,
+             matching. Labels are shortened (Right/Both, Up+Down, N 8ve) so
+             8 buttons stay legible once they're sharing one row at mobile
+             widths instead of getting a whole line to themselves. Two
+             dividers (same style as the Choose-a-Key row's) mark the 3
+             logical groups — Hand | Direction | Octaves — the way that row
+             separates naturals from accidentals. Because this is now
+             SHORTER than the old 2-line version, not taller, there's no
+             shell-height risk (Chords/Progressions stay the tallest pair
+             regardless) — confirmed via qa/check-dimensions.js. -->
+        <div class="section-label">3. Choose your scale settings</div>
+        <div class="wpl-scale-settings-row" style="display:flex; align-items:stretch; gap:8px; margin-bottom:14px;">
+          <div id="wpl-scale-hands-row" style="display:contents;"></div>
+          <div style="width:3px; background:var(--wpl-line); border-radius:2px;"></div>
+          <div id="wpl-scale-direction-row" style="display:contents;"></div>
+          <div style="width:3px; background:var(--wpl-line); border-radius:2px;"></div>
+          <div id="wpl-scale-octaves-row" style="display:contents;"></div>
+        </div>
+
+        <div class="wpl-playbar">
+          <div class="wpl-bpm">
+            <span class="wpl-bpm-label">TEMPO</span>
+            <input type="range" id="wpl-scales-bpm-slider" min="40" max="160" value="100" />
+            <span class="wpl-bpm-value" id="wpl-scales-bpm-value">100</span>
+          </div>
+          <div class="wpl-playbar-controls">
+            <button class="wpl-toggle-btn" id="wpl-scales-loop-btn"><span class="wpl-icon">&#8635;</span>Loop</button>
+            <button class="wpl-toggle-btn" id="wpl-scales-click-btn"><span class="wpl-icon">&#9679;</span>Click</button>
+            <button class="wpl-play-btn" id="wpl-scales-play-btn"><span class="wpl-icon">&#9654;</span><span id="wpl-scales-play-label">Play</span></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Speed Drills sub-panel (coming soon) -->
+      <div id="wpl-practice-sub-drills" class="wpl-practice-subpanel">
+        <div class="wpl-soon">
+          <div class="wpl-soon-icon">&#127925;</div>
+          <div class="wpl-soon-title">Speed drills — coming soon</div>
+          <div class="wpl-soon-text">Timed inversion, thumb, and octave drills at multiple speed levels, for building finger independence and speed.</div>
+        </div>
+      </div>
+
+      <!-- Progression Drills sub-panel (coming soon) -->
+      <div id="wpl-practice-sub-progdrills" class="wpl-practice-subpanel">
+        <div class="wpl-soon">
+          <div class="wpl-soon-icon">&#127929;</div>
+          <div class="wpl-soon-title">Progression drills — coming soon</div>
+          <div class="wpl-soon-text">Tempo-building companion drills for each of the 5 Progressions modules, arpeggiated across root, 1st, and 2nd inversion.</div>
+        </div>
       </div>
     </div>
 
