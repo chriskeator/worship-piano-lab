@@ -256,6 +256,15 @@ body {
    Chords v2's quality-row2, Scales' view-row. */
 .step-btn .l { font-size: 12px; opacity: 0.9; line-height: 1.2; }
 
+/* Choose a View row: "Note Names"/"Scale Degrees" have no subtitle,
+   the other 4 buttons do -- .step-btn's shared justify-content:center
+   would center each button's own content independently, putting these
+   2 titles lower than the other 4 (no subtitle line below to push
+   against). Chris, discussed earlier for this exact row: "titles
+   should be all on the same plane" -- top-align instead so every
+   title sits at the same y regardless of what follows it. */
+#wpl-scale-view-row .step-btn { justify-content: flex-start; }
+
 /* ---------- Chords panel: Position row (top) & Quality row (bottom) ----------
    Chris, 2026-08-31: swap which row is on top, and make the top row
    (position) taller than the bottom row (quality). These two rows are the
