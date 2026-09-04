@@ -318,14 +318,27 @@ body {
    to a uniform 2-line row -- affects all 6 buttons equally, not a lopsided
    mismatch); 10px covers 521-589px; 12px covers 590-899px; 900px+ keeps
    the row's standard, unscoped 16px (already verified to fit there). */
+/* Chris, 2026-09-04, follow-up: "the title is now smaller than the sub
+   title" -- the .n tiers above were already the largest size that fits
+   "RH Fingers"/"LH Fingers" without wrapping at each range's narrowest
+   width, so there's no more room to grow .n further; instead .l (the plain
+   .step-btn .l base rule is a flat 12px everywhere) is scoped down to stay
+   BELOW .n's size at each of the same three tiers, restoring the
+   title-bigger-than-subtitle relationship every other row in the app uses
+   (.prog-tab .num > .name, .step-btn .n > .l at 900px+ here). Smaller-only
+   changes can't reopen wrapping (.l's own text -- "Names"/"1 Octave"/
+   "2 Octaves" -- already fit at the old, larger 12px). */
 @media (max-width: 520px) {
   #wpl-scale-view-row .step-btn .n { font-size: 8px; }
+  #wpl-scale-view-row .step-btn .l { font-size: 7px; }
 }
 @media (min-width: 521px) and (max-width: 589px) {
   #wpl-scale-view-row .step-btn .n { font-size: 10px; }
+  #wpl-scale-view-row .step-btn .l { font-size: 9px; }
 }
 @media (min-width: 590px) and (max-width: 899px) {
   #wpl-scale-view-row .step-btn .n { font-size: 12px; }
+  #wpl-scale-view-row .step-btn .l { font-size: 10px; }
 }
 
 /* Choose a View row: every button now has both a title and a subtitle

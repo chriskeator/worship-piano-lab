@@ -559,18 +559,32 @@
     const scaleKey = curScaleKey();
     const entries = [];
     if (curScaleView === 0 || curScaleView === 1) {
-      const tones = D.scaleDefs[scaleKey].tones;
-      tones.forEach(t => {
-        const tNote = E.transposeNote(t.note + (NOTES_VIEW_OCT + 2), curKeyPc, useFlats);
+      // buildScaleAscent(scaleKey, 1) walks one octave of tones AND appends
+      // the top root (Chris, 2026-09-04: "Note and Number tabs...need to end
+      // on the 1 note...all 6 scales need to have an extra note to complete
+      // the scale") -- same helper the RH/LH Fingers branch below already
+      // used, which is why those views already had the completing root note
+      // and only Notes/Numbers (which used to read `tones` directly) didn't.
+      D.buildScaleAscent(scaleKey, 1).forEach(step => {
+        // +step.octaveOffset (0 for the 7 scale tones, 1 for the appended
+        // top root) so the completing root note lands one on-screen octave
+        // to the right instead of re-lighting the same key as the bottom
+        // root -- oct is derived from the transposed note's own octave
+        // (same pattern the RH/LH Fingers branch below uses), not hardcoded.
+        const tNote = E.transposeNote(step.name + (NOTES_VIEW_OCT + 2 + step.octaveOffset), curKeyPc, useFlats);
         const name = tNote.replace(/[0-9]/g, "");
+        const oct = parseInt(tNote.replace(/[^0-9]/g, ""), 10) - 2;
         const pc = D.noteToPc[name];
-        const label = curScaleView === 0 ? E.toDisplayFlat(name) : t.degree;
-        entries.push({ pc, oct: NOTES_VIEW_OCT, label, color: KEY_COLOR_RIGHT });
+        const label = curScaleView === 0 ? E.toDisplayFlat(name) : D.degreeLabelForNote(scaleKey, step.name);
+        entries.push({ pc, oct, label, color: KEY_COLOR_RIGHT });
       });
     } else {
       const octaves = (curScaleView === 3 || curScaleView === 5) ? 2 : 1;
       const isLeft = curScaleView === 4 || curScaleView === 5;
-      const baseOct = isLeft ? LH_BASE_OCT : RH_BASE_OCT;
+      // RH Fingers (both 1 & 2 octave) move up 1 octave from where they were
+      // -- Chris, 2026-09-04: "RH 1 octave and RH 2 octave need to move up 1
+      // octave. both LF [LH] fingers are good" (LH stays at LH_BASE_OCT).
+      const baseOct = isLeft ? LH_BASE_OCT : RH_BASE_OCT + 1;
       const fingers = (isLeft ? D.scaleDefs[scaleKey].lhFingers : D.scaleDefs[scaleKey].rhFingers)[octaves];
       D.buildScaleAscent(scaleKey, octaves).forEach((step, i) => {
         const tNote = E.transposeNote(step.name + (baseOct + step.octaveOffset), curKeyPc, useFlats);
@@ -725,6 +739,9 @@
       // for max speed on a scale... just do 1/2 notes... to double the
       // speed" rather than raising the slider's own max past 160.
       beatsPerChord: 0.5,
+      // Scales-only click behavior -- see piano-engine.js's playThrough for
+      // the half-rate/accent logic (Chris, 2026-09-04).
+      halfClick: true,
       onStep: (i) => {
         scaleStepIndex = i;
         renderScale(i);
