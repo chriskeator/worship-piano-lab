@@ -89,7 +89,6 @@
   let clickOn = false;
   let playingDisplayedProg = null; // which progression the step row currently shows while playing
   let activeTabId = "chords2"; // Chords is the first tab, and the default shown on load
-  let activePracticeSub = "scales";
   let scaleOctaves = 1;
   let scaleDirection = "up";
   let scaleHands = "right";
@@ -112,7 +111,8 @@
   const TABS = [
     { id: "chords2", label: "Chords", soon: false },
     { id: "progressions", label: "Progressions", soon: false },
-    { id: "practice", label: "Practice", soon: false }
+    { id: "scales", label: "Scales", soon: false },
+    { id: "practice", label: "Practice", soon: true }
   ];
 
   function buildTabBar() {
@@ -146,13 +146,12 @@
         } else if (tab.id === "progressions") {
           headingLabel.textContent = "Number";
           render();
-        } else if (tab.id === "practice" && activePracticeSub === "scales") {
-          // "Soon" sub-tabs (Speed Drills, Progression Drills) have nothing
-          // to show yet — leave the heading/keyboard exactly as they were,
-          // same as switching into any other not-yet-built tab always has.
+        } else if (tab.id === "scales") {
           headingLabel.textContent = "Degree";
           renderScale();
         }
+        // "practice" is a "Soon" placeholder tab — nothing to render yet,
+        // leave the heading/keyboard exactly as they were.
       });
       bar.appendChild(btn);
     });
@@ -195,13 +194,11 @@
         } else if (activeTabId === "chords2") {
           renderChords2();
           E.playChordSound(D.chordVoicings[D.chordQualityNames[curQuality2]][curPosition2], curKeyPc, useFlats);
+        } else if (activeTabId === "scales") {
+          renderScale(0);
+          E.playChordSound(currentScaleSteps()[0], curKeyPc, useFlats);
         } else if (activeTabId === "practice") {
-          // "Soon" sub-tabs (Speed Drills, Progression Drills) have nothing
-          // built yet to render/play — only react to key changes on Scales.
-          if (activePracticeSub === "scales") {
-            renderScale(0);
-            E.playChordSound(currentScaleSteps()[0], curKeyPc, useFlats);
-          }
+          // "Soon" placeholder — nothing built yet to render/play.
         } else {
           buildStepButtons();
           render();
@@ -501,53 +498,7 @@
     });
   }
 
-  // ---------- Practice tab ----------
-  const PRACTICE_SUBS = [
-    { id: "scales", label: "Scales", soon: false },
-    { id: "drills", label: "Speed Drills", soon: true },
-    { id: "progdrills", label: "Progression Drills", soon: true }
-  ];
-
-  // Chris, 2026-09-01, second follow-up: "the practice bottom 2 button
-  // lines still arent the same size as the chords/progressions bottom 2
-  // lines" — this row is now sized/colored (see styles.css) to match
-  // Progressions' #wpl-prog-tabs / Chords' #wpl-position-tabs2 (the
-  // "top row" of each tab's 2-row layout). Those rows stack a big label
-  // over a small caption (.num/.name, .n-top/.n-bottom); this one stacks
-  // the sub-tab name over its own "Soon" badge (or nothing, for Scales)
-  // the same way, via .wpl-subtab-label, instead of the old single
-  // inline line — a stacked block wraps predictably (each is a normal
-  // word-by-word wrap) where one long nowrap line would just overflow.
-  function buildPracticeSubTabs() {
-    const wrap = document.getElementById("wpl-practice-subtabs");
-    wrap.innerHTML = "";
-    PRACTICE_SUBS.forEach(sub => {
-      const btn = document.createElement("button");
-      btn.className = "wpl-toggle-btn" + (sub.id === activePracticeSub ? " active" : "");
-      btn.innerHTML = `<span class="wpl-subtab-label">${sub.label}</span>` + (sub.soon ? '<span class="wpl-tab-soon">Soon</span>' : "");
-      btn.addEventListener("click", () => {
-        activePracticeSub = sub.id;
-        document.querySelectorAll("#wpl-practice-subtabs .wpl-toggle-btn").forEach(t => t.classList.remove("active"));
-        btn.classList.add("active");
-        document.querySelectorAll(".wpl-practice-subpanel").forEach(p => p.classList.remove("active"));
-        document.getElementById("wpl-practice-sub-" + sub.id).classList.add("active");
-        E.stopPlayThrough();
-        resetPlayButton();
-        resetChords2PlayButton();
-        resetScalesPlayButton();
-        // "Soon" sub-tabs leave the heading/keyboard exactly as they were
-        // (nothing built yet to show) instead of relabeling to something
-        // that doesn't correspond to anything on screen.
-        if (sub.id === "scales") {
-          document.getElementById("wpl-step-heading-label").textContent = "Degree";
-          renderScale();
-        }
-      });
-      wrap.appendChild(btn);
-    });
-  }
-
-  // ---------- Scales sub-panel ----------
+  // ---------- Scales panel ----------
   // Diatonic scale-degree labels for the readout's second box — pitch-class
   // based (not step-index based) so it stays correct regardless of
   // direction/octave: e.g. G in any octave is always "5".
@@ -585,91 +536,64 @@
     }
   }
 
-  // Chris, 2026-08-31: "the practice tab layout is horrible and looks
-  // nothing like the other 2 tabs" — Hand and Direction were built as
-  // .wpl-toggle-btn (the pill style meant for the Loop/Click playbar
-  // controls), while Octaves right next to them in the SAME row was
-  // .step-btn — two different button families side by side in one row,
-  // which is why this row never matched the clean one-family-per-row look
-  // every row on Chords/Progressions has. Both are now .step-btn, exactly
-  // like Octaves, so all 8 buttons in this row share one shape/color
-  // family — the same pattern as any single "choose an option" row
-  // elsewhere in the app.
-  // Chris, 2026-09-01, follow-up: "why do you have 3 rows of buttons?
-  // make it identical to chords/progressions that have 2 rows" — labels
-  // here are shortened ("Right Hand" -> "Right", "Both Hands" -> "Both")
-  // now that this row shares one line with Direction+Octaves (8 buttons
-  // total, no forced 2nd line — see index.html) instead of getting its
-  // own line to spell things out in full.
-  function buildScaleHandsRow() {
-    const wrap = document.getElementById("wpl-scale-hands-row");
+  // ---------- Choose a Scale row ----------
+  // Copied verbatim from buildProgTabs()'s .prog-tab pattern (button,
+  // num/name divs, same active-class toggle) -- only the data source
+  // differs (a fixed array here instead of D.progressionNames).
+  const SCALE_TYPES = [
+    { num: "Major", name: "Scale" },
+    { num: "Minor", name: "Scale" },
+    { num: "Pentatonic", name: "Major" },
+    { num: "Pentatonic", name: "Minor" },
+    { num: "Blues", name: "Major" },
+    { num: "Blues", name: "Minor" }
+  ];
+  let curScaleType = 0;
+  function buildScaleTypeRow() {
+    const wrap = document.getElementById("wpl-scale-type-row");
     wrap.innerHTML = "";
-    [{ id: "right", label: "Right" }, { id: "both", label: "Both" }].forEach(opt => {
-      const b = document.createElement("div");
-      b.className = "step-btn" + (opt.id === scaleHands ? " active" : "");
-      b.innerHTML = `<div class="n">${opt.label}</div>`;
-      const activate = () => {
-        scaleHands = opt.id;
-        document.querySelectorAll("#wpl-scale-hands-row .step-btn").forEach(t => t.classList.remove("active"));
+    SCALE_TYPES.forEach((opt, i) => {
+      const b = document.createElement("button");
+      b.className = "prog-tab" + (i === curScaleType ? " active" : "");
+      b.innerHTML = `<div class="num">${opt.num}</div><div class="name">${opt.name}</div>`;
+      b.addEventListener("click", () => {
+        curScaleType = i;
+        document.querySelectorAll("#wpl-scale-type-row .prog-tab").forEach(t => t.classList.remove("active"));
         b.classList.add("active");
-        onScaleSettingChanged();
-      };
-      b.addEventListener("click", activate);
-      b.addEventListener("touchstart", (e) => { e.preventDefault(); activate(); }, { passive: false });
+      });
       wrap.appendChild(b);
     });
   }
 
-  function buildScaleOctavesRow() {
-    const wrap = document.getElementById("wpl-scale-octaves-row");
+  // ---------- Choose a View row ----------
+  // Copied verbatim from buildStepButtons()'s .step-btn pattern (div, not
+  // button; n/l divs; touchstart handled the same way) -- only the data
+  // source differs (a fixed array here instead of the current
+  // progression's chords).
+  const SCALE_VIEWS = [
+    { n: "Note Names", l: "" },
+    { n: "Scale Degrees", l: "" },
+    { n: "Right Hand", l: "1 Octave" },
+    { n: "Right Hand", l: "2 Octaves" },
+    { n: "Left Hand", l: "1 Octave" },
+    { n: "Left Hand", l: "2 Octaves" }
+  ];
+  let curScaleView = 0;
+  function buildScaleViewRow() {
+    const wrap = document.getElementById("wpl-scale-view-row");
     wrap.innerHTML = "";
-    // .step-btn (single line), not .prog-tab's big-number style — this row
-    // sits in the SAME flex row as Hand and Direction (see index.html),
-    // and every button there needs to share one height so nothing looks
-    // uneven or wraps. The .prog-tab num+name look was reverted 2026-08-31
-    // for exactly that reason. Labels shortened to "N 8ve" (no plural "s")
-    // 2026-09-01 alongside Hand/Direction — measured via Playwright at the
-    // 320px breakpoint: "2 8ves" only cleared this row's ~28px-per-button
-    // budget by 0.9px, which rounding/kerning in real rendering still blew
-    // (it visibly wrapped to 2 lines), where "2 8ve" clears it by ~6px.
-    [1, 2, 3].forEach(n => {
-      const b = document.createElement("div");
-      b.className = "step-btn" + (n === scaleOctaves ? " active" : "");
-      b.innerHTML = `<div class="n">${n} 8ve</div>`;
+    SCALE_VIEWS.forEach((opt, i) => {
+      const btn = document.createElement("div");
+      btn.className = "step-btn" + (i === curScaleView ? " active" : "");
+      btn.innerHTML = `<div class="n">${opt.n}</div><div class="l">${opt.l}</div>`;
       const activate = () => {
-        scaleOctaves = n;
-        document.querySelectorAll("#wpl-scale-octaves-row .step-btn").forEach(t => t.classList.remove("active"));
-        b.classList.add("active");
-        onScaleSettingChanged();
+        curScaleView = i;
+        document.querySelectorAll("#wpl-scale-view-row .step-btn").forEach(t => t.classList.remove("active"));
+        btn.classList.add("active");
       };
-      b.addEventListener("click", activate);
-      b.addEventListener("touchstart", (e) => { e.preventDefault(); activate(); }, { passive: false });
-      wrap.appendChild(b);
-    });
-  }
-
-  function buildScaleDirectionRow() {
-    const wrap = document.getElementById("wpl-scale-direction-row");
-    wrap.innerHTML = "";
-    // "Up/Dn" not "Up+Down": measured via Playwright at the 320px
-    // breakpoint (Chris, 2026-09-01 follow-up) — "Up+Down" has no natural
-    // line-break point (no space) and its 42px natural width doesn't fit
-    // this row's ~28px-per-button budget at 320px, so it silently overflows
-    // into the next button instead of wrapping. "Up/Dn" measures ~26.5px,
-    // comfortably inside budget at every breakpoint.
-    [{ id: "up", label: "Up" }, { id: "down", label: "Down" }, { id: "updown", label: "Up/Dn" }].forEach(opt => {
-      const b = document.createElement("div");
-      b.className = "step-btn" + (opt.id === scaleDirection ? " active" : "");
-      b.innerHTML = `<div class="n">${opt.label}</div>`;
-      const activate = () => {
-        scaleDirection = opt.id;
-        document.querySelectorAll("#wpl-scale-direction-row .step-btn").forEach(t => t.classList.remove("active"));
-        b.classList.add("active");
-        onScaleSettingChanged();
-      };
-      b.addEventListener("click", activate);
-      b.addEventListener("touchstart", (e) => { e.preventDefault(); activate(); }, { passive: false });
-      wrap.appendChild(b);
+      btn.addEventListener("click", activate);
+      btn.addEventListener("touchstart", (e) => { e.preventDefault(); activate(); }, { passive: false });
+      wrap.appendChild(btn);
     });
   }
 
@@ -877,10 +801,8 @@
     startTrialCountdown();
     buildKeyTabs();
     buildProgTabs();
-    buildPracticeSubTabs();
-    buildScaleHandsRow();
-    buildScaleOctavesRow();
-    buildScaleDirectionRow();
+    buildScaleTypeRow();
+    buildScaleViewRow();
     buildPositionTabs2();
     buildQualityRow2();
     E.buildKeyboard(document.getElementById("wpl-piano"), document.getElementById("wpl-status"));
@@ -890,7 +812,7 @@
     wireChords2Playbar();
     if (activeTabId === "chords2") {
       renderChords2();
-    } else if (activeTabId === "practice" && activePracticeSub === "scales") {
+    } else if (activeTabId === "scales") {
       renderScale();
     } else {
       render();

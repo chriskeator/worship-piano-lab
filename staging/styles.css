@@ -246,7 +246,15 @@ body {
    (.l) are untouched; only rows that use them (step-row, quality-row2) are
    affected, at 12px as before. */
 .step-btn .n { font-weight: 800; color: var(--wpl-ink); font-size: 16px; line-height: 1.2; }
-.step-btn .l { font-size: 12px; color: var(--wpl-muted); line-height: 1.2; }
+/* Chris, 2026-09-04: top-row subtitle (.prog-tab .name) and bottom-row
+   subtitle (.step-btn .l) read as two different colors -- .name has no
+   color of its own (inherits --wpl-ink at 0.9 opacity from the shared
+   .prog-tab/.key-tab/.step-btn rule above), .l was hardcoded to
+   --wpl-muted (gray). Matching .l to the same treatment (drop the
+   hardcoded color, add the same 0.9 opacity) makes every subtitle the
+   same color everywhere .step-btn .l is used -- Progressions' step-row,
+   Chords v2's quality-row2, Scales' view-row. */
+.step-btn .l { font-size: 12px; opacity: 0.9; line-height: 1.2; }
 
 /* ---------- Chords panel: Position row (top) & Quality row (bottom) ----------
    Chris, 2026-08-31: swap which row is on top, and make the top row
@@ -748,8 +756,8 @@ body {
      written (before Chords v2 existed) and were still falling back to
      their own 8px inline gap (index.html) at this breakpoint instead of
      shrinking with every other row's buttons. */
-  #wpl-prog-tabs, #wpl-step-row, #wpl-chord-quality-tabs, #wpl-chord-position-row, .wpl-scale-settings-row, #wpl-practice-subtabs, #wpl-position-tabs2, #wpl-quality-row2 { gap: 4px !important; }
-  #wpl-prog-tabs, .wpl-scale-settings-row, #wpl-practice-subtabs, #wpl-position-tabs2 { margin-bottom: 6px !important; }
+  #wpl-prog-tabs, #wpl-step-row, #wpl-chord-quality-tabs, #wpl-chord-position-row, #wpl-scale-type-row, #wpl-scale-view-row, #wpl-position-tabs2, #wpl-quality-row2 { gap: 4px !important; }
+  #wpl-prog-tabs, #wpl-scale-type-row, #wpl-position-tabs2 { margin-bottom: 6px !important; }
   /* Position (top, taller) / Quality (bottom, shorter) — same swapped-sum
      rule as desktop, scaled down: 59+44=103, matching this breakpoint's
      original 59+44=103 total exactly (Progressions' own .prog-tab is 59px
@@ -854,7 +862,7 @@ body {
   /* Same fix as the 520px rule above: #wpl-position-tabs2 / #wpl-quality-row2
      added so Chords v2's own two rows shrink their gap along with every
      other row at this breakpoint too. */
-  #wpl-prog-tabs, #wpl-step-row, #wpl-chord-quality-tabs, #wpl-chord-position-row, .wpl-scale-settings-row, #wpl-practice-subtabs, #wpl-position-tabs2, #wpl-quality-row2 { gap: 3px !important; }
+  #wpl-prog-tabs, #wpl-step-row, #wpl-chord-quality-tabs, #wpl-chord-position-row, #wpl-scale-type-row, #wpl-scale-view-row, #wpl-position-tabs2, #wpl-quality-row2 { gap: 3px !important; }
   /* Position (top, taller) / Quality (bottom, shorter) — 52+40=92, matching
      this breakpoint's original 52+40=92 total exactly (Progressions' own
      .prog-tab is 52px here, so position matches it exactly). margin-bottom is
