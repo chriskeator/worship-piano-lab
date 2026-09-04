@@ -536,88 +536,90 @@
     }
   }
 
-  // ---------- "Choose a scale" row ----------
-  // Chris, 2026-09-04: replaces the old Hand/Direction/Octaves settings
-  // with a "Choose a scale" + "Choose a view" pair of rows, matching
-  // Progressions' own two-row shape (title+subtitle .prog-tab buttons,
-  // not .step-btn). LAYOUT ONLY for now — clicking a button just tracks
-  // curScaleType/curScaleView and toggles which one looks active; the
-  // actual notes/fingerings each selection plays is a separate follow-up
-  // pass, so currentScaleSteps() below still uses the fixed
-  // scaleHands/scaleDirection/scaleOctaves constants until that lands.
-  // Title/subtitle split, per Chris: repeating "Major"/"Minor" as the big
-  // title on all 6 buttons read as confusing, so only the first two (which
-  // have no more-specific name to lead with) keep Major/Minor as the
-  // title; Pentatonic/Blues lead as the title on the other 4, with
-  // Major/Minor as their subtitle instead.
-  // "Pentatonic" doesn't fit at the row's normal 22px title size except
-  // at the very widest widths (Playwright-verified: overflows everywhere
-  // from 288px up to ~880px, only clean at the 520px mobile-font
-  // breakpoint and again at >=900px) -- so it gets the same titleFull/
-  // titleShort responsive-swap treatment as the view row below, at the
-  // same >=900px threshold. Every other title is short enough to just
-  // repeat itself as both full and short.
-  const SCALE_TYPES = [
-    { id: "major", titleFull: "Major", titleShort: "Major", sub: "Scale" },
-    { id: "minor", titleFull: "Minor", titleShort: "Minor", sub: "Scale" },
-    { id: "majorPentatonic", titleFull: "Pentatonic", titleShort: "Pent", sub: "Major" },
-    { id: "minorPentatonic", titleFull: "Pentatonic", titleShort: "Pent", sub: "Minor" },
-    { id: "majorBlues", titleFull: "Blues", titleShort: "Blues", sub: "Major" },
-    { id: "minorBlues", titleFull: "Blues", titleShort: "Blues", sub: "Minor" }
-  ];
-  let curScaleType = "major";
-
-  function buildScaleTypeRow() {
-    const wrap = document.getElementById("wpl-scale-type-row");
+  // Chris, 2026-08-31: "the practice tab layout is horrible and looks
+  // nothing like the other 2 tabs" — Hand and Direction were built as
+  // .wpl-toggle-btn (the pill style meant for the Loop/Click playbar
+  // controls), while Octaves right next to them in the SAME row was
+  // .step-btn — two different button families side by side in one row,
+  // which is why this row never matched the clean one-family-per-row look
+  // every row on Chords/Progressions has. Both are now .step-btn, exactly
+  // like Octaves, so all 8 buttons in this row share one shape/color
+  // family — the same pattern as any single "choose an option" row
+  // elsewhere in the app.
+  // Chris, 2026-09-01, follow-up: "why do you have 3 rows of buttons?
+  // make it identical to chords/progressions that have 2 rows" — labels
+  // here are shortened ("Right Hand" -> "Right", "Both Hands" -> "Both")
+  // now that this row shares one line with Direction+Octaves (8 buttons
+  // total, no forced 2nd line — see index.html) instead of getting its
+  // own line to spell things out in full.
+  function buildScaleHandsRow() {
+    const wrap = document.getElementById("wpl-scale-hands-row");
     wrap.innerHTML = "";
-    SCALE_TYPES.forEach(opt => {
-      const b = document.createElement("button");
-      b.type = "button";
-      b.className = "prog-tab" + (opt.id === curScaleType ? " active" : "");
-      b.innerHTML = `<div class="num"><span class="wpl-lbl-full">${opt.titleFull}</span><span class="wpl-lbl-short">${opt.titleShort}</span></div><div class="name">${opt.sub}</div>`;
-      b.addEventListener("click", () => {
-        curScaleType = opt.id;
-        document.querySelectorAll("#wpl-scale-type-row .prog-tab").forEach(t => t.classList.remove("active"));
+    [{ id: "right", label: "Right" }, { id: "both", label: "Both" }].forEach(opt => {
+      const b = document.createElement("div");
+      b.className = "step-btn" + (opt.id === scaleHands ? " active" : "");
+      b.innerHTML = `<div class="n">${opt.label}</div>`;
+      const activate = () => {
+        scaleHands = opt.id;
+        document.querySelectorAll("#wpl-scale-hands-row .step-btn").forEach(t => t.classList.remove("active"));
         b.classList.add("active");
-      });
+        onScaleSettingChanged();
+      };
+      b.addEventListener("click", activate);
+      b.addEventListener("touchstart", (e) => { e.preventDefault(); activate(); }, { passive: false });
       wrap.appendChild(b);
     });
   }
 
-  // ---------- "Choose a view" row ----------
-  // Note Names / Scale Degrees are title-only on wide screens (no natural
-  // 2-word split, so the caption is left blank there) but split into
-  // title+caption on narrow screens, same idea as RH/LH + octave count —
-  // titleFull/subFull is what shows once the row is wide enough (see the
-  // #wpl-scale-view-row min-width query in styles.css), titleShort/
-  // subShort is the always-fits fallback shown below that width, all the
-  // way down to 288px. Chris, 2026-09-04: full names on desktop when they
-  // fit, short abbreviations on mobile.
-  const SCALE_VIEWS = [
-    { id: "noteNames", titleFull: "Note Names", subFull: "", titleShort: "Note", subShort: "Names" },
-    { id: "scaleDegrees", titleFull: "Scale Degrees", subFull: "", titleShort: "Scale", subShort: "Degrees" },
-    { id: "rh1", titleFull: "Right Hand", subFull: "1 Octave", titleShort: "RH", subShort: "1 8ve" },
-    { id: "rh2", titleFull: "Right Hand", subFull: "2 Octaves", titleShort: "RH", subShort: "2 8ve" },
-    { id: "lh1", titleFull: "Left Hand", subFull: "1 Octave", titleShort: "LH", subShort: "1 8ve" },
-    { id: "lh2", titleFull: "Left Hand", subFull: "2 Octaves", titleShort: "LH", subShort: "2 8ve" }
-  ];
-  let curScaleView = "noteNames";
-
-  function buildScaleViewRow() {
-    const wrap = document.getElementById("wpl-scale-view-row");
+  function buildScaleOctavesRow() {
+    const wrap = document.getElementById("wpl-scale-octaves-row");
     wrap.innerHTML = "";
-    SCALE_VIEWS.forEach(opt => {
-      const b = document.createElement("button");
-      b.type = "button";
-      b.className = "prog-tab" + (opt.id === curScaleView ? " active" : "");
-      b.innerHTML =
-        `<div class="num"><span class="wpl-lbl-full">${opt.titleFull}</span><span class="wpl-lbl-short">${opt.titleShort}</span></div>` +
-        `<div class="name"><span class="wpl-lbl-full">${opt.subFull}</span><span class="wpl-lbl-short">${opt.subShort}</span></div>`;
-      b.addEventListener("click", () => {
-        curScaleView = opt.id;
-        document.querySelectorAll("#wpl-scale-view-row .prog-tab").forEach(t => t.classList.remove("active"));
+    // .step-btn (single line), not .prog-tab's big-number style — this row
+    // sits in the SAME flex row as Hand and Direction (see index.html),
+    // and every button there needs to share one height so nothing looks
+    // uneven or wraps. The .prog-tab num+name look was reverted 2026-08-31
+    // for exactly that reason. Labels shortened to "N 8ve" (no plural "s")
+    // 2026-09-01 alongside Hand/Direction — measured via Playwright at the
+    // 320px breakpoint: "2 8ves" only cleared this row's ~28px-per-button
+    // budget by 0.9px, which rounding/kerning in real rendering still blew
+    // (it visibly wrapped to 2 lines), where "2 8ve" clears it by ~6px.
+    [1, 2, 3].forEach(n => {
+      const b = document.createElement("div");
+      b.className = "step-btn" + (n === scaleOctaves ? " active" : "");
+      b.innerHTML = `<div class="n">${n} 8ve</div>`;
+      const activate = () => {
+        scaleOctaves = n;
+        document.querySelectorAll("#wpl-scale-octaves-row .step-btn").forEach(t => t.classList.remove("active"));
         b.classList.add("active");
-      });
+        onScaleSettingChanged();
+      };
+      b.addEventListener("click", activate);
+      b.addEventListener("touchstart", (e) => { e.preventDefault(); activate(); }, { passive: false });
+      wrap.appendChild(b);
+    });
+  }
+
+  function buildScaleDirectionRow() {
+    const wrap = document.getElementById("wpl-scale-direction-row");
+    wrap.innerHTML = "";
+    // "Up/Dn" not "Up+Down": measured via Playwright at the 320px
+    // breakpoint (Chris, 2026-09-01 follow-up) — "Up+Down" has no natural
+    // line-break point (no space) and its 42px natural width doesn't fit
+    // this row's ~28px-per-button budget at 320px, so it silently overflows
+    // into the next button instead of wrapping. "Up/Dn" measures ~26.5px,
+    // comfortably inside budget at every breakpoint.
+    [{ id: "up", label: "Up" }, { id: "down", label: "Down" }, { id: "updown", label: "Up/Dn" }].forEach(opt => {
+      const b = document.createElement("div");
+      b.className = "step-btn" + (opt.id === scaleDirection ? " active" : "");
+      b.innerHTML = `<div class="n">${opt.label}</div>`;
+      const activate = () => {
+        scaleDirection = opt.id;
+        document.querySelectorAll("#wpl-scale-direction-row .step-btn").forEach(t => t.classList.remove("active"));
+        b.classList.add("active");
+        onScaleSettingChanged();
+      };
+      b.addEventListener("click", activate);
+      b.addEventListener("touchstart", (e) => { e.preventDefault(); activate(); }, { passive: false });
       wrap.appendChild(b);
     });
   }
@@ -826,8 +828,9 @@
     startTrialCountdown();
     buildKeyTabs();
     buildProgTabs();
-    buildScaleTypeRow();
-    buildScaleViewRow();
+    buildScaleHandsRow();
+    buildScaleOctavesRow();
+    buildScaleDirectionRow();
     buildPositionTabs2();
     buildQualityRow2();
     E.buildKeyboard(document.getElementById("wpl-piano"), document.getElementById("wpl-status"));
