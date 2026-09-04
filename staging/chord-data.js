@@ -165,45 +165,101 @@
     { pc: 6, label: "F#" }, { pc: 8, label: "A♭" }, { pc: 10, label: "B♭" }
   ];
 
-  // ---------- Scales (Practice tab) ----------
+  // ---------- Scales tab ----------
   // Written in the key of C, same convention as the chord voicings above —
-  // piano-engine.js transposes live to the selected key. Right hand starts
-  // at C3 (not C4) specifically so a 3-octave run still tops out at C6,
-  // which stays inside the on-screen keyboard's 5-octave range (note
-  // octaves 2-6, see piano-engine.js renderChord's "oct - 2" mapping).
-  // Both-hands mode shadows the right hand exactly one octave down.
-  const MAJOR_SCALE_NOTE_ORDER = ["C", "D", "E", "F", "G", "A", "B"];
-  const SCALE_RIGHT_BASE_OCTAVE = 3;
+  // piano-engine.js transposes live to the selected key.
+  //
+  // `tones` is one octave's worth of scale-tone note names + Nashville-style
+  // degree labels, in ascending order starting on the root — this is both
+  // (a) what "Note Names"/"Scale Degrees" light up identically in every
+  // octave across the keyboard, and (b) the raw material buildScaleAscent
+  // below cycles through to generate a multi-octave run for the RH/LH
+  // fingering views.
+  //
+  // `rhFingers`/`lhFingers` are Chris's exact finger-number sequences
+  // (2026-09-04), one array per octave count, each already verified to be
+  // the same length as the note sequence buildScaleAscent produces for that
+  // scale/octave count (7 or 6 tones/octave + 1 trailing top root) — except
+  // pentMajor/pentMinor's 2-octave LH, which Chris sourced from Google and
+  // flagged as unverified; both came in one finger too long (12 vs the
+  // expected 11), so the trailing extra digit is dropped here to keep the
+  // note/finger arrays aligned. Chris confirmed the RH numbers are all
+  // correct and asked not to worry about correctness of LH beyond that.
+  const SCALE_DEFS = {
+    major: {
+      displayName: "Major",
+      tones: [
+        { note: "C", degree: "1" }, { note: "D", degree: "2" }, { note: "E", degree: "3" },
+        { note: "F", degree: "4" }, { note: "G", degree: "5" }, { note: "A", degree: "6" },
+        { note: "B", degree: "7" }
+      ],
+      rhFingers: { 1: [1, 2, 3, 1, 2, 3, 4, 5], 2: [1, 2, 3, 1, 2, 3, 4, 1, 2, 3, 1, 2, 3, 4, 5] },
+      lhFingers: { 1: [5, 4, 3, 2, 1, 3, 2, 1], 2: [5, 4, 3, 2, 1, 3, 2, 1, 4, 3, 2, 1, 3, 2, 1] }
+    },
+    minor: {
+      displayName: "Minor",
+      tones: [
+        { note: "C", degree: "1" }, { note: "D", degree: "2" }, { note: "Eb", degree: "♭3" },
+        { note: "F", degree: "4" }, { note: "G", degree: "5" }, { note: "Ab", degree: "♭6" },
+        { note: "Bb", degree: "♭7" }
+      ],
+      rhFingers: { 1: [1, 2, 3, 1, 2, 3, 4, 1], 2: [1, 2, 3, 1, 2, 3, 4, 1, 2, 3, 1, 2, 3, 4, 1] },
+      lhFingers: { 1: [4, 3, 2, 1, 3, 2, 1, 4], 2: [4, 3, 2, 1, 3, 2, 1, 4, 3, 2, 1, 3, 2, 1, 4] }
+    },
+    pentMajor: {
+      displayName: "Pentatonic Major",
+      tones: [
+        { note: "C", degree: "1" }, { note: "D", degree: "2" }, { note: "E", degree: "3" },
+        { note: "G", degree: "5" }, { note: "A", degree: "6" }
+      ],
+      rhFingers: { 1: [1, 2, 3, 1, 3, 5], 2: [1, 2, 3, 1, 3, 1, 2, 3, 1, 3, 5] },
+      lhFingers: { 1: [5, 4, 3, 2, 1, 2], 2: [5, 4, 3, 2, 1, 3, 2, 1, 3, 2, 1] }
+    },
+    pentMinor: {
+      displayName: "Pentatonic Minor",
+      tones: [
+        { note: "C", degree: "1" }, { note: "Eb", degree: "♭3" }, { note: "F", degree: "4" },
+        { note: "G", degree: "5" }, { note: "Bb", degree: "♭7" }
+      ],
+      rhFingers: { 1: [1, 3, 1, 2, 3, 5], 2: [1, 3, 1, 2, 3, 1, 3, 1, 2, 3, 5] },
+      lhFingers: { 1: [5, 4, 3, 2, 1, 2], 2: [5, 4, 3, 2, 1, 3, 2, 1, 3, 2, 1] }
+    },
+    bluesMajor: {
+      displayName: "Blues Major",
+      tones: [
+        { note: "C", degree: "1" }, { note: "D", degree: "2" }, { note: "D#", degree: "♭3" },
+        { note: "E", degree: "3" }, { note: "G", degree: "5" }, { note: "A", degree: "6" }
+      ],
+      rhFingers: { 1: [1, 2, 3, 1, 2, 3, 5], 2: [1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 5] },
+      lhFingers: { 1: [5, 4, 3, 2, 1, 2, 1], 2: [5, 4, 3, 2, 1, 2, 1, 4, 3, 2, 1, 2, 1] }
+    },
+    bluesMinor: {
+      displayName: "Blues Minor",
+      tones: [
+        { note: "C", degree: "1" }, { note: "Eb", degree: "♭3" }, { note: "F", degree: "4" },
+        { note: "F#", degree: "♭5" }, { note: "G", degree: "5" }, { note: "Bb", degree: "♭7" }
+      ],
+      rhFingers: { 1: [1, 2, 3, 4, 1, 3, 5], 2: [1, 2, 3, 4, 1, 3, 1, 2, 3, 4, 1, 3, 5] },
+      lhFingers: { 1: [5, 4, 3, 2, 1, 2, 1], 2: [5, 4, 3, 2, 1, 2, 1, 4, 3, 2, 1, 2, 1] }
+    }
+  };
 
-  function buildMajorScaleAscent(octaves) {
+  // Cycles a scale's one-octave `tones` across `octaves` octaves and caps it
+  // with the top root — e.g. major/2 -> 15 entries (7+7+1), pentMajor/2 -> 11
+  // (5+5+1) — matching every rhFingers/lhFingers array's length above.
+  function buildScaleAscent(scaleKey, octaves) {
+    const def = SCALE_DEFS[scaleKey];
     const ascent = [];
     for (let oct = 0; oct < octaves; oct++) {
-      MAJOR_SCALE_NOTE_ORDER.forEach(name => ascent.push({ name, octaveOffset: oct }));
+      def.tones.forEach(t => ascent.push({ name: t.note, octaveOffset: oct }));
     }
-    ascent.push({ name: "C", octaveOffset: octaves }); // top root
+    ascent.push({ name: def.tones[0].note, octaveOffset: octaves }); // top root
     return ascent;
   }
 
-  // direction: "up" | "down" | "updown". hands: "right" | "both".
-  // Returns chord-shaped {name, left, right} steps — same shape as a
-  // progression/chord-position array — so it drops straight into the
-  // existing playThrough/playChordSound/renderChord engine with no changes.
-  function buildScaleSteps(octaves, direction, hands) {
-    const ascent = buildMajorScaleAscent(octaves);
-    let seq = ascent;
-    if (direction === "down") {
-      seq = [...ascent].reverse();
-    } else if (direction === "updown") {
-      seq = [...ascent, ...[...ascent].slice(0, -1).reverse()];
-    }
-    return seq.map(step => {
-      const rightOct = SCALE_RIGHT_BASE_OCTAVE + step.octaveOffset;
-      return {
-        name: step.name,
-        right: [step.name + rightOct],
-        left: hands === "both" ? [step.name + (rightOct - 1)] : []
-      };
-    });
+  function degreeLabelForNote(scaleKey, name) {
+    const t = SCALE_DEFS[scaleKey].tones.find(t => t.note === name);
+    return t ? t.degree : "1";
   }
 
   global.WPL_DATA = {
@@ -221,6 +277,8 @@
     chordPositionNamesSeventh,
     seventhQualities,
     chordVoicings,
-    buildScaleSteps
+    scaleDefs: SCALE_DEFS,
+    buildScaleAscent,
+    degreeLabelForNote
   };
 })(window);

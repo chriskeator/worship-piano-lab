@@ -89,9 +89,6 @@
   let clickOn = false;
   let playingDisplayedProg = null; // which progression the step row currently shows while playing
   let activeTabId = "chords2"; // Chords is the first tab, and the default shown on load
-  let scaleOctaves = 1;
-  let scaleDirection = "up";
-  let scaleHands = "right";
   let scaleStepIndex = 0;
   let scalesBpm = 80;
   let scalesLoopOn = false;
@@ -140,14 +137,22 @@
         resetChords2PlayButton();
         activeTabId = tab.id;
         const headingLabel = document.getElementById("wpl-step-heading-label");
+        const chordHeadingLabel = document.getElementById("wpl-chord-heading-label");
         if (tab.id === "chords2") {
+          chordHeadingLabel.textContent = "Chord";
           headingLabel.textContent = "Position";
+          document.getElementById("wpl-bass-legend").style.display = "";
+          document.getElementById("wpl-chord-legend").style.display = "";
           renderChords2();
         } else if (tab.id === "progressions") {
+          chordHeadingLabel.textContent = "Chord";
           headingLabel.textContent = "Number";
+          document.getElementById("wpl-bass-legend").style.display = "";
+          document.getElementById("wpl-chord-legend").style.display = "";
           render();
         } else if (tab.id === "scales") {
-          headingLabel.textContent = "Degree";
+          chordHeadingLabel.textContent = "Scale";
+          headingLabel.textContent = "View";
           renderScale();
         }
         // "practice" is a "Soon" placeholder tab — nothing to render yet,
@@ -499,28 +504,100 @@
   }
 
   // ---------- Scales panel ----------
-  // Diatonic scale-degree labels for the readout's second box — pitch-class
-  // based (not step-index based) so it stays correct regardless of
-  // direction/octave: e.g. G in any octave is always "5".
-  const MAJOR_DEGREE_LABELS = { 0: "1", 2: "2", 4: "3", 5: "4", 7: "5", 9: "6", 11: "7" };
-  function scaleDegreeLabel(noteWithOctave) {
-    const name = noteWithOctave.replace(/[0-9]/g, "");
-    return MAJOR_DEGREE_LABELS[D.noteToPc[name]] || "1";
-  }
+  // Maps curScaleType (Choose a Scale row index) to its chord-data.js key,
+  // and curScaleView (Choose a View row index) to what that view lights up:
+  // 0 Note Names / 1 Scale Degrees light every octave of the scale at once
+  // (Chris: "always displays the same note names across the entire keyboard
+  // width"); 2/3 Right Hand light only that 1- or 2-octave run with finger
+  // numbers instead of note names; 4/5 do the same for Left Hand. Order
+  // here must stay in lockstep with SCALE_TYPES/SCALE_VIEWS below.
+  const SCALE_TYPE_KEYS = ["major", "minor", "pentMajor", "pentMinor", "bluesMajor", "bluesMinor"];
+  const RH_BASE_OCT = 3; // matches the old single-note preview's register
+  const LH_BASE_OCT = 2; // one octave below RH, same as chord voicings' left hand
+  const KEY_COLOR_RIGHT = "linear-gradient(#fca5a5,#f87171)"; // matches renderChord's right-hand red
+  const KEY_COLOR_LEFT = "linear-gradient(#7dd3fc,#38bdf8)";  // matches renderChord's left-hand blue
 
+  function curScaleKey() { return SCALE_TYPE_KEYS[curScaleType]; }
+
+  // Audio-only: a simple one-hand ascending run for playback/preview. The
+  // on-screen key labels are a separate, static map (see renderScaleKeyMap)
+  // that doesn't change per playback step -- Chris's spec describes a fixed
+  // reference chart per scale+view selection, not a note-by-note flash.
   function currentScaleSteps() {
-    return D.buildScaleSteps(scaleOctaves, scaleDirection, scaleHands);
+    const scaleKey = curScaleKey();
+    let octaves = 1, hand = "right", baseOct = RH_BASE_OCT;
+    if (curScaleView === 3) octaves = 2;
+    if (curScaleView === 4) { hand = "left"; baseOct = LH_BASE_OCT; }
+    if (curScaleView === 5) { hand = "left"; baseOct = LH_BASE_OCT; octaves = 2; }
+    const ascent = D.buildScaleAscent(scaleKey, octaves);
+    return ascent.map(step => {
+      const noteWithOct = step.name + (baseOct + step.octaveOffset);
+      return {
+        name: step.name,
+        right: hand === "right" ? [noteWithOct] : [],
+        left: hand === "left" ? [noteWithOct] : []
+      };
+    });
   }
 
-  function renderScale(highlightStep) {
-    const steps = currentScaleSteps();
-    const stepToShow = highlightStep != null ? highlightStep : Math.min(scaleStepIndex, steps.length - 1);
-    const st = steps[stepToShow];
-    setReadoutValue(document.getElementById("wpl-chord-name"), st.name, E.formatLabel(E.transposeChordName(st.name, curKeyPc, useFlats)));
-    const degree = scaleDegreeLabel(st.right[0]);
-    setReadoutValue(document.getElementById("wpl-step-label"), degree, degree);
-    E.renderChord(st, curKeyPc, useFlats, -1, -1);
+  // Lights the on-screen keyboard for the current scale + view. Notes/
+  // Degrees light every octave (5 on-screen octaves) with the same label
+  // repeating; RH/LH Fingers light only that hand's specific 1- or 2-octave
+  // run, labeled with finger numbers. Also shows/hides the Bass note/Chord
+  // tones legend rows to match which color(s) actually appear.
+  function renderScaleKeyMap() {
+    const scaleKey = curScaleKey();
+    const entries = [];
+    if (curScaleView === 0 || curScaleView === 1) {
+      const tones = D.scaleDefs[scaleKey].tones;
+      for (let oct = 0; oct < 5; oct++) {
+        tones.forEach(t => {
+          const tNote = E.transposeNote(t.note + (oct + 2), curKeyPc, useFlats);
+          const name = tNote.replace(/[0-9]/g, "");
+          const pc = D.noteToPc[name];
+          const label = curScaleView === 0 ? E.toDisplayFlat(name) : t.degree;
+          entries.push({ pc, oct, label, color: KEY_COLOR_RIGHT });
+        });
+      }
+    } else {
+      const octaves = (curScaleView === 3 || curScaleView === 5) ? 2 : 1;
+      const isLeft = curScaleView === 4 || curScaleView === 5;
+      const baseOct = isLeft ? LH_BASE_OCT : RH_BASE_OCT;
+      const fingers = (isLeft ? D.scaleDefs[scaleKey].lhFingers : D.scaleDefs[scaleKey].rhFingers)[octaves];
+      D.buildScaleAscent(scaleKey, octaves).forEach((step, i) => {
+        const tNote = E.transposeNote(step.name + (baseOct + step.octaveOffset), curKeyPc, useFlats);
+        const name = tNote.replace(/[0-9]/g, "");
+        const oct = parseInt(tNote.replace(/[^0-9]/g, ""), 10) - 2;
+        const pc = D.noteToPc[name];
+        entries.push({ pc, oct, label: String(fingers[i] != null ? fingers[i] : ""), color: isLeft ? KEY_COLOR_LEFT : KEY_COLOR_RIGHT });
+      });
+    }
+    E.renderScaleMap(entries);
     document.getElementById("wpl-either-legend").style.display = "none";
+    const hasLeft = entries.some(e => e.color === KEY_COLOR_LEFT);
+    const hasRight = entries.some(e => e.color === KEY_COLOR_RIGHT);
+    document.getElementById("wpl-bass-legend").style.display = hasLeft ? "" : "none";
+    document.getElementById("wpl-chord-legend").style.display = hasRight ? "" : "none";
+  }
+
+  // highlightStep is accepted (playback passes the current step index) but
+  // only affects nothing visual right now -- the key map above is a static
+  // reference chart for the current scale+view, not a per-note flash.
+  function renderScale(highlightStep) {
+    const rootName = E.toDisplayFlat(E.transposeNote("C4", curKeyPc, useFlats).replace(/[0-9]/g, ""));
+    // Reuse the Choose-a-Scale/View rows' own SHORT label pieces here (not
+    // the full desktop spelling) -- this readout box is a fixed 140x50px
+    // sized for short values like "Root High"/"1st Inv", and full text like
+    // "Right Hand 2 Octaves" or "Pentatonic Major" overflows it. "Pent
+    // Major"/"RH 2 Octaves" etc. read fine at that size and are already the
+    // exact abbreviations shown on mobile, so nothing new to learn.
+    const scaleType = SCALE_TYPES[curScaleType];
+    const scaleLabel = rootName + " " + scaleType.numShort + " " + scaleType.name;
+    setReadoutValue(document.getElementById("wpl-chord-name"), scaleLabel, scaleLabel);
+    const view = SCALE_VIEWS[curScaleView];
+    const viewLabel = view.nShort + " " + view.l;
+    setReadoutValue(document.getElementById("wpl-step-label"), viewLabel, viewLabel);
+    renderScaleKeyMap();
   }
 
   // Re-reads whichever setting just changed and either updates a running
@@ -563,6 +640,7 @@
         curScaleType = i;
         document.querySelectorAll("#wpl-scale-type-row .prog-tab").forEach(t => t.classList.remove("active"));
         b.classList.add("active");
+        onScaleSettingChanged();
       });
       wrap.appendChild(b);
     });
@@ -599,6 +677,7 @@
         curScaleView = i;
         document.querySelectorAll("#wpl-scale-view-row .step-btn").forEach(t => t.classList.remove("active"));
         btn.classList.add("active");
+        onScaleSettingChanged();
       };
       btn.addEventListener("click", activate);
       btn.addEventListener("touchstart", (e) => { e.preventDefault(); activate(); }, { passive: false });

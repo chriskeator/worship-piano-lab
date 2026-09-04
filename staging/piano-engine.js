@@ -421,6 +421,20 @@
     el._flashTimeout = setTimeout(() => { s.style.opacity = "0"; }, 600);
   }
 
+  // Lights an arbitrary set of keys with custom labels/colors — used by the
+  // Scales tab's "Choose a view" row, which needs to show many keys at once
+  // (every octave of a scale, or a specific finger-numbered run) rather than
+  // one chord's worth of notes. `entries`: [{ pc, oct, label, color }], oct
+  // is the 0-4 on-screen keyboard octave index (same indexing renderChord
+  // uses internally, i.e. note-octave minus 2).
+  function renderScaleMap(entries) {
+    resetPiano();
+    entries.forEach(e => {
+      const isWhite = [0, 2, 4, 5, 7, 9, 11].includes(e.pc);
+      light(e.pc, e.oct, e.color, e.label, isWhite);
+    });
+  }
+
   // Lights the keyboard for a chord. `progIndex`/`stepIndex` are only used to
   // reproduce the original "either hand" purple-key special case.
   function renderChord(ch, keyPc, useFlatsArg, progIndex, stepIndex) {
@@ -554,9 +568,11 @@
     transposeNote,
     transposeChordName,
     formatLabel,
+    toDisplayFlat,
     buildKeyboard,
     resetPiano,
     renderChord,
+    renderScaleMap,
     playChordSound,
     playSingleNote,
     playThrough,
