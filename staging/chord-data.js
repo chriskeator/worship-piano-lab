@@ -162,7 +162,12 @@
     { pc: 0, label: "C" }, { pc: 2, label: "D" }, { pc: 4, label: "E" },
     { pc: 5, label: "F" }, { pc: 7, label: "G" }, { pc: 9, label: "A" },
     { pc: 11, label: "B" }, { pc: 1, label: "D♭" }, { pc: 3, label: "E♭" },
-    { pc: 6, label: "F#" }, { pc: 8, label: "A♭" }, { pc: 10, label: "B♭" }
+    // Real ♯ glyph (was plain ASCII "#") -- Chris, 2026-09-05: this was the
+    // one key tab still showing a keyboard "#" while every flat key tab
+    // here already stored the real ♭ symbol directly. parseLetterAccidental
+    // above accepts this glyph too, so the scale-spelling math for this key
+    // is unaffected.
+    { pc: 6, label: "F♯" }, { pc: 8, label: "A♭" }, { pc: 10, label: "B♭" }
   ];
 
   // ---------- Scales tab ----------
@@ -289,7 +294,13 @@
     let acc = 0;
     if (noteStr.length > 1) {
       const c = noteStr[1];
-      if (c === "#") acc = 1;
+      // Accepts both the ASCII "#" every SCALE_DEFS tone still uses AND the
+      // real ♯ (U+266F) -- keyList's F# entry now stores the real glyph
+      // directly (matching how its flat siblings already store real ♭),
+      // and that label is what spellScaleToneInKey's rootLabel comes from
+      // (Chris, 2026-09-05, from the key tab still showing a plain
+      // keyboard "#" while every flat key tab showed the real symbol).
+      if (c === "#" || c === "♯") acc = 1;
       else if (c === "b" || c === "♭") acc = -1;
     }
     return { letter, acc };

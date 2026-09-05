@@ -681,7 +681,16 @@
     const viewLabel = VIEW_READOUT_LABELS[curScaleView];
     const viewColor = VIEW_READOUT_COLORS[curScaleView];
     const viewHtml = viewColor ? `<span style="color:${viewColor}">${viewLabel}</span>` : viewLabel;
-    setReadoutValue(document.getElementById("wpl-step-label"), viewLabel, viewHtml);
+    // Always the smaller/uniform readout size here too (not setReadoutValue's
+    // length-based toggle) -- same issue as the Scale readout above: "Notes"
+    // (5 chars) stayed under setReadoutValue's >5 threshold and rendered at
+    // the big size while "Numbers" (7 chars) tipped over it and rendered
+    // small, even though both are View-row labels that should look the same
+    // -- Chris, 2026-09-05: "the notes fonts size under view is way bigger
+    // than the numbers font size."
+    const stepLabelEl = document.getElementById("wpl-step-label");
+    stepLabelEl.classList.add("long-label");
+    stepLabelEl.innerHTML = viewHtml;
     renderScaleKeyMap();
   }
 
