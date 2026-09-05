@@ -111,7 +111,18 @@ body {
   transition: color 0.15s ease;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
+  /* Unlike .prog-tab/.step-btn/.key-tab (the sub-rows within a panel),
+     this row never got flex:1 -- with exactly 4 tabs today the fixed
+     padding + font sizes below happen to fit every breakpoint, but a
+     future 5th tab would just overflow or wrap the bar (adding height)
+     instead of sharing the row width like every other button row in the
+     app already does. flex:1 1 0 + min-width:0 makes this row self-
+     adjusting the same way, so adding a tab is a markup-only change here
+     too, not a new round of breakpoint tuning. */
+  flex: 1 1 0;
+  min-width: 0;
 }
 .wpl-tab.active { color: var(--wpl-accent-dark); }
 .wpl-tab.active::after {
@@ -189,14 +200,6 @@ body {
    and finding this one tighter (was 2px here, 1px on the Chords quality
    row's override below — now both 4px, one shared standard). */
 .prog-tab .name { font-size: 12px; font-weight: 600; opacity: 0.9; margin-top: 4px; }
-
-/* ---------- Practice tab sub-panels (Scales / Speed Drills / Progression
-   Drills) — plain show/hide, not the CSS-Grid tallest-wins stacking the
-   top-level .wpl-panel's use. That trick exists to keep the TOP tab bar
-   from resizing the shell when switching tabs; switching sub-tabs WITHIN
-   Practice is allowed to change Practice's own height. ---------- */
-.wpl-practice-subpanel { display: none; }
-.wpl-practice-subpanel.active { display: block; }
 
 /* ---------- Key tabs ---------- */
 .key-tab {
@@ -379,170 +382,6 @@ body {
    own step-row. (Earlier attempt used flex-start to compensate for 2
    of the 6 buttons having no subtitle; not needed once the labels
    were split.) */
-
-/* ---------- Chords panel: Position row (top) & Quality row (bottom) ----------
-   Chris, 2026-08-31: swap which row is on top, and make the top row
-   (position) taller than the bottom row (quality). These two rows are the
-   ONLY thing scoped by #wpl-chord-position-row / #wpl-chord-quality-tabs
-   below — the shared .step-btn/.prog-tab base rules above are untouched so
-   every other row (Progressions' step-row, its own quality-less tabs,
-   Scales settings) keeps its original size.
-   Heights are the ORIGINAL two values, simply swapped between rows (desktop
-   was quality=78 / position=60, now position=78 / quality=60) — NOT new
-   numbers. That's deliberate: 78px is exactly Progressions' own .prog-tab
-   height (its 5-button row, untouched), so the Chords position row —
-   now the first/top row on this tab, same as Progressions' first row —
-   matches it exactly instead of being taller (Chris, 2026-08-31: "the 4
-   top buttons on the chords tab are taller than the top 5 buttons on the
-   progressions tab" — caught after an earlier pass used 80/58 here, close
-   but not an exact match). Swapping the exact values, not inventing new
-   ones, also keeps the SUM identical at every breakpoint (138 desktop,
-   103 @520px, 92 @340px) — this panel ties with Progressions for the
-   tallest .wpl-panel, and the whole shell is sized off that pair, so the
-   total must never grow ("the whole exterior of the shell cannot change
-   ever"). Verified via Playwright after every edit, not just eyeballed. */
-/* Colors are swapped the same way as the heights: position (top) now
-   gets prog-tab's light-blue rest look, quality (bottom) gets step-btn's
-   tan rest look — matching Progressions, where the TOP row (its 5
-   prog-tab buttons) is blue and the row below it is tan. Caught alongside
-   the height mismatch (Chris, 2026-08-31: "top buttons need to be blue,
-   not the bottom row of buttons") — .prog-tab/.step-btn's own rest colors
-   are left alone; only these two rows get overridden. */
-#wpl-chord-position-row .step-btn {
-  min-height: 78px;
-  padding: 12px 4px 9px;
-  background: var(--wpl-prog-bg);
-  border-color: var(--wpl-prog-border);
-  /* Chris, 2026-08-31: "the pill shape looks different... progressions
-     pill is more rounded than the chords pill" — this row is built from
-     .step-btn markup (border-radius: 8px, the tan family's corner) but is
-     now colored/sized to look like a Progressions .prog-tab row (12px,
-     more rounded). The height/color swap above never touched radius, so
-     the shape stayed step-btn's even after everything else became
-     prog-tab's. Matching it here, and step-btn's 8px on the quality row
-     below (which is real .prog-tab markup got the tan treatment the same
-     half-swapped way), makes both rows read as the SAME shape family as
-     their Progressions counterparts, not just the same color. */
-  border-radius: 12px;
-  /* Chris, 2026-09-02: "on desktop... don't wrap the text, put it on 1
-     line. but keep it wrapped on mobile as it is" — n-top/n-bottom (built
-     by positionLabelHTML in ui.js, splitting "Root Low" into "Root" +
-     "Low") are direct children of this flex container, which is
-     flex-direction:column by default (the shared .step-btn rule) — that's
-     what stacks them into 2 lines. Row here (desktop only — the 520px/
-     340px breakpoints below restore column) puts them side by side on one
-     line; `gap` supplies the space the original split consumed, so the
-     markup itself doesn't need to change. Measured via Playwright: even
-     "1st/2nd/3rd Inversion" (the longest label) fits with room to spare
-     at every width down to the 521px edge of this breakpoint. */
-  flex-direction: row;
-  gap: 4px;
-}
-#wpl-chord-position-row .n-top,
-#wpl-chord-position-row .n-bottom {
-  font-weight: 700;
-  color: var(--wpl-ink);
-  font-size: 14px;
-  line-height: 1.15;
-}
-#wpl-chord-position-row .step-btn.active .n-top,
-#wpl-chord-position-row .step-btn.active .n-bottom { color: #fff; }
-/* Chris, 2026-08-31: "the clicked buttons on the bottom 2 rows are not
-   turning blue like the progressions tab" — the rest-color override two
-   rules up (an ID + one class, specificity 1-1-0) was silently beating the
-   shared ".step-btn.active"/".prog-tab.active" rule up in the base section
-   (two classes, 0-2-0) — an ID selector always outranks any number of
-   plain classes, regardless of source order, so the tapped/active button
-   never actually got var(--wpl-accent); only its text went white (from the
-   .n-top/.n-bottom rule just above, which IS scoped to .active and so did
-   win). These two rules restore the accent background on tap by matching
-   ".active" at the same ID-scoped specificity, and the :hover pair below
-   does the same for the active+hover (darker accent) case — without it, a
-   real mouse hovering an already-active button would fall back to the
-   plain rest-hover color instead of staying the darker "pressed" blue. */
-#wpl-chord-position-row .step-btn.active,
-#wpl-chord-quality-tabs .prog-tab.active {
-  background: var(--wpl-accent);
-  border-color: var(--wpl-accent);
-}
-/* Same ID-vs-class specificity fix as the two rules above, needed here for
-   the same reason: #wpl-practice-subtabs .wpl-toggle-btn (the rest-color
-   override just below) is an ID + class selector (1-1-0), which beats the
-   shared .wpl-toggle-btn.active rule (0-2-0) despite .active coming later
-   in the file — without this, the active sub-tab would stay light blue
-   instead of turning the solid accent color like every other active button
-   in the app. Caught via a live background-color check after the initial
-   pass "looked right" in a screenshot but the accent blue wasn't actually
-   applying (2026-09-01). */
-#wpl-practice-subtabs .wpl-toggle-btn.active {
-  background: var(--wpl-accent);
-  border-color: var(--wpl-accent);
-}
-
-#wpl-chord-quality-tabs .prog-tab {
-  min-height: 60px;
-  padding: 8px 6px 6px;
-  background: var(--wpl-tan);
-  border-color: var(--wpl-line);
-  border-radius: 8px;
-}
-#wpl-chord-quality-tabs .prog-tab .num { font-size: 16px; }
-/* Chris, 2026-09-02: "the sub text under the major/minor etc buttons are
-   too small... make them the same size as the other sub text buttons" —
-   Progressions' step-row uses 12px (.step-btn .l) for its "2m"/"1/3"-style
-   captions; this row's own longest caption, Min7's "1-♭3-5-♭7", is longer
-   text than any step-row label ever is, but still measures barely a third
-   of this button's width even at 12px (Playwright nowrap-probe: ~50px
-   natural vs ~148px available at desktop), so it can go all the way to the
-   same 12px with no wrapping risk. */
-#wpl-chord-quality-tabs .prog-tab .name { font-size: 12px; margin-top: 4px; color: var(--wpl-muted); font-weight: 400; opacity: 1; }
-/* Chris, 2026-09-02, follow-up: "should the sub text on these be the same
-   color?" (comparing Chords' quality-row captions to Progressions' step-row
-   captions) — .name is a shared class also used by Progressions' OWN
-   5-button prog-tab row (the "Foundation"/"Smooth" progression names),
-   which is meant to read as a bold, near-full-strength caption (color:
-   var(--wpl-ink) inherited, opacity:0.9, font-weight:600 from the base
-   .prog-tab .name rule above). This row borrows .prog-tab markup for its
-   shape/recolor but its captions ("1-3-5" etc) are functionally the SAME
-   kind of quiet interval caption as Progressions' step-row .l elements
-   (var(--wpl-muted), normal weight) — so it's re-pointed here to match
-   that quieter treatment instead of inheriting the bold-name one. */
-#wpl-chord-quality-tabs .prog-tab.active .name { color: rgba(255,255,255,0.85); }
-/* Same reasoning as .step-btn.active .l above: on the active (accent-blue)
-   background, full-white .name would look inconsistent with how every
-   other "quiet caption" in the app dims slightly against an active
-   background (see .step-btn.active .l a few rules up). */
-
-/* ---------- Practice sub-tabs row ----------
-   Chris, 2026-09-01, second follow-up: "the practice bottom 2 button lines
-   still arent the same size as the chords/progressions bottom 2 lines" —
-   row count already matched (2 rows) but this row was still the small
-   .wpl-toggle-btn pill (34px, meant for playbar Loop/Click), not the 78px
-   "top row" height/color Progressions' #wpl-prog-tabs .prog-tab and
-   Chords' #wpl-chord-position-row .step-btn both share. Scoped to this ID
-   only — Loop/Click elsewhere keep the original compact pill untouched.
-   flex:1/min-width:0 + the container's nowrap (index.html) make all 3
-   buttons share the row exactly like every other row's buttons, instead
-   of wrapping onto a 2nd line the way this row used to (flex-wrap:wrap). */
-#wpl-practice-subtabs .wpl-toggle-btn {
-  flex: 1;
-  min-width: 0;
-  flex-direction: column;
-  gap: 2px;
-  justify-content: center;
-  min-height: 78px;
-  padding: 14px 4px;
-  background: var(--wpl-prog-bg);
-  border-color: var(--wpl-prog-border);
-  border-radius: 12px;
-}
-#wpl-practice-subtabs .wpl-subtab-label {
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 1.2;
-  white-space: normal;
-}
-#wpl-practice-subtabs .wpl-tab-soon { white-space: nowrap; }
 
 /* ---------- Chord / number readout ---------- */
 /* Both boxes are a fixed width (not min-width) sized with buffer to fit the
@@ -778,34 +617,8 @@ body {
   .prog-tab:hover { background: var(--wpl-prog-hover); border-color: var(--wpl-prog-hover); }
   .key-tab:hover { background: var(--wpl-tan-hover); border-color: var(--wpl-tan-hover); }
   .step-btn:hover { background: var(--wpl-tan-hover); border-color: var(--wpl-tan-hover); }
-  /* Chords Position row is a .step-btn with its rest color overridden to
-     blue (matching .prog-tab); Quality row is a .prog-tab overridden to
-     tan (matching .step-btn) — see the swap above these rows' rules.
-     Without these, the base class rules just above would hover each one
-     to the WRONG color (position hovering tan, quality hovering blue).
-     These must come after the base .prog-tab:hover/.step-btn:hover rules
-     above so the ID-scoped selector wins on specificity anyway, but the
-     order also keeps this readable as "the override to the override." */
-  #wpl-chord-position-row .step-btn:hover { background: var(--wpl-prog-hover); border-color: var(--wpl-prog-hover); }
-  #wpl-chord-quality-tabs .prog-tab:hover { background: var(--wpl-tan-hover); border-color: var(--wpl-tan-hover); }
-  /* Same specificity fix as the active-state rules above, applied to the
-     hover case: without these, hovering an already-active button in this
-     row would fall back to the plain rest-hover (light blue / tan) instead
-     of staying the darker "pressed" accent the base .active:hover rule
-     intends. */
-  #wpl-chord-position-row .step-btn.active:hover,
-  #wpl-chord-quality-tabs .prog-tab.active:hover {
-    background: var(--wpl-accent-dark);
-    border-color: var(--wpl-accent-dark);
-  }
   .wpl-toggle-btn:hover { background: var(--wpl-tan-hover); border-color: var(--wpl-tan-hover); box-shadow: var(--wpl-lift-shadow); transform: translateY(-1.5px); }
   .wpl-toggle-btn.active:hover { background: var(--wpl-accent-dark); border-color: var(--wpl-accent-dark); }
-  /* Practice sub-tabs are recolored to the blue "top row" family above —
-     without this, the base .wpl-toggle-btn:hover rule just above would
-     hover them to the wrong (tan) color, same specificity fix pattern as
-     the Chords position/quality rows use for the same reason. */
-  #wpl-practice-subtabs .wpl-toggle-btn:hover { background: var(--wpl-prog-hover); border-color: var(--wpl-prog-hover); }
-  #wpl-practice-subtabs .wpl-toggle-btn.active:hover { background: var(--wpl-accent-dark); border-color: var(--wpl-accent-dark); }
   .wpl-play-btn:hover { background: var(--wpl-accent-dark); border-color: var(--wpl-accent-dark); transform: translateY(-1.5px); }
   .wpl-play-btn.playing:hover { background: #d97706; border-color: #d97706; }
   .wpl-lock-cta:hover { background: var(--wpl-accent-dark); border-color: var(--wpl-accent-dark); transform: translateY(-1.5px); }
@@ -890,10 +703,9 @@ body {
   .key-tab.key-tab-wide { letter-spacing: -0.3px; }
   #wpl-key-tabs { gap: 3px !important; }
   .step-btn { padding: 5px 1px; min-height: 44px; }
-  /* Matches #wpl-chord-quality-tabs .prog-tab .num's 11px at this
-     breakpoint — base rule now (see the desktop rule above), so every
-     .step-btn .n consumer (step-row, quality-row2, Practice's Hand/
-     Direction/Octaves) moves together automatically. */
+  /* Base rule now (see the desktop rule above), so every .step-btn .n
+     consumer (step-row, quality-row2, Practice's Hand/Direction/Octaves)
+     moves together automatically. */
   .step-btn .n { font-size: 11px; }
   .step-btn .l { font-size: 10px; }
   /* #wpl-position-tabs2 / #wpl-quality-row2 (Chords v2's own two rows)
@@ -903,29 +715,8 @@ body {
      written (before Chords v2 existed) and were still falling back to
      their own 8px inline gap (index.html) at this breakpoint instead of
      shrinking with every other row's buttons. */
-  #wpl-prog-tabs, #wpl-step-row, #wpl-chord-quality-tabs, #wpl-chord-position-row, #wpl-scale-type-row, #wpl-scale-view-row, #wpl-position-tabs2, #wpl-quality-row2 { gap: 4px !important; }
+  #wpl-prog-tabs, #wpl-step-row, #wpl-scale-type-row, #wpl-scale-view-row, #wpl-position-tabs2, #wpl-quality-row2 { gap: 4px !important; }
   #wpl-prog-tabs, #wpl-scale-type-row, #wpl-position-tabs2 { margin-bottom: 6px !important; }
-  /* Position (top, taller) / Quality (bottom, shorter) — same swapped-sum
-     rule as desktop, scaled down: 59+44=103, matching this breakpoint's
-     original 59+44=103 total exactly (Progressions' own .prog-tab is 59px
-     here, so position matches it exactly, same exact-match fix as desktop). */
-  #wpl-chord-position-row { margin-bottom: 6px !important; }
-  /* flex-direction:column restores the stacked 2-line look — the desktop
-     rule above switched this row to row/one-line, which is NOT wanted on
-     mobile (Chris, 2026-09-02: "keep it wrapped on mobile as it is"). */
-  #wpl-chord-position-row .step-btn { min-height: 59px; padding: 8px 2px 6px; background: var(--wpl-prog-bg); border-color: var(--wpl-prog-border); flex-direction: column; }
-  #wpl-chord-position-row .n-top, #wpl-chord-position-row .n-bottom { font-size: 10.5px; }
-  #wpl-chord-quality-tabs .prog-tab { min-height: 44px; padding: 5px 2px 4px; background: var(--wpl-tan); border-color: var(--wpl-line); }
-  #wpl-chord-quality-tabs .prog-tab .num { font-size: 11px; }
-  /* Matches #wpl-step-row's .step-btn .l size (10px) at this breakpoint —
-     measured via Playwright: Min7's "1-♭3-5-♭7" (the longest caption) is
-     ~41.7px natural width against ~47px available, a safe margin. */
-  #wpl-chord-quality-tabs .prog-tab .name { font-size: 10px; }
-  /* Matches #wpl-chord-position-row's 59px at this breakpoint (same "top
-     row" family — see the desktop rule above). */
-  #wpl-practice-subtabs .wpl-toggle-btn { min-height: 59px; padding: 8px 2px; }
-  #wpl-practice-subtabs .wpl-subtab-label { font-size: 9px; }
-  #wpl-practice-subtabs .wpl-tab-soon { font-size: 6.5px; padding: 1px 3px; }
   /* Chris, 2026-09-01: "why do you have 3 rows of buttons? make it
      identical to chords/progressions that have 2 rows" — this row (Hand +
      Direction + Octaves) used to force Octaves onto its own 2nd line here
@@ -1005,9 +796,8 @@ body {
      while still stepping up from the old 7px. */
   .prog-tab .name { font-size: 8.5px; }
   .step-btn { padding: 4px 1px; min-height: 40px; }
-  /* Base rule (matches #wpl-chord-quality-tabs .prog-tab .num's 9px here
-     too) — same value the shared 520px rule above already uses, so no
-     change is needed stepping down into this breakpoint. */
+  /* Same value the shared 520px rule above already uses, so no change is
+     needed stepping down into this breakpoint. */
   .step-btn .n, .step-btn .l { font-size: 9px; }
   .key-tab { font-size: 9.5px; padding: 5px 0; line-height: 11px; }
   .key-tab.key-tab-wide { letter-spacing: -0.4px; }
@@ -1015,24 +805,8 @@ body {
   /* Same fix as the 520px rule above: #wpl-position-tabs2 / #wpl-quality-row2
      added so Chords v2's own two rows shrink their gap along with every
      other row at this breakpoint too. */
-  #wpl-prog-tabs, #wpl-step-row, #wpl-chord-quality-tabs, #wpl-chord-position-row, #wpl-scale-type-row, #wpl-scale-view-row, #wpl-position-tabs2, #wpl-quality-row2 { gap: 3px !important; }
-  /* Position (top, taller) / Quality (bottom, shorter) — 52+40=92, matching
-     this breakpoint's original 52+40=92 total exactly (Progressions' own
-     .prog-tab is 52px here, so position matches it exactly). margin-bottom is
-     left alone here (inherits the 6px !important set at 520px above) to
-     match the original, which never overrode it at this breakpoint either. */
-  /* Same flex-direction restore as the 520px breakpoint above. */
-  #wpl-chord-position-row .step-btn { min-height: 52px; padding: 6px 1px 5px; background: var(--wpl-prog-bg); border-color: var(--wpl-prog-border); flex-direction: column; }
-  #wpl-chord-position-row .n-top, #wpl-chord-position-row .n-bottom { font-size: 8.5px; }
-  #wpl-chord-quality-tabs .prog-tab { min-height: 40px; padding: 4px 1px 3px; background: var(--wpl-tan); border-color: var(--wpl-line); }
-  #wpl-chord-quality-tabs .prog-tab .num { font-size: 9px; }
-  /* .step-btn .l is 9px at this breakpoint, but Min7's "1-♭3-5-♭7" only
-     clears this narrower button's width by ~2.5px at 9px (Playwright
-     probe) — the same kind of razor-thin margin that visibly wrapped in
-     real rendering for "2 8ves" earlier (2026-09-01), so this stays one
-     notch down at 8.5px (~4.6px margin) instead of the full 9px match. */
-  #wpl-chord-quality-tabs .prog-tab .name { font-size: 8.5px; }
-  /* Chords v2 (TEMP, #wpl-panel-chords2): quality row's captions are plain
+  #wpl-prog-tabs, #wpl-step-row, #wpl-scale-type-row, #wpl-scale-view-row, #wpl-position-tabs2, #wpl-quality-row2 { gap: 3px !important; }
+  /* Chords v2 (#wpl-panel-chords2): quality row's captions are plain
      .step-btn .l, which is 9px at this breakpoint (shared rule above) —
      fine for Progressions' own short captions ("2m", "1/3"), but Min7's
      "1-♭3-5-♭7" wraps to a 2nd line at 9px in this row's slightly
@@ -1045,10 +819,6 @@ body {
      to 8px — 2px of real margin below the exact 8.25px threshold, not
      shaved to the bone. */
   #wpl-quality-row2 .step-btn .l { font-size: 8px; }
-  /* Matches #wpl-chord-position-row's 52px at this breakpoint. */
-  #wpl-practice-subtabs .wpl-toggle-btn { min-height: 52px; padding: 6px 1px; }
-  #wpl-practice-subtabs .wpl-subtab-label { font-size: 7.5px; }
-  #wpl-practice-subtabs .wpl-tab-soon { font-size: 5.5px; padding: 1px 2px; }
   .wpl-readout-row { padding: 0 2px; gap: 10px; }
   .wpl-readout-row > div { width: 88px !important; height: 34px !important; }
   /* Overrides the 341-520px tier's 8px above -- this narrowest phone

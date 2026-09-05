@@ -131,9 +131,9 @@
     bar.innerHTML = "";
     TABS.forEach((tab, i) => {
       const btn = document.createElement("button");
-      // Active state tracks activeTabId (default "progressions"), not
-      // array position — TABS is now ordered Chords-first for display,
-      // but Progressions should still be the tab shown on first load.
+      // Active state tracks activeTabId (default "chords2", set above),
+      // not array position -- TABS is ordered Chords-first for display,
+      // which matches the tab shown by default on first load.
       btn.className = "wpl-tab" + (tab.id === activeTabId ? " active" : "");
       btn.innerHTML = tab.label + (tab.soon ? ' <span class="wpl-tab-soon">Soon</span>' : "");
       btn.addEventListener("click", () => {
@@ -267,7 +267,12 @@
       b.innerHTML = `<div class="num">${i + 1}</div><div class="name">${name}</div>`;
       b.addEventListener("click", () => {
         curProg = i;
-        document.querySelectorAll(".prog-tab").forEach(t => t.classList.remove("active"));
+        // Scoped to this row only -- .prog-tab is shared with Chords v2's
+        // position row and Scales' scale-type row (see buildScaleTypeRow),
+        // which sit in hidden .wpl-panels, not removed from the DOM. An
+        // unscoped query here used to strip THEIR active highlight too
+        // every time a Progressions tab was clicked.
+        document.querySelectorAll("#wpl-prog-tabs .prog-tab").forEach(t => t.classList.remove("active"));
         b.classList.add("active");
         if (E.isPlaying()) {
           // Don't cut the beat off or restart it — the running play-through
