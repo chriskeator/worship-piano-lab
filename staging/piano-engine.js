@@ -39,7 +39,12 @@
     // legitimate double-flat ("Bbb") the correct-spelling scale logic in
     // chord-data.js produces (Chris, 2026-09-05); every other caller here
     // only ever has at most one "b" anyway, so this is a safe broadening.
-    return noteLetter.replace(/b/g, "♭");
+    // Also swaps the ASCII "#" spellScaleTone builds for sharp keys (e.g.
+    // A major's "C#") for the real ♯ (U+266F) -- Chris, 2026-09-05, from a
+    // screenshot: "that's a number symbol right instead of the actual
+    // sharp symbol?" Same reasoning as the "b"/♭ swap above: pure display,
+    // never round-tripped back through noteToPc.
+    return noteLetter.replace(/b/g, "♭").replace(/#/g, "♯");
   }
 
   function transposeChordName(name, semitones, useFlats) {
@@ -404,25 +409,31 @@
   }
 
   // A black key on a 5-octave mobile keyboard is only ~6px wide -- not
-  // enough room for a 2-character label ("E♭", "♭3") side by side at any
-  // legible size, which is why they were unreadable on phones. Splits a
-  // label containing "♭" into a main span (the letter or number) and a
-  // flat span, always main-then-flat regardless of which order they
-  // appear in the raw string ("E♭" vs "♭3"), so styles.css can stack them
-  // on two lines on narrow phones with the letter/number always on top
-  // and the flat always the smaller line underneath -- Chris, 2026-09-05:
-  // "stack the black keys on mobile." Labels without a "♭" (white-key
-  // letters, plain numbers, finger digits) are untouched, single line.
+  // enough room for a 2-character label ("E♭", "♭3", "C♯") side by side at
+  // any legible size, which is why they were unreadable on phones. Splits
+  // a label containing an accidental into a main span (the letter or
+  // number) and an accidental span, always main-then-accidental regardless
+  // of which order they appear in the raw string ("E♭" vs "♭3"), so
+  // styles.css can stack them on two lines on narrow phones with the
+  // letter/number always on top and the accidental always the smaller
+  // line underneath -- Chris, 2026-09-05: "stack the black keys on
+  // mobile," then again the same day for sharps: "C# is too big" (the
+  // Notes view's sharp-keyed letters, e.g. A major's "C♯", weren't going
+  // through this split at all before, so they stayed one big single-line
+  // label while flats got the small stacked treatment). Labels with
+  // neither symbol (white-key letters, plain numbers, finger digits) are
+  // untouched, single line.
   function setKeyLabelText(s, text) {
-    const flatIdx = text.indexOf("♭");
-    if (flatIdx === -1) {
+    const m = text.match(/[♭♯]/);
+    if (!m) {
       s.classList.remove("key-label-stacked");
       s.textContent = text;
       return;
     }
-    const main = text.slice(0, flatIdx) + text.slice(flatIdx + 1);
+    const symbol = m[0];
+    const main = text.slice(0, m.index) + text.slice(m.index + 1);
     s.classList.add("key-label-stacked");
-    s.innerHTML = `<span class="key-label-main">${main}</span><span class="key-label-flat">♭</span>`;
+    s.innerHTML = `<span class="key-label-main">${main}</span><span class="key-label-accidental">${symbol}</span>`;
   }
 
   function light(pc, oct, color, name, isWhite) {

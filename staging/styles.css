@@ -844,7 +844,7 @@ body {
      2026-09-05: "stack the black keys on mobile." */
   #wpl-piano .key-label-stacked { display: flex !important; flex-direction: column; align-items: center; justify-content: center; gap: 0; }
   #wpl-piano .key-label-stacked .key-label-main { display: block; line-height: 1; }
-  #wpl-piano .key-label-stacked .key-label-flat { display: block; line-height: 1; font-size: 5px !important; }
+  #wpl-piano .key-label-stacked .key-label-accidental { display: block; line-height: 1; font-size: 5px !important; }
   #wpl-piano-frame { padding: 3px !important; border-radius: 8px !important; }
   .wpl-title { font-size: 22px; }
   .prog-tab { padding: 8px 2px; min-height: 59px; }
