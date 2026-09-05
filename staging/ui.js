@@ -449,7 +449,7 @@
     const btn = document.getElementById("wpl-chords2-play-btn");
     if (!btn) return;
     btn.classList.remove("playing");
-    document.getElementById("wpl-chords2-play-label").textContent = "Practice";
+    document.getElementById("wpl-chords2-play-label").textContent = "Play";
     btn.querySelector(".wpl-icon").innerHTML = "&#9654;";
     document.querySelectorAll("#wpl-position-tabs2 .prog-tab.playing").forEach(b => b.classList.remove("playing"));
   }
@@ -617,16 +617,20 @@
     }
     E.renderScaleMap(entries);
     document.getElementById("wpl-either-legend").style.display = "none";
-    const hasLeft = entries.some(e => e.color === KEY_COLOR_LEFT);
-    const hasRight = entries.some(e => e.color === KEY_COLOR_RIGHT);
-    document.getElementById("wpl-bass-legend").style.display = hasLeft ? "" : "none";
-    document.getElementById("wpl-chord-legend").style.display = hasRight ? "" : "none";
-    // Chris, 2026-09-05: "Bass note"/"Chord tones" don't make sense on the
-    // Scales tab (nothing here is a chord) -- "a blue left hand and a red
-    // right hand would make more sense" instead, matching the same
-    // blue=left/red=right coloring RH/LH Fingers already use. Only this
-    // tab's legend text changes; Chords/Progressions reset it back in
-    // buildTabBar.
+    // Both always shown together on Scales, never toggled on/off per view --
+    // Chris, 2026-09-05: "keep both blue left hand and red right hand there
+    // at the same time and not switching from one to the other." This is a
+    // fixed color key (blue=left/red=right), not a report of which hand the
+    // current view happens to highlight, so unlike Chords/Progressions
+    // (where hasLeft/hasRight genuinely varies) it should never hide either
+    // one on this tab.
+    document.getElementById("wpl-bass-legend").style.display = "";
+    document.getElementById("wpl-chord-legend").style.display = "";
+    // "Bass note"/"Chord tones" don't make sense on the Scales tab (nothing
+    // here is a chord) -- "a blue left hand and a red right hand would make
+    // more sense" instead, matching the blue=left/red=right coloring RH/LH
+    // Fingers already use. Only this tab's legend text changes; Chords/
+    // Progressions reset it back in buildTabBar.
     document.getElementById("wpl-bass-legend-label").textContent = "Left Hand";
     document.getElementById("wpl-chord-legend-label").textContent = "Right Hand";
   }
