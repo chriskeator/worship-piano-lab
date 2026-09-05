@@ -836,15 +836,19 @@ body {
      which looks wrong. */
   #wpl-piano { height: 57px !important; }
   #wpl-piano span { font-size: 6px !important; }
-  /* Black-key labels with a flat ("E♭", "♭3") stack on two lines here
-     instead of running side by side -- a black key at this width is only
-     ~6px wide, not enough for 2 characters at any legible size. Letter/
-     number always on top (inherits the 6px above), flat always the
-     smaller line underneath, regardless of source-string order -- Chris,
-     2026-09-05: "stack the black keys on mobile." */
+  /* Black-key labels with an accidental ("E♭", "♭3", "C♯") stack on two
+     lines here instead of running side by side -- a black key at this
+     width is only ~6px wide, not enough for 2 characters at any legible
+     size. Stacked in the label's own left-to-right order (see
+     setKeyLabelText in piano-engine.js), so "E♭" is E-over-♭ but "♭3" is
+     ♭-over-3 -- Chris, 2026-09-05: "stack the black keys on mobile," then
+     "I dont' like 7b where 7 is on top of the flat. it needs to be
+     reversed to flat is on top." Accidental line bumped from 5px to 6px
+     the same day: "make the # and flat symbols on mobile be larger.
+     there is more room to fit them." */
   #wpl-piano .key-label-stacked { display: flex !important; flex-direction: column; align-items: center; justify-content: center; gap: 0; }
   #wpl-piano .key-label-stacked .key-label-main { display: block; line-height: 1; }
-  #wpl-piano .key-label-stacked .key-label-accidental { display: block; line-height: 1; font-size: 5px !important; }
+  #wpl-piano .key-label-stacked .key-label-accidental { display: block; line-height: 1; font-size: 6px !important; }
   #wpl-piano-frame { padding: 3px !important; border-radius: 8px !important; }
   .wpl-title { font-size: 22px; }
   .prog-tab { padding: 8px 2px; min-height: 59px; }
@@ -1032,5 +1036,15 @@ body {
 @media (max-height: 500px) {
   #wpl-piano { height: 95px !important; }
   #wpl-piano span { font-size: 8px !important; }
+  /* Same two-line stacking as the portrait tier above -- landscape phones
+     hit this height-based query at widths this app never gave black-key
+     labels any stacking treatment at all, so a 2-character "C♯"/"♭3" ran
+     side by side and didn't fit a black key here either (~10-14px wide)
+     -- Chris, 2026-09-05: "on mobile landscape, the black notes are not
+     stacked." Slightly bigger than the portrait tier's sizes since these
+     keys have a bit more room. */
+  #wpl-piano .key-label-stacked { display: flex !important; flex-direction: column; align-items: center; justify-content: center; gap: 0; }
+  #wpl-piano .key-label-stacked .key-label-main { display: block; line-height: 1; }
+  #wpl-piano .key-label-stacked .key-label-accidental { display: block; line-height: 1; font-size: 7px !important; }
   #wpl-piano-frame { padding: 4px !important; border-radius: 8px !important; }
 }

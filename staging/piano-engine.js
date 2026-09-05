@@ -411,18 +411,15 @@
   // A black key on a 5-octave mobile keyboard is only ~6px wide -- not
   // enough room for a 2-character label ("E♭", "♭3", "C♯") side by side at
   // any legible size, which is why they were unreadable on phones. Splits
-  // a label containing an accidental into a main span (the letter or
-  // number) and an accidental span, always main-then-accidental regardless
-  // of which order they appear in the raw string ("E♭" vs "♭3"), so
-  // styles.css can stack them on two lines on narrow phones with the
-  // letter/number always on top and the accidental always the smaller
-  // line underneath -- Chris, 2026-09-05: "stack the black keys on
-  // mobile," then again the same day for sharps: "C# is too big" (the
-  // Notes view's sharp-keyed letters, e.g. A major's "C♯", weren't going
-  // through this split at all before, so they stayed one big single-line
-  // label while flats got the small stacked treatment). Labels with
-  // neither symbol (white-key letters, plain numbers, finger digits) are
-  // untouched, single line.
+  // a label containing an accidental into two stacked lines, in the SAME
+  // left-to-right order the raw string already has ("E♭" -> E over ♭;
+  // "♭3" -> ♭ over 3) -- Chris, 2026-09-05, after seeing the earlier
+  // always-letter/number-on-top version live: "I dont' like 7b where 7 is
+  // on top of the flat. it needs to be reversed to flat is on top." The
+  // accidental character (whichever position it's in) still gets the
+  // smaller/subordinate styling via key-label-accidental; the other
+  // character gets key-label-main. Labels with neither symbol (white-key
+  // letters, plain numbers, finger digits) are untouched, single line.
   function setKeyLabelText(s, text) {
     const m = text.match(/[♭♯]/);
     if (!m) {
@@ -430,10 +427,10 @@
       s.textContent = text;
       return;
     }
-    const symbol = m[0];
-    const main = text.slice(0, m.index) + text.slice(m.index + 1);
     s.classList.add("key-label-stacked");
-    s.innerHTML = `<span class="key-label-main">${main}</span><span class="key-label-accidental">${symbol}</span>`;
+    s.innerHTML = text.split("").map((ch, i) =>
+      `<span class="${i === m.index ? "key-label-accidental" : "key-label-main"}">${ch}</span>`
+    ).join("");
   }
 
   function light(pc, oct, color, name, isWhite) {
