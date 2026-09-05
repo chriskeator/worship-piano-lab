@@ -521,46 +521,23 @@ body {
    widest real value ("Root High"/"Root Low" on the Chords tab) so the row
    never shifts based on content length, and justify-content:center + gap
    groups them near the middle instead of pinning them to the row's edges.
-   The row itself is a 3-column grid: the Scale+View pair lives in the
-   middle "auto" column, and the two side columns are pure spacers -- the
-   1fr/1fr default here just needs to be EQUAL, since ui.js's
-   sizeHandIcon() overrides both to the same explicit pixel width via
-   inline style whenever the hand icon is actually showing (measured
-   against the real, continuously-variable leftover space beside the
-   pair -- see that function's own comment for why this couldn't just be
-   a handful of CSS breakpoints). That's what keeps the Scale+View pair
-   perfectly centered in the row, exactly as it is on the Chords/
-   Progressions tabs, whether or not the icon is showing -- Chris,
-   2026-09-05, after the icon's first version was added as a plain third
-   flex item and recentered/shifted the whole row left of where Chords/
-   Progressions show it: "keep scale / view the same as the other chords
-   / progressions tabs." */
-.wpl-readout-row { display: grid; grid-template-columns: 1fr auto 1fr; align-items: flex-end; margin: 8px 0 6px; padding: 0 20px; }
-.wpl-readout-pair { grid-column: 2; display: flex; justify-content: center; align-items: flex-end; gap: 36px; }
+   (A hand-with-numbered-fingers icon briefly lived in this row too,
+   2026-09-05 -- removed again: even capped at a modest max size it was
+   still taller than the readout boxes on every tier, which grew the
+   row's own height and visibly pushed the piano down every time a
+   Fingers view was selected. Chris: "your hand is too big which pushed
+   that row down which made the entire shell move down... just delete
+   the hand." A real PNG image, sized to fit inside the existing box
+   height instead of growing it, is the likely next approach if he
+   supplies one -- flagged here so the reasoning isn't lost if it comes
+   back.) */
+.wpl-readout-row { display: flex; justify-content: center; align-items: flex-end; gap: 36px; margin: 8px 0 6px; padding: 0 20px; }
 .wpl-readout-label { font-size: 13px; color: var(--wpl-muted); }
 /* Numbers/symbols ("C", "1", "5/7") read fine big and bold; full words
    ("Root High", "1st Inv") look oversized/heavy at the same size, so
    ui.js's setReadoutValue() adds this class whenever the raw value is
    longer than any real number/symbol ever gets (see ui.js comment). */
 #wpl-chord-name.long-label, #wpl-step-label.long-label { font-size: 18px !important; }
-
-/* Hand-with-numbered-fingers icon, shown next to the View readout only
-   while a Fingers view (RH or LH) is active -- ui.js's updateHandIcon()
-   swaps its content and display; sizeHandIcon() sets its actual
-   width/height inline (see that function's comment). Lives in the row's
-   right column (see the grid comment above) and is centered within it
-   via justify-self, which is exactly "centered between View and the
-   right frame's end" (that column's left edge is where the centered
-   pair ends, its right edge is the row's/frame's own right edge) --
-   Chris, 2026-09-05. align-self centers it vertically against the row's
-   flex-end-aligned text instead of pinning it to the bottom edge. */
-/* 60x60 here is just the pre-JS fallback (briefly visible, if at all,
-   before ui.js's sizeHandIcon() sets the real inline width/height).
-   min-width:0 defeats grid items' default min-width:auto (which sizes
-   them to their content's natural/specified width) so this column can
-   still shrink below that fallback on the very first paint instead of
-   forcing the grid wider than the row. */
-.wpl-hand-icon { grid-column: 3; justify-self: center; align-self: center; width: 60px; height: 60px; min-width: 0; }
 
 /* ---------- Piano ---------- */
 #wpl-piano-frame { background: #1e293b; border-radius: 12px; padding: 5px; }
@@ -933,9 +910,8 @@ body {
      with only ONE line instead of two, Practice's total height only
      shrinks further below Chords/Progressions's shared max, so there's
      no shell-height risk (confirmed via qa/check-dimensions.js). */
-  .wpl-readout-row { padding: 0 4px; margin: 4px 0 2px; }
-  .wpl-readout-pair { gap: 20px; }
-  .wpl-readout-pair > div { width: 112px !important; height: 40px !important; }
+  .wpl-readout-row { padding: 0 4px; margin: 4px 0 2px; gap: 20px; }
+  .wpl-readout-row > div { width: 112px !important; height: 40px !important; }
   /* "Pentatonic" subtitle on the Choose a Scale row -- see the .wpl-name-wide
      comment further down for the full breakdown of these three tiers.
      This is the 341-520px tier (7px). */
@@ -1043,9 +1019,8 @@ body {
   #wpl-practice-subtabs .wpl-toggle-btn { min-height: 52px; padding: 6px 1px; }
   #wpl-practice-subtabs .wpl-subtab-label { font-size: 7.5px; }
   #wpl-practice-subtabs .wpl-tab-soon { font-size: 5.5px; padding: 1px 2px; }
-  .wpl-readout-row { padding: 0 2px; }
-  .wpl-readout-pair { gap: 10px; }
-  .wpl-readout-pair > div { width: 88px !important; height: 34px !important; }
+  .wpl-readout-row { padding: 0 2px; gap: 10px; }
+  .wpl-readout-row > div { width: 88px !important; height: 34px !important; }
   /* Overrides the 341-520px tier's 7px above -- this narrowest phone
      tier gets slightly more room (see .wpl-name-wide comment near the
      521-619px tier for the full breakdown). */

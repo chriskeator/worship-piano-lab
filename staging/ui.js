@@ -320,11 +320,6 @@
     const ch = prog[stepToShow];
     setReadoutValue(document.getElementById("wpl-chord-name"), ch.name, E.formatLabel(E.transposeChordName(ch.name, curKeyPc, useFlats)));
     setReadoutValue(document.getElementById("wpl-step-label"), ch.topLabel, E.formatLabel(ch.topLabel));
-    // The hand icon is a Scales-tab/Fingers-view-only element -- hide it
-    // here since this readout row is shared with the Progressions tab.
-    const handIconEl = document.getElementById("wpl-hand-icon");
-    if (handIconEl) handIconEl.style.display = "none";
-    sizeHandIcon();
     document.querySelectorAll("#wpl-step-row .step-btn").forEach((b, i) => {
       b.classList.toggle("active", i === stepToShow);
       b.querySelector(".n").textContent = E.transposeChordName(prog[i].name, curKeyPc, useFlats);
@@ -436,10 +431,6 @@
     setReadoutValue(document.getElementById("wpl-chord-name"), ch.name, E.formatLabel(E.transposeChordName(ch.name, curKeyPc, useFlats)));
     const posName = getChordPositionNames(D.chordQualityNames[curQuality2])[posToShow];
     setReadoutValue(document.getElementById("wpl-step-label"), posName, posName);
-    // Same as above -- this readout row is shared with the Chords tab.
-    const handIconEl = document.getElementById("wpl-hand-icon");
-    if (handIconEl) handIconEl.style.display = "none";
-    sizeHandIcon();
     updateQualityRow2Numbers();
     document.querySelectorAll("#wpl-position-tabs2 .prog-tab").forEach((b, i) => {
       b.classList.toggle("active", i === posToShow);
@@ -677,126 +668,6 @@
   const VIEW_READOUT_LABELS = ["Notes", "Numbers", "Fingers", "Fingers", "Fingers", "Fingers"];
   const VIEW_READOUT_COLORS = [null, null, "#f87171", "#f87171", "#38bdf8", "#38bdf8"];
 
-  // Small hand-with-numbered-fingers icon shown next to the View readout
-  // whenever a Fingers view (RH or LH) is active -- Chris, 2026-09-05,
-  // from a reference photo of an open hand, fingers spread, with 1-5
-  // labeled thumb-to-pinky. First version curled the fingers together
-  // like a fist and read as too small/cramped -- Chris: "it needs to be
-  // bigger with fingers open... and the numbers for each finger are too
-  // small." This version fans each finger out from the palm at its own
-  // angle (like the reference) with real gaps between them, and the
-  // numbers are proportionally much larger relative to the hand.
-  // Built as two hand-authored SVGs (not one icon mirrored with a CSS
-  // transform) so the "1".."5" labels stay upright and correctly ordered
-  // instead of coming out backwards -- the LH svg's shapes are the RH
-  // svg's shapes reflected across the viewBox's own center (x' = 100 - x),
-  // so the thumb ends up on the right and the numbers still read 1-5
-  // left-to-right in age order, matching real left-hand piano fingering
-  // (thumb/1 nearest the middle of the keyboard, pinky/5 on the outside).
-  // Fill/stroke reuse the app's existing tan/muted palette; the numbers
-  // reuse the same red/blue already used to color-code RH/LH everywhere
-  // else in this readout. The viewBox's negative top margin (-16) leaves
-  // headroom for the "3" label over the tallest (middle) finger.
-  const RH_HAND_SVG = `<svg viewBox="0 -16 100 128" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-    <rect x="28" y="64" width="42" height="34" rx="15" fill="var(--wpl-tan)" stroke="var(--wpl-muted)" stroke-width="2"/>
-    <rect x="14" y="56" width="13" height="28" rx="6.5" fill="var(--wpl-tan)" stroke="var(--wpl-muted)" stroke-width="2" transform="rotate(-48 20.5 70)"/>
-    <rect x="32" y="30" width="10" height="36" rx="5" fill="var(--wpl-tan)" stroke="var(--wpl-muted)" stroke-width="2" transform="rotate(-14 37 66)"/>
-    <rect x="44" y="20" width="10" height="46" rx="5" fill="var(--wpl-tan)" stroke="var(--wpl-muted)" stroke-width="2"/>
-    <rect x="56" y="26" width="10" height="40" rx="5" fill="var(--wpl-tan)" stroke="var(--wpl-muted)" stroke-width="2" transform="rotate(12 61 66)"/>
-    <rect x="66" y="36" width="9" height="30" rx="4.5" fill="var(--wpl-tan)" stroke="var(--wpl-muted)" stroke-width="2" transform="rotate(26 70.5 66)"/>
-    <text x="13" y="42" text-anchor="middle" font-size="19" font-weight="800" fill="#f87171">1</text>
-    <text x="29" y="10" text-anchor="middle" font-size="19" font-weight="800" fill="#f87171">2</text>
-    <text x="49" y="-2" text-anchor="middle" font-size="19" font-weight="800" fill="#f87171">3</text>
-    <text x="65" y="6" text-anchor="middle" font-size="19" font-weight="800" fill="#f87171">4</text>
-    <text x="80" y="22" text-anchor="middle" font-size="19" font-weight="800" fill="#f87171">5</text>
-  </svg>`;
-  const LH_HAND_SVG = `<svg viewBox="0 -16 100 128" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-    <rect x="30" y="64" width="42" height="34" rx="15" fill="var(--wpl-tan)" stroke="var(--wpl-muted)" stroke-width="2"/>
-    <rect x="73" y="56" width="13" height="28" rx="6.5" fill="var(--wpl-tan)" stroke="var(--wpl-muted)" stroke-width="2" transform="rotate(48 79.5 70)"/>
-    <rect x="58" y="30" width="10" height="36" rx="5" fill="var(--wpl-tan)" stroke="var(--wpl-muted)" stroke-width="2" transform="rotate(14 63 66)"/>
-    <rect x="46" y="20" width="10" height="46" rx="5" fill="var(--wpl-tan)" stroke="var(--wpl-muted)" stroke-width="2"/>
-    <rect x="34" y="26" width="10" height="40" rx="5" fill="var(--wpl-tan)" stroke="var(--wpl-muted)" stroke-width="2" transform="rotate(-12 39 66)"/>
-    <rect x="25" y="36" width="9" height="30" rx="4.5" fill="var(--wpl-tan)" stroke="var(--wpl-muted)" stroke-width="2" transform="rotate(-26 29.5 66)"/>
-    <text x="87" y="42" text-anchor="middle" font-size="19" font-weight="800" fill="#38bdf8">1</text>
-    <text x="71" y="10" text-anchor="middle" font-size="19" font-weight="800" fill="#38bdf8">2</text>
-    <text x="51" y="-2" text-anchor="middle" font-size="19" font-weight="800" fill="#38bdf8">3</text>
-    <text x="35" y="6" text-anchor="middle" font-size="19" font-weight="800" fill="#38bdf8">4</text>
-    <text x="20" y="22" text-anchor="middle" font-size="19" font-weight="800" fill="#38bdf8">5</text>
-  </svg>`;
-
-  // The hand's ideal size (60px, matching the desktop CSS default) can't
-  // always fit: the two readout boxes are a fixed pixel width, so on
-  // narrower screens -- especially right at the 340px/520px tier
-  // boundaries, where the boxes themselves jump from 88px to 112px to
-  // 140px wide but the frame is barely any wider -- the leftover space
-  // beside them shrinks to almost nothing. Rather than chase that with
-  // more and more CSS breakpoints (as the "Pentatonic" subtitle fix
-  // above had to), this measures the ACTUAL leftover space on the real
-  // device on every call and sizes the icon to fit it, capped at a
-  // sensible min/max -- correct at every width without guessing at
-  // per-tier pixel values, and immune to the font-metric mismatches
-  // between this sandbox's headless Chromium and Chris's real phone
-  // that caused the earlier "Finger Patterns" clipping bug (this is
-  // plain box geometry, not text measurement, so it can't drift the
-  // same way). Also keeps the row's two side grid columns (which the
-  // icon's column shares, see styles.css .wpl-readout-row) pinned to
-  // the SAME width on both sides, which is what keeps the Scale/View
-  // pair centered exactly like it is on the Chords/Progressions tabs
-  // instead of sliding over when the icon appears.
-  const HAND_ICON_MIN = 28, HAND_ICON_MAX = 60, HAND_ICON_MARGIN = 6;
-  function sizeHandIcon() {
-    const row = document.querySelector(".wpl-readout-row");
-    const pair = document.querySelector(".wpl-readout-pair");
-    const icon = document.getElementById("wpl-hand-icon");
-    if (!row || !pair || !icon) return;
-    if (icon.style.display === "none") {
-      row.style.gridTemplateColumns = "";
-      return;
-    }
-    const rowCs = getComputedStyle(row);
-    const rowInner = row.getBoundingClientRect().width - parseFloat(rowCs.paddingLeft) - parseFloat(rowCs.paddingRight);
-    const pairWidth = pair.getBoundingClientRect().width;
-    // perSide is the TRUE leftover space on each side of the centered
-    // pair -- both grid columns always get this exact value (never
-    // capped), which is what keeps them equal/symmetric no matter how
-    // big or small the icon itself ends up. The icon's own size is
-    // capped separately at HAND_ICON_MAX and centered within that
-    // (usually wider) column via justify-self in styles.css, which is
-    // what makes it look "centered between View and the frame's end"
-    // instead of just flush against the frame edge on wide screens.
-    // Only when perSide itself is smaller than HAND_ICON_MIN (right at
-    // the 340px/520px tier boundaries, where the readout boxes jump to
-    // a wider fixed size faster than the frame does) does the icon
-    // shrink below that floor, rather than overflow its own column.
-    const perSide = (rowInner - pairWidth) / 2;
-    let size = Math.min(perSide - HAND_ICON_MARGIN, HAND_ICON_MAX);
-    size = Math.max(size, Math.min(HAND_ICON_MIN, perSide));
-    size = Math.max(size, 0);
-    icon.style.width = size + "px";
-    icon.style.height = size + "px";
-    row.style.gridTemplateColumns = perSide + "px auto " + perSide + "px";
-  }
-  window.addEventListener("resize", sizeHandIcon);
-
-  // Shows/hides/swaps the hand icon based on which View is active: hidden
-  // for Notes/Numbers (0,1), the RH icon for the two RH Fingers views
-  // (2,3), the LH icon for the two LH Fingers views (4,5).
-  function updateHandIcon(view) {
-    const el = document.getElementById("wpl-hand-icon");
-    if (!el) return;
-    if (view === 2 || view === 3) {
-      el.innerHTML = RH_HAND_SVG;
-      el.style.display = "flex";
-    } else if (view === 4 || view === 5) {
-      el.innerHTML = LH_HAND_SVG;
-      el.style.display = "flex";
-    } else {
-      el.style.display = "none";
-      el.innerHTML = "";
-    }
-    sizeHandIcon();
-  }
-
   // highlightStep is accepted (playback passes the current step index) but
   // only affects nothing visual right now -- the key map above is a static
   // reference chart for the current scale+view, not a per-note flash.
@@ -825,7 +696,6 @@
     const stepLabelEl = document.getElementById("wpl-step-label");
     stepLabelEl.classList.add("long-label");
     stepLabelEl.innerHTML = viewHtml;
-    updateHandIcon(curScaleView);
     renderScaleKeyMap();
   }
 
@@ -917,9 +787,9 @@
   // Indices stay exactly what they've always meant (0=Note, 1=Number,
   // 2=RH 1 Octave, 3=RH 2 Octaves, 4=LH 1 Octave, 5=LH 2 Octaves) --
   // curScaleView's numeric value is relied on elsewhere in this file
-  // (renderScaleKeyMap's octave/hand checks, VIEW_READOUT_LABELS/COLORS,
-  // updateHandIcon's RH/LH split), so only the DISPLAY order of the
-  // buttons changes, via SCALE_VIEW_DISPLAY_ORDER below -- same approach
+  // (renderScaleKeyMap's octave/hand checks, VIEW_READOUT_LABELS/COLORS),
+  // so only the DISPLAY order of the buttons changes, via
+  // SCALE_VIEW_DISPLAY_ORDER below -- same approach
   // as SCALE_TYPE_DISPLAY_ORDER above for the Choose a Scale row, per
   // Chris, 2026-09-05: "do it the same way you did the top row... group
   // 1 octave buttons together and 2 octave together."
