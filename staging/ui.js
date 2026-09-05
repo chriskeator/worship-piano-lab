@@ -583,7 +583,15 @@
         // scale's own tones, one slot higher for the appended top root
         // (step.octaveOffset is 1 only for that final entry) -- not tied to
         // any acoustic register since this view doesn't play audio.
-        const oct = NOTES_VIEW_OCT + step.octaveOffset;
+        // Read left-to-right as the scale actually ascends from the root --
+        // Chris, 2026-09-05: for any root other than C, tones whose pitch
+        // class is LOWER than the root's (e.g. E major's 6th/7th, C#/D#)
+        // are still higher notes in the actual scale, so they need to wrap
+        // into the next on-screen octave instead of sitting to the root's
+        // left. step.octaveOffset alone (0 for the 7 tones, 1 for the
+        // appended top root) isn't enough on its own for any root but C.
+        const wraps = spelled.pc < curKeyPc ? 1 : 0;
+        const oct = NOTES_VIEW_OCT + step.octaveOffset + wraps;
         const label = curScaleView === 0 ? E.toDisplayFlat(spelled.name) : D.degreeLabelForNote(scaleKey, step.name);
         entries.push({ pc: spelled.pc, oct, label, color: KEY_COLOR_RIGHT });
       });
