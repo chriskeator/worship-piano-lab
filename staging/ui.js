@@ -95,6 +95,15 @@
   let playingDisplayedProg = null; // which progression the step row currently shows while playing
   let activeTabId = "chords2"; // Chords is the first tab, and the default shown on load
   let scaleStepIndex = 0;
+  // The {pc, oct, label, color} entries renderScaleKeyMap() most recently
+  // lit, in the same order currentScaleSteps() builds its playback steps
+  // (both walk D.buildScaleAscent(scaleKey, octaves) with the same
+  // octaves/hand for the current view) -- so lastScaleEntries[i] is always
+  // the on-screen key that just sounded for playback step i. Used by
+  // startScalesPlaythrough's onStep to flash that exact key (Chris,
+  // 2026-09-05: "make the correct note light up when that note is
+  // played").
+  let lastScaleEntries = [];
   let scalesBpm = 160;
   let scalesLoopOn = false;
   let scalesClickOn = false;
@@ -615,6 +624,7 @@
         entries.push({ pc, oct, label: String(fingers[i] != null ? fingers[i] : ""), color: isLeft ? KEY_COLOR_LEFT : KEY_COLOR_RIGHT });
       });
     }
+    lastScaleEntries = entries;
     E.renderScaleMap(entries);
     document.getElementById("wpl-either-legend").style.display = "none";
     // Both always shown together on Scales, never toggled on/off per view --
@@ -858,6 +868,12 @@
       onStep: (i) => {
         scaleStepIndex = i;
         renderScale(i);
+        // Pulse the exact key that just sounded, on top of its persistent
+        // red/blue reference color -- see lastScaleEntries above. renderScale
+        // (via renderScaleKeyMap) just rebuilt the persistent state above,
+        // so this runs after, matching this step's entry 1:1.
+        const played = lastScaleEntries[i];
+        if (played) E.flashPlayedKey(played.pc, played.oct);
       },
       onDone: () => {
         resetScalesPlayButton();

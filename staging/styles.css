@@ -294,20 +294,26 @@ body {
    did; it just uses the same .prog-tab .num sizing as every other row
    (12px/14px/22px across the same 340/520 breakpoints).
    "Pentatonic" moved down to be the subtitle (.name) instead, always
-   spelled out rather than abbreviated to "Pent" (Chris: "keep it
-   'Pentatonic', reduce text size if you need to... but keep text size
-   as large as you can"). .wpl-name-wide flags just those two buttons'
-   subtitles (see SCALE_TYPES "wide" flag in ui.js) so "Scale"/"Blues"
-   keep the normal, larger .name size everywhere -- only "Pentatonic"
-   needs its own smaller sizing to avoid wrapping. Three tiers, each the
-   largest size that still fits "Pentatonic" at that range's narrowest
-   width (Playwright-verified against the button's actual measured inner
-   width, not just eyeballed): 7.5px covers 320px+ (wraps only in the
-   same sub-320px sliver the RH Fingers fix above already accepts as an
-   edge case); 7px covers the 341-520px range (worst case is right at
-   341px, where the row's own gap/padding shrinks the button back down);
-   9px covers 521-619px; 620px+ is wide enough for the row's own normal
-   .name size (12px) with real margin, so no override is needed there. */
+   spelled out rather than abbreviated to "Pent". .wpl-name-wide still
+   flags just those two buttons' subtitles (see SCALE_TYPES "wide" flag
+   in ui.js) for the 521-619px tier below, where "Scale"/"Blues" keep the
+   row's normal, larger .name size and only "Pentatonic" needs its own
+   smaller size to avoid wrapping.
+   Below 521px, though, Chris, 2026-09-05 (mobile only): "make Pentatonic
+   bigger... then reduce the subtitles Scale and Blues to be the same
+   size as Pentatonic" -- so the two mobile tiers (see #wpl-scale-type-row
+   .prog-tab .name further down, at the 341-520px and <=340px breakpoints)
+   drop the .wpl-name-wide restriction and size ALL THREE subtitles
+   (Scale/Pentatonic/Blues) the same, at the largest size that still fits
+   "Pentatonic" -- the longest of the three -- at that tier's narrowest
+   real device width (Playwright-verified: candidate sizes tested against
+   the button's actual measured width, with wrap/overflow checked directly
+   via scrollHeight and scrollWidth, at real phone widths 320-520px rather
+   than the full theoretical breakpoint range, since e.g. 341-359px has no
+   real device and its own tighter "pinch" from the row's padding/gap
+   shrinking right at that boundary). 9px still covers 521-619px; 620px+
+   is wide enough for the row's own normal .name size (12px) with real
+   margin, so no override is needed there. */
 @media (min-width: 521px) and (max-width: 619px) {
   #wpl-scale-type-row .prog-tab .name.wpl-name-wide { font-size: 9px; }
 }
@@ -319,21 +325,43 @@ body {
    Fingers", see SCALE_VIEWS in ui.js) -- so unlike "Note"/"Number", this
    row's text can't just avoid wrapping by getting shorter below some
    breakpoint on its own; the fix here is shrinking the row's own
-   .step-btn .n font at the widths where it otherwise wraps (Chris: "make
-   the text smaller if there's wrapping"), same font-size-only approach as
-   the Choose a Scale row's Pentatonic fix above. Three tiers, each the
-   largest size that still fits "RH Fingers" at that range's narrowest
-   width (Playwright-verified): 8px covers all of mobile (except the very
-   narrowest ~288-339px sliver, which still wraps to a uniform 2-line row
-   -- affects all 6 buttons equally, not a lopsided mismatch); 10px covers
-   521-589px; 12px covers 590-899px; 900px+ keeps the row's standard,
-   unscoped 16px (already verified to fit there). .l is scoped 1px below
-   .n at each tier (Chris, 2026-09-04 follow-up: "the title is now smaller
-   than the sub title") to keep the title-bigger-than-subtitle
-   relationship every other row in the app uses. */
-@media (max-width: 520px) {
+   .step-btn .n font at the widths where it otherwise wraps.
+   Chris, 2026-09-05 (mobile only): "make the titles bigger, but don't
+   let LH and RH fingers wrap... make the bottom subtitles the same text
+   size as the top row subtitles." The old flat 8px/7px for all of
+   <=520px actually still wrapped "RH Fingers"/"LH Fingers" at real
+   320px-wide phones (Playwright-confirmed: scrollHeight jumps to a 2nd
+   line at 8px there), so the <=520px tier is now split into four
+   narrower bands, each the largest .n size that keeps "RH Fingers" on
+   one line at that band's narrowest *real* device width (forced
+   white-space:nowrap + measured scrollWidth against the button's actual
+   width, tested across every common phone width 320-520px, not the
+   theoretical breakpoint continuum): 7px for <=340px (real floor: 320px);
+   8px for 341-374px (real floor: 360px); 8.25px for 375-411px (real
+   floor: 375px); 9px for 412-520px (real floor: 412px). .l (the
+   subtitle) is set to match the Choose a Scale row's own new unified
+   subtitle size at the same two breakpoints it uses (7.75px <=340px,
+   8px 341-520px) per Chris's "same as the top row" instruction, rather
+   than following the .n tiers above -- both sets of numbers were
+   verified together (all six buttons' .n and .l, at every real width
+   320-520px) with zero wraps or overflow. 10px/9px still covers
+   521-589px; 12px/10px still covers 590-899px; 900px+ keeps the row's
+   standard, unscoped 16px/12px (already verified to fit there). */
+@media (max-width: 340px) {
+  #wpl-scale-view-row .step-btn .n { font-size: 7px; }
+  #wpl-scale-view-row .step-btn .l { font-size: 7.75px; }
+}
+@media (min-width: 341px) and (max-width: 374px) {
   #wpl-scale-view-row .step-btn .n { font-size: 8px; }
-  #wpl-scale-view-row .step-btn .l { font-size: 7px; }
+  #wpl-scale-view-row .step-btn .l { font-size: 8px; }
+}
+@media (min-width: 375px) and (max-width: 411px) {
+  #wpl-scale-view-row .step-btn .n { font-size: 8.25px; }
+  #wpl-scale-view-row .step-btn .l { font-size: 8px; }
+}
+@media (min-width: 412px) and (max-width: 520px) {
+  #wpl-scale-view-row .step-btn .n { font-size: 9px; }
+  #wpl-scale-view-row .step-btn .l { font-size: 8px; }
 }
 @media (min-width: 521px) and (max-width: 589px) {
   #wpl-scale-view-row .step-btn .n { font-size: 10px; }
@@ -912,10 +940,12 @@ body {
      no shell-height risk (confirmed via qa/check-dimensions.js). */
   .wpl-readout-row { padding: 0 4px; margin: 4px 0 2px; gap: 20px; }
   .wpl-readout-row > div { width: 112px !important; height: 40px !important; }
-  /* "Pentatonic" subtitle on the Choose a Scale row -- see the .wpl-name-wide
-     comment further down for the full breakdown of these three tiers.
-     This is the 341-520px tier (7px). */
-  #wpl-scale-type-row .prog-tab .name.wpl-name-wide { font-size: 7px; }
+  /* Choose a Scale row's subtitles (Scale/Pentatonic/Blues), unified --
+     see the .wpl-name-wide comment further up for the full breakdown.
+     This is the 341-520px tier (8px), scoped generically (not just
+     .wpl-name-wide) so Scale/Blues shrink down to match Pentatonic
+     instead of keeping the unscoped 10px .prog-tab .name mobile size. */
+  #wpl-scale-type-row .prog-tab .name { font-size: 8px; }
   /* line-height is a fixed px value (not the desktop inline style's em-relative
      1.3), shared by both the normal and .long-label sizes below, so a
      short value ("C4") and a long one ("2nd Inv") sit on the same vertical
@@ -1021,10 +1051,11 @@ body {
   #wpl-practice-subtabs .wpl-tab-soon { font-size: 5.5px; padding: 1px 2px; }
   .wpl-readout-row { padding: 0 2px; gap: 10px; }
   .wpl-readout-row > div { width: 88px !important; height: 34px !important; }
-  /* Overrides the 341-520px tier's 7px above -- this narrowest phone
-     tier gets slightly more room (see .wpl-name-wide comment near the
-     521-619px tier for the full breakdown). */
-  #wpl-scale-type-row .prog-tab .name.wpl-name-wide { font-size: 7.5px; }
+  /* Overrides the 341-520px tier's 8px above -- this narrowest phone
+     tier (real floor: 320px) has slightly less room, so Scale/Pentatonic/
+     Blues are unified at 7.75px here instead (see .wpl-name-wide comment
+     near the 521-619px tier for the full breakdown). */
+  #wpl-scale-type-row .prog-tab .name { font-size: 7.75px; }
   .wpl-readout-row #wpl-chord-name, .wpl-readout-row #wpl-step-label { font-size: 15px !important; }
   /* 11.5px. Was briefly dropped to 10px to squeeze "Finger Patterns" into
      this 88px box on real phones, but Chris shortened the View readout's

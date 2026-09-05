@@ -401,10 +401,12 @@
     whiteEls.forEach(el => {
       el.style.background = "linear-gradient(#fff,#f1f5f9)";
       el.querySelector("span").style.opacity = "0";
+      el._persistentLabel = null;
     });
     blackEls.forEach(el => {
       el.style.background = "linear-gradient(#1e293b,#334155)";
       el.querySelector("span").style.opacity = "0";
+      el._persistentLabel = null;
     });
   }
 
@@ -441,8 +443,24 @@
     const s = el.querySelector("span");
     setKeyLabelText(s, name);
     s.style.opacity = "1";
+    // Remembered so flashKey() below can restore this label instead of
+    // hiding it when the user clicks a key that's already part of a
+    // persistent chord/scale highlight (see flashKey's comment).
+    el._persistentLabel = name;
   }
 
+  // Chris, 2026-09-05: "when i click a note with my mouse, the note name
+  // lights up then fades out. that's good, except for when i click a note
+  // that is already lit up in the scale... it needs to make sure those
+  // already highlighted notes don't fade if they're clicked." Previously
+  // this always hid the label after the flash, which stomped on any
+  // persistent chord/scale label light() had already put there — clicking
+  // a handful of highlighted keys in a row made their reference labels
+  // disappear for good (until the next full re-render). Now the flash
+  // still shows the clicked note's own label for the same 600ms, but
+  // afterward restores whichever persistent label (if any) that key held
+  // instead of blanking it — a plain unlit key (no persistent label) still
+  // fades to nothing exactly as before.
   function flashKey(el, label) {
     const overlay = el.querySelector(".key-flash");
     const s = el.querySelector(".key-label");
@@ -454,7 +472,40 @@
     void overlay.offsetWidth;
     overlay.style.transition = "opacity 0.6s ease";
     overlay.style.opacity = "0";
-    el._flashTimeout = setTimeout(() => { s.style.opacity = "0"; }, 600);
+    el._flashTimeout = setTimeout(() => {
+      if (el._persistentLabel) {
+        setKeyLabelText(s, el._persistentLabel);
+        s.style.opacity = "1";
+      } else {
+        s.style.opacity = "0";
+      }
+    }, 600);
+  }
+
+  // Chris, 2026-09-05: "in the scales tab when i hit the play button, can
+  // you make the correct note light up when that note is played... once
+  // that note is played or lit up, it'll default back to its original red
+  // or blue color." This only pulses the same translucent overlay a click
+  // already uses (see flashKey above) on top of whatever persistent
+  // color/label that key already has -- it never touches the background
+  // or label itself, so there's nothing to "restore" afterward: the
+  // overlay simply fades back out and the existing red/blue shows through
+  // again underneath, automatically -- no label/timeout bookkeeping needed
+  // the way flashKey has, since nothing here needs restoring afterward.
+  // Faster fade (0.15s) than the click flash (0.6s) since scale playback
+  // steps are eighth notes and can run much quicker than a click's
+  // deliberate single tap.
+  function flashPlayedKey(pc, oct) {
+    const isWhite = [0, 2, 4, 5, 7, 9, 11].includes(pc);
+    const list = isWhite ? whiteEls : blackEls;
+    const el = list.find(e => +e.dataset.pc === pc && +e.dataset.oct === oct);
+    if (!el) return;
+    const overlay = el.querySelector(".key-flash");
+    overlay.style.transition = "none";
+    overlay.style.opacity = "1";
+    void overlay.offsetWidth;
+    overlay.style.transition = "opacity 0.15s ease";
+    overlay.style.opacity = "0";
   }
 
   // Lights an arbitrary set of keys with custom labels/colors — used by the
@@ -620,6 +671,7 @@
     resetPiano,
     renderChord,
     renderScaleMap,
+    flashPlayedKey,
     playChordSound,
     playSingleNote,
     playThrough,
