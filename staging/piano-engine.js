@@ -413,11 +413,13 @@
       el.style.background = "linear-gradient(#fff,#f1f5f9)";
       el.querySelector("span").style.opacity = "0";
       el._persistentLabel = null;
+      el._persistentHand = null;
     });
     blackEls.forEach(el => {
       el.style.background = "linear-gradient(#1e293b,#334155)";
       el.querySelector("span").style.opacity = "0";
       el._persistentLabel = null;
+      el._persistentHand = null;
     });
   }
 
@@ -446,6 +448,17 @@
     ).join("");
   }
 
+  // Both hand colors used everywhere a key gets a persistent highlight --
+  // Scales' renderScaleMap (KEY_COLOR_RIGHT/LEFT in ui.js) and Chords'
+  // renderChord below -- happen to share the exact same blue hex
+  // (#38bdf8) for left hand and red hex (#f87171) for right hand, so
+  // sniffing the `color` string for that blue hex is enough to tell which
+  // hand a given persistent highlight belongs to, without needing a
+  // separate "which hand" argument threaded through every caller.
+  function handFromColor(color) {
+    return color && color.indexOf("38bdf8") !== -1 ? "left" : "right";
+  }
+
   function light(pc, oct, color, name, isWhite) {
     const list = isWhite ? whiteEls : blackEls;
     const el = list.find(e => +e.dataset.pc === pc && +e.dataset.oct === oct);
@@ -456,9 +469,29 @@
     s.style.opacity = "1";
     // Remembered so flashKey() below can restore this label instead of
     // hiding it when the user clicks a key that's already part of a
-    // persistent chord/scale highlight (see flashKey's comment).
+    // persistent chord/scale highlight (see flashKey's comment), and so
+    // it can pick a matching click-flash accent color (see ACCENT_COLOR
+    // below).
     el._persistentLabel = name;
+    el._persistentHand = handFromColor(color);
   }
+
+  // Shared by both flashes below. Chris, 2026-09-05 (play-through pulse):
+  // "the pulse color isn't good...it should exuentiate the existing
+  // color...if it's red, make the pulse more red, and if its blue, make it
+  // more blue...just a little bit" -- a deeper, more saturated shade of
+  // whichever hand color (red for right, blue for left) the key already
+  // shows, at a low fixed alpha (0.5) so it reads as "a little more" of
+  // the same color rather than a wash of a different one. Chris,
+  // 2026-09-05 follow-up: "now that the color is red and blue, i don't
+  // need the 25% dimmer anymore" (see flashPlayedKey) and "change colors
+  // from the green color when i click a button, to that new red color
+  // except for the LH Fingers buttons...make it the bluer color" -- so
+  // the click flash (flashKey) now uses this same map too, picked via
+  // el._persistentHand (see handFromColor above): red for a key with no
+  // persistent highlight or a right-hand one, blue only for a left-hand
+  // one (LH Fingers, or a chord's left-hand notes on Chords/Progressions).
+  const ACCENT_COLOR = { right: "rgba(220,38,38,0.5)", left: "rgba(2,132,199,0.5)" };
 
   // Chris, 2026-09-05: "when i click a note with my mouse, the note name
   // lights up then fades out. that's good, except for when i click a note
@@ -476,10 +509,11 @@
     const overlay = el.querySelector(".key-flash");
     const s = el.querySelector(".key-label");
     clearTimeout(el._flashTimeout);
-    // Always the default light-green tint here, in case flashPlayedKey
-    // below left its red/blue accent color on this overlay from a prior
-    // played-note pulse.
-    overlay.style.background = "linear-gradient(#e5f2e8,#cfe3d4)";
+    // Was a fixed light-green tint; now the same red/blue accent the
+    // play-through pulse uses, keyed off this key's own persistent hand
+    // color (red by default -- covers unlit keys and right-hand keys --
+    // blue only for a left-hand highlight, e.g. LH Fingers).
+    overlay.style.background = ACCENT_COLOR[el._persistentHand] || ACCENT_COLOR.right;
     overlay.style.transition = "none";
     overlay.style.opacity = "1";
     setKeyLabelText(s, label);
@@ -505,30 +539,24 @@
   // already has -- it never touches the background or label itself, so
   // there's nothing to "restore" afterward: the overlay simply fades back
   // out and the existing red/blue shows through again underneath.
-  // Follow-up, same day: "the highlight pulse is too much...reduce it by
-  // 25%...extend the fade longer...make the color fade match the audio
-  // fade...the pulse color isn't good...it should exuentiate the existing
-  // color...if it's red, make the pulse more red, and if its blue, make it
-  // more blue...just a little bit." So: (1) the overlay no longer uses the
-  // fixed light-green tint -- PLAYED_ACCENT below picks a deeper, more
-  // saturated shade of whichever hand color (red for right, blue for
-  // left) the key already shows, at a low fixed alpha (0.5) so it reads as
-  // "a little more" of the same color rather than a wash of a different
-  // one; (2) peak overlay opacity dropped from 1 to 0.75, the 25%
-  // reduction; (3) the fade itself stretched from 0.15s to 0.5s, closer to
-  // the actual sample's ~0.7s release tail (see playSample's gain envelope
+  // Follow-up, same day: fade stretched from 0.15s to 0.5s, closer to the
+  // actual sample's ~0.7s release tail (see playSample's gain envelope
   // above -- linearRampToValueAtTime from peak at +1.1s down to silent at
-  // +1.8s) than the original snappy flash.
-  const PLAYED_ACCENT = { right: "rgba(220,38,38,0.5)", left: "rgba(2,132,199,0.5)" };
+  // +1.8s) than the original snappy flash. Peak opacity briefly dropped to
+  // 0.75 (a 25% reduction) when the accent color was still a mismatched
+  // green; now that it's ACCENT_COLOR's own red/blue (see above), Chris:
+  // "now that the color is red and blue, i don't need the 25% dimmer
+  // anymore" -- back to a full 1, with ACCENT_COLOR's own low alpha still
+  // doing the "just a little bit" restraint on its own.
   function flashPlayedKey(pc, oct, hand) {
     const isWhite = [0, 2, 4, 5, 7, 9, 11].includes(pc);
     const list = isWhite ? whiteEls : blackEls;
     const el = list.find(e => +e.dataset.pc === pc && +e.dataset.oct === oct);
     if (!el) return;
     const overlay = el.querySelector(".key-flash");
-    overlay.style.background = PLAYED_ACCENT[hand] || PLAYED_ACCENT.right;
+    overlay.style.background = ACCENT_COLOR[hand] || ACCENT_COLOR.right;
     overlay.style.transition = "none";
-    overlay.style.opacity = "0.75";
+    overlay.style.opacity = "1";
     void overlay.offsetWidth;
     overlay.style.transition = "opacity 0.5s ease";
     overlay.style.opacity = "0";
