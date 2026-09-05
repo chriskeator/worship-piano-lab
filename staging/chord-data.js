@@ -207,18 +207,18 @@
         { note: "B", degree: "7" }
       ],
       rhFingers: {
-        "C": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
-        "D♭": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
-        "D": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
-        "E♭": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
-        "E": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
-        "F": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
-        "F♯": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
-        "G": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
-        "A♭": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
-        "A": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
-        "B♭": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
-        "B": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] }
+        "C": { 1: [1, 2, 3, 1, 2, 3, 4, 5], 2: [1, 2, 3, 1, 2, 3, 4, 1, 2, 3, 1, 2, 3, 4, 5] },
+        "D♭": { 1: [2, 3, 1, 2, 3, 4, 1, 2], 2: [2, 3, 1, 2, 3, 4, 1, 2, 3, 1, 2, 3, 4, 1, 2] },
+        "D": { 1: [1, 2, 3, 1, 2, 3, 4, 5], 2: [1, 2, 3, 1, 2, 3, 4, 1, 2, 3, 1, 2, 3, 4, 5] },
+        "E♭": { 1: [3, 1, 2, 3, 4, 1, 2, 3], 2: [3, 1, 2, 3, 4, 1, 2, 3, 1, 2, 3, 4, 1, 2, 3] },
+        "E": { 1: [1, 2, 3, 1, 2, 3, 4, 5], 2: [1, 2, 3, 1, 2, 3, 4, 1, 2, 3, 1, 2, 3, 4, 5] },
+        "F": { 1: [1, 2, 3, 4, 1, 2, 3, 4], 2: [1, 2, 3, 4, 1, 2, 3, 1, 2, 3, 4, 1, 2, 3, 4] },
+        "F♯": { 1: [2, 3, 4, 1, 2, 3, 1, 2], 2: [2, 3, 4, 1, 2, 3, 1, 2, 3, 4, 1, 2, 3, 1, 2] },
+        "G": { 1: [1, 2, 3, 1, 2, 3, 4, 5], 2: [1, 2, 3, 1, 2, 3, 4, 1, 2, 3, 1, 2, 3, 4, 5] },
+        "A♭": { 1: [3, 4, 1, 2, 3, 1, 2, 3], 2: [3, 4, 1, 2, 3, 1, 2, 3, 4, 1, 2, 3, 1, 2, 3] },
+        "A": { 1: [1, 2, 3, 1, 2, 3, 4, 5], 2: [1, 2, 3, 1, 2, 3, 4, 1, 2, 3, 1, 2, 3, 4, 5] },
+        "B♭": { 1: [2, 1, 2, 3, 1, 2, 3, 4], 2: [2, 1, 2, 3, 1, 2, 3, 4, 1, 2, 3, 1, 2, 3, 4] },
+        "B": { 1: [1, 2, 3, 1, 2, 3, 4, 5], 2: [1, 2, 3, 1, 2, 3, 4, 1, 2, 3, 1, 2, 3, 4, 5] }
       },
       lhFingers: {
         "C": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
