@@ -235,9 +235,13 @@
     },
     bluesMinor: {
       displayName: "Blues Minor",
+      // b5 written as Gb (letter G, flatted), not F# -- Chris, 2026-09-05:
+      // every flat-numbered degree (b3/b5/b6/b7) should show as an actual
+      // flat, matching its own degree label (this one reads "♭5"), never a
+      // sharp on the letter below.
       tones: [
         { note: "C", degree: "1" }, { note: "Eb", degree: "♭3" }, { note: "F", degree: "4" },
-        { note: "F#", degree: "♭5" }, { note: "G", degree: "5" }, { note: "Bb", degree: "♭7" }
+        { note: "Gb", degree: "♭5" }, { note: "G", degree: "5" }, { note: "Bb", degree: "♭7" }
       ],
       rhFingers: { 1: [1, 2, 3, 4, 1, 3, 5], 2: [1, 2, 3, 4, 1, 3, 1, 2, 3, 4, 1, 3, 5] },
       lhFingers: { 1: [5, 4, 3, 2, 1, 2, 1], 2: [5, 4, 3, 2, 1, 2, 1, 4, 3, 2, 1, 2, 1] }
