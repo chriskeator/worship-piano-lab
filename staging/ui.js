@@ -752,26 +752,21 @@
   // degree relative to the root (1, 2, ♭3...), which is what "Degrees" is
   // the standard term for -- Nashville Number System territory, not
   // interval-naming territory.
-  // "Finger Patterns" on every width now, including mobile (was "RH
-  // Fingers"/"LH Fingers", then the desktop-only nFull with mobile
-  // falling back to a shorter "Fingers") -- Chris, 2026-09-05: "on mobile,
-  // change 'fingers' to Finger Patterns. if it doesn't fit, then widen
-  // the distance between scale and view." It doesn't fit on one line
-  // below 590px at any legible size (Playwright-verified), so it wraps to
-  // 2 lines there -- see the widened section-to-section gap in
-  // index.html/styles.css, applied the same way to every "N. Choose a
-  // ..." row across every tab so this row isn't a one-off special case.
-  // Since all 4 buttons now show identical text ("Finger Patterns" /
-  // "1 Octave" twice, "2 Octaves" twice) with no way left to tell RH from
-  // LH apart, `hand` colors the title red/blue instead, matching the View
-  // readout box's own red/blue for the same reason.
+  // "RH Fingers"/"LH Fingers" here -- NOT "Finger Patterns". That wording
+  // is for the View readout box above the piano only (VIEW_READOUT_LABELS
+  // above) -- Chris, 2026-09-05, after this row briefly said "Finger
+  // Patterns" too: "no! not 'finger patterns' on the bottom row! only the
+  // scale / view part above the piano." Same length as what it replaced
+  // ("RH Fingers"/10 chars), so nFull===nShort again, no separate short
+  // mobile text needed -- styles.css has the font-size tiers back for the
+  // widths where this still wraps.
   const SCALE_VIEWS = [
     { nFull: "Note", nShort: "Note", l: "Names" },
     { nFull: "Number", nShort: "Number", l: "Degrees" },
-    { nFull: "Finger Patterns", nShort: "Finger Patterns", l: "1 Octave", hand: "view-rh" },
-    { nFull: "Finger Patterns", nShort: "Finger Patterns", l: "2 Octaves", hand: "view-rh" },
-    { nFull: "Finger Patterns", nShort: "Finger Patterns", l: "1 Octave", hand: "view-lh" },
-    { nFull: "Finger Patterns", nShort: "Finger Patterns", l: "2 Octaves", hand: "view-lh" }
+    { nFull: "RH Fingers", nShort: "RH Fingers", l: "1 Octave" },
+    { nFull: "RH Fingers", nShort: "RH Fingers", l: "2 Octaves" },
+    { nFull: "LH Fingers", nShort: "LH Fingers", l: "1 Octave" },
+    { nFull: "LH Fingers", nShort: "LH Fingers", l: "2 Octaves" }
   ];
   let curScaleView = 0;
   function buildScaleViewRow() {
@@ -780,7 +775,7 @@
     SCALE_VIEWS.forEach((opt, i) => {
       const btn = document.createElement("div");
       btn.className = "step-btn" + (i === curScaleView ? " active" : "");
-      btn.innerHTML = `<div class="n${opt.hand ? " " + opt.hand : ""}"><span class="wpl-lbl-full">${opt.nFull}</span><span class="wpl-lbl-short">${opt.nShort}</span></div><div class="l">${opt.l}</div>`;
+      btn.innerHTML = `<div class="n"><span class="wpl-lbl-full">${opt.nFull}</span><span class="wpl-lbl-short">${opt.nShort}</span></div><div class="l">${opt.l}</div>`;
       const activate = () => {
         curScaleView = i;
         document.querySelectorAll("#wpl-scale-view-row .step-btn").forEach(t => t.classList.remove("active"));

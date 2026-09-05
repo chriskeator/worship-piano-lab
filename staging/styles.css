@@ -255,15 +255,6 @@ body {
    same color everywhere .step-btn .l is used -- Progressions' step-row,
    Chords v2's quality-row2, Scales' view-row. */
 .step-btn .l { font-size: 12px; opacity: 0.9; line-height: 1.2; }
-/* Scales' 4 Finger Patterns view buttons all read the same text now (see
-   SCALE_VIEWS in ui.js), so red/blue on the title is the only thing left
-   telling RH from LH apart -- matches the red/blue the View readout box
-   already uses for the same reason. Overridden back to white when the
-   button itself is active, same as every other step-btn's title. */
-#wpl-scale-view-row .step-btn .n.view-rh { color: #f87171; }
-#wpl-scale-view-row .step-btn .n.view-lh { color: #38bdf8; }
-#wpl-scale-view-row .step-btn.active .n.view-rh,
-#wpl-scale-view-row .step-btn.active .n.view-lh { color: #fff; }
 
 /* Full label ("Pentatonic", "Right Hand", "Left Hand") vs short label
    ("Pent", "RH", "LH") -- Chris, 2026-09-04: short only on mobile, full
@@ -332,19 +323,37 @@ body {
   #wpl-scale-type-row .prog-tab .num { font-size: 18px; }
 }
 /* "Right Hand"/"Left Hand" became "RH Fingers"/"LH Fingers" (Chris,
-   2026-09-04), then "Finger Patterns" everywhere including mobile
-   (2026-09-05, see SCALE_VIEWS in ui.js) -- the font-size shrink tiers
-   that used to live here (to keep "RH Fingers"/then "Fingers" on one
-   line at narrow widths) are gone now: "Finger Patterns" doesn't fit on
-   one line below ~590px at any legible size, and Chris asked for it to
-   wrap on mobile rather than stay tiny -- "on mobile, change 'fingers' to
-   Finger Patterns. if it doesn't fit, then widen the distance between
-   scale and view." So this row now uses the same unscoped, standard
-   16px/12px (.step-btn .n/.l) every other row uses, full stop -- no
-   special-casing. See the widened section-to-section gap below (applied
-   uniformly to every "N. Choose a ..." row, not just this one) for the
-   spacing that keeps the now-taller wrapped buttons from crowding the
-   row above. */
+   2026-09-04), shown at every width (nFull===nShort for this row again --
+   "Finger Patterns" briefly lived here on 2026-09-05 but Chris caught it:
+   "no! not 'finger patterns' on the bottom row! only the scale / view
+   part above the piano," so this row is back to "RH Fingers"/"LH
+   Fingers", see SCALE_VIEWS in ui.js) -- so unlike "Note"/"Number", this
+   row's text can't just avoid wrapping by getting shorter below some
+   breakpoint on its own; the fix here is shrinking the row's own
+   .step-btn .n font at the widths where it otherwise wraps (Chris: "make
+   the text smaller if there's wrapping"), same font-size-only approach as
+   the Choose a Scale row's Pentatonic fix above. Three tiers, each the
+   largest size that still fits "RH Fingers" at that range's narrowest
+   width (Playwright-verified): 8px covers all of mobile (except the very
+   narrowest ~288-339px sliver, which still wraps to a uniform 2-line row
+   -- affects all 6 buttons equally, not a lopsided mismatch); 10px covers
+   521-589px; 12px covers 590-899px; 900px+ keeps the row's standard,
+   unscoped 16px (already verified to fit there). .l is scoped 1px below
+   .n at each tier (Chris, 2026-09-04 follow-up: "the title is now smaller
+   than the sub title") to keep the title-bigger-than-subtitle
+   relationship every other row in the app uses. */
+@media (max-width: 520px) {
+  #wpl-scale-view-row .step-btn .n { font-size: 8px; }
+  #wpl-scale-view-row .step-btn .l { font-size: 7px; }
+}
+@media (min-width: 521px) and (max-width: 589px) {
+  #wpl-scale-view-row .step-btn .n { font-size: 10px; }
+  #wpl-scale-view-row .step-btn .l { font-size: 9px; }
+}
+@media (min-width: 590px) and (max-width: 899px) {
+  #wpl-scale-view-row .step-btn .n { font-size: 12px; }
+  #wpl-scale-view-row .step-btn .l { font-size: 10px; }
+}
 
 /* Choose a View row: every button now has both a title and a subtitle
    (Note/Names, Scale/Degrees, RH/1 Octave, etc, 2026-09-04) so plain
@@ -1010,7 +1019,18 @@ body {
   .wpl-readout-row { gap: 10px; padding: 0 2px; }
   .wpl-readout-row > div { width: 88px !important; height: 34px !important; }
   .wpl-readout-row #wpl-chord-name, .wpl-readout-row #wpl-step-label { font-size: 15px !important; }
-  .wpl-readout-row #wpl-chord-name.long-label, .wpl-readout-row #wpl-step-label.long-label { font-size: 11.5px !important; }
+  /* 10px, not the old 11.5px -- "Finger Patterns" (the View readout's
+     longest value ever, see VIEW_READOUT_LABELS in ui.js) measures
+     84.4px wide at 11.5px against this box's 88px width, just ~3.6px of
+     margin -- too tight, and Chris caught it clipping/overlapping on a
+     real phone at this width: "on mobile change 'finger' to finger
+     patterns? just like desktop is" (desktop's 140px box has plenty of
+     room; this narrowest mobile tier's 88px box didn't). 10px gives
+     "Finger Patterns" a real ~14px margin (73.4px wide) and every other
+     long-label value here (Cm Pentatonic, Root High, etc) even more, with
+     no downside -- they were all already legible at the old, smaller
+     size used before this box's fonts were bumped up. */
+  .wpl-readout-row #wpl-chord-name.long-label, .wpl-readout-row #wpl-step-label.long-label { font-size: 10px !important; }
   .wpl-playbar { gap: 6px; padding: 8px 8px; }
   .wpl-playbar-controls { gap: 5px; flex-wrap: wrap; row-gap: 6px; }
   .wpl-toggle-btn, .wpl-play-btn { padding: 7px 5px; font-size: 10.5px; }
