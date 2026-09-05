@@ -302,6 +302,18 @@ body {
   #wpl-scale-type-row .wpl-lbl-full { display: inline; }
   #wpl-scale-type-row .wpl-lbl-short { display: none; }
 }
+/* On-key note/number labels: same 11px/10px (white/black) at every width
+   until now -- Chris, 2026-09-05: "on desktop only, can you make the note
+   names/number names any bigger?" Base size (mobile/tablet keys are too
+   narrow for anything bigger) stays the original inline-style values;
+   only bumped from 521px up, same "desktop" threshold as the readout
+   box above. */
+.key-label-white { font-size: 11px; }
+.key-label-black { font-size: 10px; }
+@media (min-width: 521px) {
+  .key-label-white { font-size: 15px; }
+  .key-label-black { font-size: 13px; }
+}
 /* Desktop-only bump so the top row (Choose a Scale) reads slightly
    bigger than the bottom row (Choose a View, .step-btn .n stays at
    its standard 16px) -- matching the size relationship already in

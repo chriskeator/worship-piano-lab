@@ -275,13 +275,15 @@
 
   function makeLabel(isWhite) {
     const s = document.createElement("span");
-    s.className = "key-label";
+    // Font size moved out to styles.css (.key-label-white/.key-label-black)
+    // so it can be bumped up on desktop only -- Chris, 2026-09-05: "on
+    // desktop only, can you make the note names/number names any bigger?"
+    s.className = "key-label " + (isWhite ? "key-label-white" : "key-label-black");
     s.style.cssText = `
       position: absolute;
       bottom: ${isWhite ? "4px" : "3px"};
       left: 0; right: 0;
       text-align: center;
-      font-size: ${isWhite ? "11px" : "10px"};
       font-weight: 700;
       color: ${isWhite ? "#0f172a" : "#fff"};
       opacity: 0;
