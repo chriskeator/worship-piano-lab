@@ -292,18 +292,18 @@
         "B": { 1: [1, 2, 3, 1, 3, 5], 2: [1, 2, 3, 1, 3, 1, 2, 3, 1, 3, 5] },
       },
       lhFingers: {
-        "C": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
-        "D♭": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
-        "D": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
-        "E♭": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
-        "E": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
-        "F": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
-        "F♯": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
-        "G": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
-        "A♭": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
-        "A": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
-        "B♭": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
-        "B": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] }
+        "C": { 1: [3, 2, 1, 3, 2, 1], 2: [3, 2, 1, 3, 1, 3, 2, 1, 3, 2, 1] },
+        "D♭": { 1: [3, 2, 1, 3, 2, 1], 2: [3, 2, 1, 3, 1, 3, 2, 1, 3, 2, 1] },
+        "D": { 1: [2, 1, 3, 2, 1, 2], 2: [2, 1, 3, 2, 1, 2, 1, 3, 2, 1, 2] },
+        "E♭": { 1: [3, 2, 1, 3, 1, 3], 2: [3, 2, 1, 3, 1, 3, 2, 1, 3, 1, 3] },
+        "E": { 1: [5, 3, 2, 1, 3, 1], 2: [5, 3, 2, 1, 3, 1, 3, 2, 1, 3, 1] },
+        "F": { 1: [3, 2, 1, 3, 2, 1], 2: [3, 2, 1, 3, 1, 3, 2, 1, 3, 2, 1] },
+        "F♯": { 1: [3, 2, 1, 3, 2, 1], 2: [3, 2, 1, 3, 1, 3, 2, 1, 3, 2, 1] },
+        "G": { 1: [3, 2, 1, 3, 2, 1], 2: [3, 2, 1, 3, 1, 3, 2, 1, 3, 2, 1] },
+        "A♭": { 1: [3, 2, 1, 3, 1, 3], 2: [3, 2, 1, 3, 1, 3, 2, 1, 3, 1, 3] },
+        "A": { 1: [2, 1, 3, 1, 3, 2], 2: [2, 1, 3, 1, 3, 2, 1, 3, 1, 3, 2] },
+        "B♭": { 1: [3, 2, 1, 2, 1, 3], 2: [3, 2, 1, 2, 1, 3, 2, 1, 2, 1, 3] },
+        "B": { 1: [1, 3, 1, 3, 2, 1], 2: [1, 3, 1, 3, 2, 1, 3, 1, 3, 2, 1] }
       }
     },
     pentMinor: {
