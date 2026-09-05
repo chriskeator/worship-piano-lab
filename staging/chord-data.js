@@ -322,6 +322,19 @@
     let accidental = targetPc - NATURAL_LETTER_PC[targetLetter];
     if (accidental > 6) accidental -= 12;
     if (accidental < -6) accidental += 12;
+    // A note that lands on a WHITE key is always shown as that plain
+    // natural letter, never an accidental on a neighboring letter -- Chris,
+    // 2026-09-05: "the white notes can never be labeled as a flat. Cb needs
+    // to always be a B and Fb needs to always be an E. same with any other
+    // white notes that are incorrectly labeled as flats." Strict letter-
+    // progression theory can spell a white key as Cb/Fb or even a double
+    // flat (Bbb, Abb, Ebb), but that's needless confusion once it's
+    // physically a plain white key with no black key involved -- applies
+    // the same way to the sharp mirror image (E#, B#) for consistency.
+    if (accidental !== 0) {
+      const naturalLetter = NATURAL_LETTERS.find(l => NATURAL_LETTER_PC[l] === targetPc);
+      if (naturalLetter) return { name: naturalLetter, pc: targetPc };
+    }
     const accStr = accidental > 0 ? "#".repeat(accidental) : accidental < 0 ? "b".repeat(-accidental) : "";
     return { name: targetLetter + accStr, pc: targetPc };
   }
