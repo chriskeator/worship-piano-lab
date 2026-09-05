@@ -185,15 +185,19 @@
   // below cycles through to generate a multi-octave run for the RH/LH
   // fingering views.
   //
-  // `rhFingers`/`lhFingers` are Chris's exact finger-number sequences
-  // (2026-09-04), one array per octave count, each already verified to be
-  // the same length as the note sequence buildScaleAscent produces for that
-  // scale/octave count (7 or 6 tones/octave + 1 trailing top root) — except
-  // pentMajor/pentMinor's 2-octave LH, which Chris sourced from Google and
-  // flagged as unverified; both came in one finger too long (12 vs the
-  // expected 11), so the trailing extra digit is dropped here to keep the
-  // note/finger arrays aligned. Chris confirmed the RH numbers are all
-  // correct and asked not to worry about correctness of LH beyond that.
+  // `rhFingers`/`lhFingers` are keyed by root key label (matching keyList's
+  // own `label` strings above), each holding one finger-number array per
+  // octave count. Every array's length matches the note sequence
+  // buildScaleAscent produces for that scale/octave count (7 or 6 or 5
+  // tones/octave + 1 trailing top root) -- entries are `null` until a real
+  // finger number is filled in.
+  //
+  // Cleared 2026-09-05 -- Chris: "delete all of the LH RH numbers. I'm
+  // going to go through this tomorrow one by one and fill them in. it's
+  // hard to have them all filled in and then find the incorrect ones."
+  // Every key/scale/hand/octave combination below is a blank slate (all
+  // `null`) so he can re-enter each one deliberately rather than hunting
+  // for wrong values mixed in with right ones.
   const SCALE_DEFS = {
     major: {
       displayName: "Major",
@@ -202,8 +206,34 @@
         { note: "F", degree: "4" }, { note: "G", degree: "5" }, { note: "A", degree: "6" },
         { note: "B", degree: "7" }
       ],
-      rhFingers: { 1: [1, 2, 3, 1, 2, 3, 4, 5], 2: [1, 2, 3, 1, 2, 3, 4, 1, 2, 3, 1, 2, 3, 4, 5] },
-      lhFingers: { 1: [5, 4, 3, 2, 1, 3, 2, 1], 2: [5, 4, 3, 2, 1, 3, 2, 1, 4, 3, 2, 1, 3, 2, 1] }
+      rhFingers: {
+        "C": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "D♭": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "D": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "E♭": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "E": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "F": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "F♯": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "G": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "A♭": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "A": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "B♭": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "B": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] }
+      },
+      lhFingers: {
+        "C": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "D♭": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "D": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "E♭": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "E": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "F": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "F♯": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "G": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "A♭": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "A": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "B♭": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "B": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] }
+      }
     },
     minor: {
       displayName: "Minor",
@@ -212,8 +242,34 @@
         { note: "F", degree: "4" }, { note: "G", degree: "5" }, { note: "Ab", degree: "♭6" },
         { note: "Bb", degree: "♭7" }
       ],
-      rhFingers: { 1: [1, 2, 3, 1, 2, 3, 4, 1], 2: [1, 2, 3, 1, 2, 3, 4, 1, 2, 3, 1, 2, 3, 4, 1] },
-      lhFingers: { 1: [4, 3, 2, 1, 3, 2, 1, 4], 2: [4, 3, 2, 1, 3, 2, 1, 4, 3, 2, 1, 3, 2, 1, 4] }
+      rhFingers: {
+        "C": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "D♭": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "D": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "E♭": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "E": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "F": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "F♯": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "G": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "A♭": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "A": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "B♭": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "B": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] }
+      },
+      lhFingers: {
+        "C": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "D♭": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "D": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "E♭": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "E": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "F": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "F♯": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "G": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "A♭": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "A": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "B♭": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "B": { 1: [null, null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] }
+      }
     },
     pentMajor: {
       displayName: "Pentatonic Major",
@@ -221,8 +277,34 @@
         { note: "C", degree: "1" }, { note: "D", degree: "2" }, { note: "E", degree: "3" },
         { note: "G", degree: "5" }, { note: "A", degree: "6" }
       ],
-      rhFingers: { 1: [1, 2, 3, 1, 3, 5], 2: [1, 2, 3, 1, 3, 1, 2, 3, 1, 3, 5] },
-      lhFingers: { 1: [5, 4, 3, 2, 1, 2], 2: [5, 4, 3, 2, 1, 3, 2, 1, 3, 2, 1] }
+      rhFingers: {
+        "C": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
+        "D♭": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
+        "D": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
+        "E♭": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
+        "E": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
+        "F": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
+        "F♯": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
+        "G": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
+        "A♭": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
+        "A": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
+        "B♭": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
+        "B": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] }
+      },
+      lhFingers: {
+        "C": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
+        "D♭": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
+        "D": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
+        "E♭": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
+        "E": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
+        "F": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
+        "F♯": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
+        "G": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
+        "A♭": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
+        "A": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
+        "B♭": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
+        "B": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] }
+      }
     },
     pentMinor: {
       displayName: "Pentatonic Minor",
@@ -230,8 +312,34 @@
         { note: "C", degree: "1" }, { note: "Eb", degree: "♭3" }, { note: "F", degree: "4" },
         { note: "G", degree: "5" }, { note: "Bb", degree: "♭7" }
       ],
-      rhFingers: { 1: [1, 3, 1, 2, 3, 5], 2: [1, 3, 1, 2, 3, 1, 3, 1, 2, 3, 5] },
-      lhFingers: { 1: [5, 4, 3, 2, 1, 2], 2: [5, 4, 3, 2, 1, 3, 2, 1, 3, 2, 1] }
+      rhFingers: {
+        "C": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
+        "D♭": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
+        "D": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
+        "E♭": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
+        "E": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
+        "F": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
+        "F♯": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
+        "G": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
+        "A♭": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
+        "A": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
+        "B♭": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
+        "B": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] }
+      },
+      lhFingers: {
+        "C": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
+        "D♭": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
+        "D": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
+        "E♭": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
+        "E": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
+        "F": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
+        "F♯": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
+        "G": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
+        "A♭": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
+        "A": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
+        "B♭": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] },
+        "B": { 1: [null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null] }
+      }
     },
     bluesMajor: {
       displayName: "Blues Major",
@@ -239,21 +347,69 @@
         { note: "C", degree: "1" }, { note: "D", degree: "2" }, { note: "Eb", degree: "♭3" },
         { note: "E", degree: "3" }, { note: "G", degree: "5" }, { note: "A", degree: "6" }
       ],
-      rhFingers: { 1: [1, 2, 3, 1, 2, 3, 5], 2: [1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 5] },
-      lhFingers: { 1: [5, 4, 3, 2, 1, 2, 1], 2: [5, 4, 3, 2, 1, 2, 1, 4, 3, 2, 1, 2, 1] }
+      rhFingers: {
+        "C": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "D♭": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "D": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "E♭": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "E": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "F": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "F♯": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "G": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "A♭": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "A": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "B♭": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "B": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] }
+      },
+      lhFingers: {
+        "C": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "D♭": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "D": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "E♭": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "E": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "F": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "F♯": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "G": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "A♭": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "A": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "B♭": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "B": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] }
+      }
     },
     bluesMinor: {
       displayName: "Blues Minor",
-      // b5 written as Gb (letter G, flatted), not F# -- Chris, 2026-09-05:
-      // every flat-numbered degree (b3/b5/b6/b7) should show as an actual
-      // flat, matching its own degree label (this one reads "♭5"), never a
-      // sharp on the letter below.
       tones: [
         { note: "C", degree: "1" }, { note: "Eb", degree: "♭3" }, { note: "F", degree: "4" },
         { note: "Gb", degree: "♭5" }, { note: "G", degree: "5" }, { note: "Bb", degree: "♭7" }
       ],
-      rhFingers: { 1: [1, 2, 3, 4, 1, 3, 5], 2: [1, 2, 3, 4, 1, 3, 1, 2, 3, 4, 1, 3, 5] },
-      lhFingers: { 1: [5, 4, 3, 2, 1, 2, 1], 2: [5, 4, 3, 2, 1, 2, 1, 4, 3, 2, 1, 2, 1] }
+      rhFingers: {
+        "C": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "D♭": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "D": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "E♭": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "E": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "F": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "F♯": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "G": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "A♭": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "A": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "B♭": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "B": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] }
+      },
+      lhFingers: {
+        "C": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "D♭": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "D": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "E♭": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "E": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "F": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "F♯": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "G": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "A♭": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "A": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "B♭": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] },
+        "B": { 1: [null, null, null, null, null, null, null], 2: [null, null, null, null, null, null, null, null, null, null, null, null, null] }
+      }
     }
   };
 
@@ -273,6 +429,22 @@
   function degreeLabelForNote(scaleKey, name) {
     const t = SCALE_DEFS[scaleKey].tones.find(t => t.note === name);
     return t ? t.degree : "1";
+  }
+
+  // Looks up a finger-number array, handling both shapes rhFingers/
+  // lhFingers can currently take: per-key (an object of rootLabel ->
+  // {1:[...],2:[...]}, e.g. major's rhFingers) or scale-type-wide (a flat
+  // {1:[...],2:[...]} shared by every key, for any hand/scale-type
+  // combination that doesn't have real per-key numbers yet -- see the
+  // SCALE_DEFS comment above). `rootLabel` is one of keyList's own label
+  // strings ("C", "D♭", ...); table[rootLabel] is undefined on a flat
+  // table (whose only keys are the octave numbers 1/2), so this falls
+  // through to the flat table itself in that case -- one lookup works for
+  // both shapes without the caller needing to know which one it's getting.
+  function getFingers(scaleKey, hand, rootLabel, octaves) {
+    const table = SCALE_DEFS[scaleKey][hand + "Fingers"];
+    const perKey = table[rootLabel] || table;
+    return perKey[octaves];
   }
 
   // ---------- Correct scale-tone spelling in any of the 12 keys ----------
@@ -379,6 +551,7 @@
     scaleDefs: SCALE_DEFS,
     buildScaleAscent,
     degreeLabelForNote,
-    spellScaleToneInKey
+    spellScaleToneInKey,
+    getFingers
   };
 })(window);

@@ -571,6 +571,9 @@
   function renderScaleKeyMap() {
     const scaleKey = curScaleKey();
     const entries = [];
+    // Hoisted out of the Notes/Numbers branch below so the RH/LH Fingers
+    // branch (which needs it for D.getFingers) can use the same lookup.
+    const rootLabel = D.keyList.find(k => k.pc === curKeyPc).label;
     if (curScaleView === 0 || curScaleView === 1) {
       // buildScaleAscent(scaleKey, 1) walks one octave of tones AND appends
       // the top root (Chris, 2026-09-04: "Note and Number tabs...need to end
@@ -589,7 +592,6 @@
       // sharp-or-flat table, which got Minor/Pentatonic Minor/Blues Minor's
       // flat degrees wrong in most keys and the plain Major scale wrong in
       // F/D♭/E♭/A♭/B♭ (Chris, 2026-09-04/05).
-      const rootLabel = D.keyList.find(k => k.pc === curKeyPc).label;
       D.buildScaleAscent(scaleKey, 1).forEach(step => {
         const spelled = D.spellScaleToneInKey(step.name, rootLabel);
         // oct is just the on-screen octave slot -- NOTES_VIEW_OCT for the
@@ -615,7 +617,11 @@
       // -- Chris, 2026-09-04: "RH 1 octave and RH 2 octave need to move up 1
       // octave. both LF [LH] fingers are good" (LH stays at LH_BASE_OCT).
       const baseOct = isLeft ? LH_BASE_OCT : RH_BASE_OCT + 1;
-      const fingers = (isLeft ? D.scaleDefs[scaleKey].lhFingers : D.scaleDefs[scaleKey].rhFingers)[octaves];
+      // getFingers handles both the per-key {rootLabel: {octaves: [...]}}
+      // shape and the older flat {octaves: [...]} shape transparently (see
+      // chord-data.js) -- every scale type is per-key now, but this keeps
+      // working even if a scale type ever falls back to a shared sequence.
+      const fingers = D.getFingers(scaleKey, isLeft ? "lh" : "rh", rootLabel, octaves);
       D.buildScaleAscent(scaleKey, octaves).forEach((step, i) => {
         const tNote = E.transposeNote(step.name + (baseOct + step.octaveOffset), curKeyPc, useFlats);
         const name = tNote.replace(/[0-9]/g, "");
