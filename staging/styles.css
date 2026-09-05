@@ -520,8 +520,23 @@ body {
 /* Both boxes are a fixed width (not min-width) sized with buffer to fit the
    widest real value ("Root High"/"Root Low" on the Chords tab) so the row
    never shifts based on content length, and justify-content:center + gap
-   groups them near the middle instead of pinning them to the row's edges. */
-.wpl-readout-row { display: flex; justify-content: center; align-items: flex-end; gap: 36px; margin: 8px 0 6px; padding: 0 20px; }
+   groups them near the middle instead of pinning them to the row's edges.
+   The row itself is a 3-column grid: the Scale+View pair lives in the
+   middle "auto" column, and the two side columns are pure spacers -- the
+   1fr/1fr default here just needs to be EQUAL, since ui.js's
+   sizeHandIcon() overrides both to the same explicit pixel width via
+   inline style whenever the hand icon is actually showing (measured
+   against the real, continuously-variable leftover space beside the
+   pair -- see that function's own comment for why this couldn't just be
+   a handful of CSS breakpoints). That's what keeps the Scale+View pair
+   perfectly centered in the row, exactly as it is on the Chords/
+   Progressions tabs, whether or not the icon is showing -- Chris,
+   2026-09-05, after the icon's first version was added as a plain third
+   flex item and recentered/shifted the whole row left of where Chords/
+   Progressions show it: "keep scale / view the same as the other chords
+   / progressions tabs." */
+.wpl-readout-row { display: grid; grid-template-columns: 1fr auto 1fr; align-items: flex-end; margin: 8px 0 6px; padding: 0 20px; }
+.wpl-readout-pair { grid-column: 2; display: flex; justify-content: center; align-items: flex-end; gap: 36px; }
 .wpl-readout-label { font-size: 13px; color: var(--wpl-muted); }
 /* Numbers/symbols ("C", "1", "5/7") read fine big and bold; full words
    ("Root High", "1st Inv") look oversized/heavy at the same size, so
@@ -531,12 +546,21 @@ body {
 
 /* Hand-with-numbered-fingers icon, shown next to the View readout only
    while a Fingers view (RH or LH) is active -- ui.js's updateHandIcon()
-   swaps its content and display. It's a third .wpl-readout-row flex
-   child so it automatically picks up the row's existing gap/centering
-   at every breakpoint below instead of needing its own positioning;
-   align-self overrides the row's flex-end so it sits centered next to
-   the text instead of pinned to the row's bottom edge. */
-.wpl-hand-icon { width: 44px; height: 44px; align-self: center; flex-shrink: 0; }
+   swaps its content and display; sizeHandIcon() sets its actual
+   width/height inline (see that function's comment). Lives in the row's
+   right column (see the grid comment above) and is centered within it
+   via justify-self, which is exactly "centered between View and the
+   right frame's end" (that column's left edge is where the centered
+   pair ends, its right edge is the row's/frame's own right edge) --
+   Chris, 2026-09-05. align-self centers it vertically against the row's
+   flex-end-aligned text instead of pinning it to the bottom edge. */
+/* 60x60 here is just the pre-JS fallback (briefly visible, if at all,
+   before ui.js's sizeHandIcon() sets the real inline width/height).
+   min-width:0 defeats grid items' default min-width:auto (which sizes
+   them to their content's natural/specified width) so this column can
+   still shrink below that fallback on the very first paint instead of
+   forcing the grid wider than the row. */
+.wpl-hand-icon { grid-column: 3; justify-self: center; align-self: center; width: 60px; height: 60px; min-width: 0; }
 
 /* ---------- Piano ---------- */
 #wpl-piano-frame { background: #1e293b; border-radius: 12px; padding: 5px; }
@@ -909,12 +933,9 @@ body {
      with only ONE line instead of two, Practice's total height only
      shrinks further below Chords/Progressions's shared max, so there's
      no shell-height risk (confirmed via qa/check-dimensions.js). */
-  .wpl-readout-row { padding: 0 4px; margin: 4px 0 2px; gap: 20px; }
-  .wpl-readout-row > div { width: 112px !important; height: 40px !important; }
-  /* Higher-specificity override of the ">div" rule just above, which would
-     otherwise force the hand icon to the same 112x40 box size as the
-     Scale/View readouts. */
-  .wpl-readout-row > .wpl-hand-icon { width: 34px !important; height: 34px !important; }
+  .wpl-readout-row { padding: 0 4px; margin: 4px 0 2px; }
+  .wpl-readout-pair { gap: 20px; }
+  .wpl-readout-pair > div { width: 112px !important; height: 40px !important; }
   /* "Pentatonic" subtitle on the Choose a Scale row -- see the .wpl-name-wide
      comment further down for the full breakdown of these three tiers.
      This is the 341-520px tier (7px). */
@@ -1022,11 +1043,9 @@ body {
   #wpl-practice-subtabs .wpl-toggle-btn { min-height: 52px; padding: 6px 1px; }
   #wpl-practice-subtabs .wpl-subtab-label { font-size: 7.5px; }
   #wpl-practice-subtabs .wpl-tab-soon { font-size: 5.5px; padding: 1px 2px; }
-  .wpl-readout-row { gap: 10px; padding: 0 2px; }
-  .wpl-readout-row > div { width: 88px !important; height: 34px !important; }
-  /* Same override as the 520px tier above, scaled down further for this
-     narrowest phone tier. */
-  .wpl-readout-row > .wpl-hand-icon { width: 26px !important; height: 26px !important; }
+  .wpl-readout-row { padding: 0 2px; }
+  .wpl-readout-pair { gap: 10px; }
+  .wpl-readout-pair > div { width: 88px !important; height: 34px !important; }
   /* Overrides the 341-520px tier's 7px above -- this narrowest phone
      tier gets slightly more room (see .wpl-name-wide comment near the
      521-619px tier for the full breakdown). */
