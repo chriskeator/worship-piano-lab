@@ -540,6 +540,15 @@ body {
    longer than any real number/symbol ever gets (see ui.js comment). */
 #wpl-chord-name.long-label, #wpl-step-label.long-label { font-size: 18px !important; }
 
+/* Hand-with-numbered-fingers icon, shown next to the View readout only
+   while a Fingers view (RH or LH) is active -- ui.js's updateHandIcon()
+   swaps its content and display. It's a third .wpl-readout-row flex
+   child so it automatically picks up the row's existing gap/centering
+   at every breakpoint below instead of needing its own positioning;
+   align-self overrides the row's flex-end so it sits centered next to
+   the text instead of pinned to the row's bottom edge. */
+.wpl-hand-icon { width: 44px; height: 44px; align-self: center; flex-shrink: 0; }
+
 /* ---------- Piano ---------- */
 #wpl-piano-frame { background: #1e293b; border-radius: 12px; padding: 5px; }
 #wpl-status {
@@ -913,6 +922,10 @@ body {
      no shell-height risk (confirmed via qa/check-dimensions.js). */
   .wpl-readout-row { padding: 0 4px; margin: 4px 0 2px; gap: 20px; }
   .wpl-readout-row > div { width: 112px !important; height: 40px !important; }
+  /* Higher-specificity override of the ">div" rule just above, which would
+     otherwise force the hand icon to the same 112x40 box size as the
+     Scale/View readouts. */
+  .wpl-readout-row > .wpl-hand-icon { width: 34px !important; height: 34px !important; }
   /* line-height is a fixed px value (not the desktop inline style's em-relative
      1.3), shared by both the normal and .long-label sizes below, so a
      short value ("C4") and a long one ("2nd Inv") sit on the same vertical
@@ -1018,19 +1031,17 @@ body {
   #wpl-practice-subtabs .wpl-tab-soon { font-size: 5.5px; padding: 1px 2px; }
   .wpl-readout-row { gap: 10px; padding: 0 2px; }
   .wpl-readout-row > div { width: 88px !important; height: 34px !important; }
+  /* Same override as the 520px tier above, scaled down further for this
+     narrowest phone tier. */
+  .wpl-readout-row > .wpl-hand-icon { width: 26px !important; height: 26px !important; }
   .wpl-readout-row #wpl-chord-name, .wpl-readout-row #wpl-step-label { font-size: 15px !important; }
-  /* 10px, not the old 11.5px -- "Finger Patterns" (the View readout's
-     longest value ever, see VIEW_READOUT_LABELS in ui.js) measures
-     84.4px wide at 11.5px against this box's 88px width, just ~3.6px of
-     margin -- too tight, and Chris caught it clipping/overlapping on a
-     real phone at this width: "on mobile change 'finger' to finger
-     patterns? just like desktop is" (desktop's 140px box has plenty of
-     room; this narrowest mobile tier's 88px box didn't). 10px gives
-     "Finger Patterns" a real ~14px margin (73.4px wide) and every other
-     long-label value here (Cm Pentatonic, Root High, etc) even more, with
-     no downside -- they were all already legible at the old, smaller
-     size used before this box's fonts were bumped up. */
-  .wpl-readout-row #wpl-chord-name.long-label, .wpl-readout-row #wpl-step-label.long-label { font-size: 10px !important; }
+  /* 11.5px. Was briefly dropped to 10px to squeeze "Finger Patterns" into
+     this 88px box on real phones, but Chris shortened the View readout's
+     finger-view label to "Fingers" instead (see VIEW_READOUT_LABELS in
+     ui.js) -- same length as "Numbers", which already fit fine here --
+     so the extra shrink is no longer needed and this reverts to the size
+     tuned for the longest Scale readout values (Cm Pentatonic, etc). */
+  .wpl-readout-row #wpl-chord-name.long-label, .wpl-readout-row #wpl-step-label.long-label { font-size: 11.5px !important; }
   .wpl-playbar { gap: 6px; padding: 8px 8px; }
   .wpl-playbar-controls { gap: 5px; flex-wrap: wrap; row-gap: 6px; }
   .wpl-toggle-btn, .wpl-play-btn { padding: 7px 5px; font-size: 10.5px; }

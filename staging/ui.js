@@ -320,6 +320,10 @@
     const ch = prog[stepToShow];
     setReadoutValue(document.getElementById("wpl-chord-name"), ch.name, E.formatLabel(E.transposeChordName(ch.name, curKeyPc, useFlats)));
     setReadoutValue(document.getElementById("wpl-step-label"), ch.topLabel, E.formatLabel(ch.topLabel));
+    // The hand icon is a Scales-tab/Fingers-view-only element -- hide it
+    // here since this readout row is shared with the Progressions tab.
+    const handIconEl = document.getElementById("wpl-hand-icon");
+    if (handIconEl) handIconEl.style.display = "none";
     document.querySelectorAll("#wpl-step-row .step-btn").forEach((b, i) => {
       b.classList.toggle("active", i === stepToShow);
       b.querySelector(".n").textContent = E.transposeChordName(prog[i].name, curKeyPc, useFlats);
@@ -431,6 +435,9 @@
     setReadoutValue(document.getElementById("wpl-chord-name"), ch.name, E.formatLabel(E.transposeChordName(ch.name, curKeyPc, useFlats)));
     const posName = getChordPositionNames(D.chordQualityNames[curQuality2])[posToShow];
     setReadoutValue(document.getElementById("wpl-step-label"), posName, posName);
+    // Same as above -- this readout row is shared with the Chords tab.
+    const handIconEl = document.getElementById("wpl-hand-icon");
+    if (handIconEl) handIconEl.style.display = "none";
     updateQualityRow2Numbers();
     document.querySelectorAll("#wpl-position-tabs2 .prog-tab").forEach((b, i) => {
       b.classList.toggle("active", i === posToShow);
@@ -654,14 +661,77 @@
   // like "Root High") kept independent of the view row's own button text
   // (which now reads "RH Fingers"/"LH Fingers" in full) so a future button
   // relabel can't reopen the overflow "Right Hand 2 Octaves" caused before.
-  // "Notes" (not "Note Names") and "Finger Patterns" for all 4 RH/LH views
+  // "Notes" (not "Note Names") and "Fingers" for all 4 RH/LH views
   // (not "RH 1 Octave"/"RH 2 Octaves"/etc) -- Chris, 2026-09-05, from a
-  // screenshot of this readout box. The RH/LH split still needs to read at
-  // a glance once the text no longer says which hand, so "Finger Patterns"
-  // is colored red for the two RH views and blue for the two LH views,
-  // matching the red/blue used everywhere else for right/left hand.
-  const VIEW_READOUT_LABELS = ["Notes", "Numbers", "Finger Patterns", "Finger Patterns", "Finger Patterns", "Finger Patterns"];
+  // screenshot of this readout box. "Finger Patterns" kept truncating to
+  // "Finger" on real mobile devices despite fitting in headless-browser
+  // measurements, so Chris asked to just shorten it to "Fingers" everywhere
+  // (mobile and desktop) -- the bottom "3. Choose a View" button row is
+  // untouched and still reads "RH Fingers"/"LH Fingers" in full.
+  // The RH/LH split still needs to read at a glance once the text no
+  // longer says which hand, so "Fingers" is colored red for the two RH
+  // views and blue for the two LH views, matching the red/blue used
+  // everywhere else for right/left hand.
+  const VIEW_READOUT_LABELS = ["Notes", "Numbers", "Fingers", "Fingers", "Fingers", "Fingers"];
   const VIEW_READOUT_COLORS = [null, null, "#f87171", "#f87171", "#38bdf8", "#38bdf8"];
+
+  // Small hand-with-numbered-fingers icon shown next to the View readout
+  // whenever a Fingers view (RH or LH) is active -- Chris, 2026-09-05,
+  // from a reference photo of a hand with 1-5 labeled thumb-to-pinky.
+  // Built as two hand-authored SVGs (not one icon mirrored with a CSS
+  // transform) so the "1".."5" labels stay upright and correctly ordered
+  // instead of coming out backwards -- the LH svg's shapes are the RH
+  // svg's shapes reflected across the viewBox's own center (x' = 60 - x),
+  // so the thumb ends up on the right and the numbers still read 1-5
+  // left-to-right in age order, matching real left-hand piano fingering
+  // (thumb/1 nearest the middle of the keyboard, pinky/5 on the outside).
+  // Fill/stroke reuse the app's existing tan/muted palette; the numbers
+  // reuse the same red/blue already used to color-code RH/LH everywhere
+  // else in this readout.
+  const RH_HAND_SVG = `<svg viewBox="0 0 60 76" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <rect x="15" y="44" width="30" height="24" rx="10" fill="var(--wpl-tan)" stroke="var(--wpl-muted)" stroke-width="1.5"/>
+    <rect x="5" y="46" width="9" height="20" rx="4.5" fill="var(--wpl-tan)" stroke="var(--wpl-muted)" stroke-width="1.5" transform="rotate(-35 9.5 56)"/>
+    <rect x="17" y="24" width="7" height="22" rx="3.5" fill="var(--wpl-tan)" stroke="var(--wpl-muted)" stroke-width="1.5"/>
+    <rect x="25.5" y="18" width="7" height="28" rx="3.5" fill="var(--wpl-tan)" stroke="var(--wpl-muted)" stroke-width="1.5"/>
+    <rect x="34" y="23" width="7" height="23" rx="3.5" fill="var(--wpl-tan)" stroke="var(--wpl-muted)" stroke-width="1.5"/>
+    <rect x="42.5" y="29" width="6" height="17" rx="3" fill="var(--wpl-tan)" stroke="var(--wpl-muted)" stroke-width="1.5"/>
+    <text x="8" y="42" text-anchor="middle" font-size="10" font-weight="800" fill="#f87171">1</text>
+    <text x="20.5" y="20" text-anchor="middle" font-size="10" font-weight="800" fill="#f87171">2</text>
+    <text x="29" y="14" text-anchor="middle" font-size="10" font-weight="800" fill="#f87171">3</text>
+    <text x="37.5" y="19" text-anchor="middle" font-size="10" font-weight="800" fill="#f87171">4</text>
+    <text x="45.5" y="25" text-anchor="middle" font-size="10" font-weight="800" fill="#f87171">5</text>
+  </svg>`;
+  const LH_HAND_SVG = `<svg viewBox="0 0 60 76" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <rect x="15" y="44" width="30" height="24" rx="10" fill="var(--wpl-tan)" stroke="var(--wpl-muted)" stroke-width="1.5"/>
+    <rect x="46" y="46" width="9" height="20" rx="4.5" fill="var(--wpl-tan)" stroke="var(--wpl-muted)" stroke-width="1.5" transform="rotate(35 50.5 56)"/>
+    <rect x="36" y="24" width="7" height="22" rx="3.5" fill="var(--wpl-tan)" stroke="var(--wpl-muted)" stroke-width="1.5"/>
+    <rect x="27.5" y="18" width="7" height="28" rx="3.5" fill="var(--wpl-tan)" stroke="var(--wpl-muted)" stroke-width="1.5"/>
+    <rect x="19" y="23" width="7" height="23" rx="3.5" fill="var(--wpl-tan)" stroke="var(--wpl-muted)" stroke-width="1.5"/>
+    <rect x="11.5" y="29" width="6" height="17" rx="3" fill="var(--wpl-tan)" stroke="var(--wpl-muted)" stroke-width="1.5"/>
+    <text x="52" y="42" text-anchor="middle" font-size="10" font-weight="800" fill="#38bdf8">1</text>
+    <text x="39.5" y="20" text-anchor="middle" font-size="10" font-weight="800" fill="#38bdf8">2</text>
+    <text x="31" y="14" text-anchor="middle" font-size="10" font-weight="800" fill="#38bdf8">3</text>
+    <text x="22.5" y="19" text-anchor="middle" font-size="10" font-weight="800" fill="#38bdf8">4</text>
+    <text x="14.5" y="25" text-anchor="middle" font-size="10" font-weight="800" fill="#38bdf8">5</text>
+  </svg>`;
+
+  // Shows/hides/swaps the hand icon based on which View is active: hidden
+  // for Notes/Numbers (0,1), the RH icon for the two RH Fingers views
+  // (2,3), the LH icon for the two LH Fingers views (4,5).
+  function updateHandIcon(view) {
+    const el = document.getElementById("wpl-hand-icon");
+    if (!el) return;
+    if (view === 2 || view === 3) {
+      el.innerHTML = RH_HAND_SVG;
+      el.style.display = "flex";
+    } else if (view === 4 || view === 5) {
+      el.innerHTML = LH_HAND_SVG;
+      el.style.display = "flex";
+    } else {
+      el.style.display = "none";
+      el.innerHTML = "";
+    }
+  }
 
   // highlightStep is accepted (playback passes the current step index) but
   // only affects nothing visual right now -- the key map above is a static
@@ -691,6 +761,7 @@
     const stepLabelEl = document.getElementById("wpl-step-label");
     stepLabelEl.classList.add("long-label");
     stepLabelEl.innerHTML = viewHtml;
+    updateHandIcon(curScaleView);
     renderScaleKeyMap();
   }
 
