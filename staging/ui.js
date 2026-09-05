@@ -654,7 +654,14 @@
   // like "Root High") kept independent of the view row's own button text
   // (which now reads "RH Fingers"/"LH Fingers" in full) so a future button
   // relabel can't reopen the overflow "Right Hand 2 Octaves" caused before.
-  const VIEW_READOUT_LABELS = ["Note Names", "Numbers", "RH 1 Octave", "RH 2 Octaves", "LH 1 Octave", "LH 2 Octaves"];
+  // "Notes" (not "Note Names") and "Finger Patterns" for all 4 RH/LH views
+  // (not "RH 1 Octave"/"RH 2 Octaves"/etc) -- Chris, 2026-09-05, from a
+  // screenshot of this readout box. The RH/LH split still needs to read at
+  // a glance once the text no longer says which hand, so "Finger Patterns"
+  // is colored red for the two RH views and blue for the two LH views,
+  // matching the red/blue used everywhere else for right/left hand.
+  const VIEW_READOUT_LABELS = ["Notes", "Numbers", "Finger Patterns", "Finger Patterns", "Finger Patterns", "Finger Patterns"];
+  const VIEW_READOUT_COLORS = [null, null, "#f87171", "#f87171", "#38bdf8", "#38bdf8"];
 
   // highlightStep is accepted (playback passes the current step index) but
   // only affects nothing visual right now -- the key map above is a static
@@ -672,7 +679,9 @@
       ? `${rootName}<span class="wpl-lbl-short">${shortSuffix}</span><span class="wpl-lbl-full">${fullSuffix}</span>`
       : rootName + shortSuffix;
     const viewLabel = VIEW_READOUT_LABELS[curScaleView];
-    setReadoutValue(document.getElementById("wpl-step-label"), viewLabel, viewLabel);
+    const viewColor = VIEW_READOUT_COLORS[curScaleView];
+    const viewHtml = viewColor ? `<span style="color:${viewColor}">${viewLabel}</span>` : viewLabel;
+    setReadoutValue(document.getElementById("wpl-step-label"), viewLabel, viewHtml);
     renderScaleKeyMap();
   }
 
