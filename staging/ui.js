@@ -745,21 +745,29 @@
   // button; n/l divs; touchstart handled the same way) -- only the data
   // source differs (a fixed array here instead of the current
   // progression's chords).
-  // "RH Fingers"/"LH Fingers" (Chris, 2026-09-04, replacing the original
-  // "Right Hand"/"Left Hand") are the same length as what they replace, so
-  // they use the same nFull===nShort treatment as "Note"/"Number" below --
-  // no separate short mobile text needed; styles.css still has a font-size
-  // fallback for this row if a width is ever found where it wraps (see the
-  // "that row shell size can never change" rule).
   // "Number"/"Names" (not "Degrees") -- Chris, 2026-09-05: matches "Note"/
   // "Names" right above it instead of using a different second word.
+  // "Finger Patterns" (was "RH Fingers"/"LH Fingers") -- Chris, 2026-09-05:
+  // "the view 'finger' needs to say 'finger patterns' like desktop," to
+  // match the View readout box next to it, which already dropped the
+  // hand name from its text in favor of a red/blue color (see
+  // VIEW_READOUT_LABELS/VIEW_READOUT_COLORS above). Since all 4 buttons
+  // would otherwise show identical text ("Finger Patterns" / "1 Octave"
+  // twice, "2 Octaves" twice) with no way left to tell RH from LH apart,
+  // `hand` colors the title red/blue here the same way, via the
+  // view-rh/view-lh classes below. Full text doesn't fit this row's
+  // button width below 900px at any legible size (Playwright-verified --
+  // it wraps even at the smallest size the row has ever used), so below
+  // that it shows the short "Fingers" instead, using the row's existing
+  // full/short swap (the same one "Note"/"Number" here don't need, since
+  // they're already this short everywhere).
   const SCALE_VIEWS = [
     { nFull: "Note", nShort: "Note", l: "Names" },
     { nFull: "Number", nShort: "Number", l: "Names" },
-    { nFull: "RH Fingers", nShort: "RH Fingers", l: "1 Octave" },
-    { nFull: "RH Fingers", nShort: "RH Fingers", l: "2 Octaves" },
-    { nFull: "LH Fingers", nShort: "LH Fingers", l: "1 Octave" },
-    { nFull: "LH Fingers", nShort: "LH Fingers", l: "2 Octaves" }
+    { nFull: "Finger Patterns", nShort: "Fingers", l: "1 Octave", hand: "view-rh" },
+    { nFull: "Finger Patterns", nShort: "Fingers", l: "2 Octaves", hand: "view-rh" },
+    { nFull: "Finger Patterns", nShort: "Fingers", l: "1 Octave", hand: "view-lh" },
+    { nFull: "Finger Patterns", nShort: "Fingers", l: "2 Octaves", hand: "view-lh" }
   ];
   let curScaleView = 0;
   function buildScaleViewRow() {
@@ -768,7 +776,7 @@
     SCALE_VIEWS.forEach((opt, i) => {
       const btn = document.createElement("div");
       btn.className = "step-btn" + (i === curScaleView ? " active" : "");
-      btn.innerHTML = `<div class="n"><span class="wpl-lbl-full">${opt.nFull}</span><span class="wpl-lbl-short">${opt.nShort}</span></div><div class="l">${opt.l}</div>`;
+      btn.innerHTML = `<div class="n${opt.hand ? " " + opt.hand : ""}"><span class="wpl-lbl-full">${opt.nFull}</span><span class="wpl-lbl-short">${opt.nShort}</span></div><div class="l">${opt.l}</div>`;
       const activate = () => {
         curScaleView = i;
         document.querySelectorAll("#wpl-scale-view-row .step-btn").forEach(t => t.classList.remove("active"));
