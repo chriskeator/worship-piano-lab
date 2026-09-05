@@ -288,6 +288,16 @@ body {
 @media (min-width: 521px) {
   #wpl-scale-type-row .prog-tab .num { font-size: 16px; }
 }
+/* Scale readout ("C", "Cm", ...): spelled-out Major/Minor only above the
+   readout box's own mobile/desktop split (140px box starts here, same
+   breakpoint the .wpl-readout-row mobile override below uses) -- Chris,
+   2026-09-05: "on desktop... change the text back from C to C Major and
+   Cm to C Minor." Below this width the compact "C"/"Cm" stays (matches
+   the smaller 112px/88px boxes at narrower widths). */
+@media (min-width: 521px) {
+  #wpl-chord-name .wpl-lbl-full { display: inline; }
+  #wpl-chord-name .wpl-lbl-short { display: none; }
+}
 @media (min-width: 720px) {
   #wpl-scale-type-row .wpl-lbl-full { display: inline; }
   #wpl-scale-type-row .wpl-lbl-short { display: none; }

@@ -148,12 +148,16 @@
           headingLabel.textContent = "Position";
           document.getElementById("wpl-bass-legend").style.display = "";
           document.getElementById("wpl-chord-legend").style.display = "";
+          document.getElementById("wpl-bass-legend-label").textContent = "Bass note";
+          document.getElementById("wpl-chord-legend-label").textContent = "Chord tones";
           renderChords2();
         } else if (tab.id === "progressions") {
           chordHeadingLabel.textContent = "Chord";
           headingLabel.textContent = "Number";
           document.getElementById("wpl-bass-legend").style.display = "";
           document.getElementById("wpl-chord-legend").style.display = "";
+          document.getElementById("wpl-bass-legend-label").textContent = "Bass note";
+          document.getElementById("wpl-chord-legend-label").textContent = "Chord tones";
           render();
         } else if (tab.id === "scales") {
           chordHeadingLabel.textContent = "Scale";
@@ -617,14 +621,31 @@
     const hasRight = entries.some(e => e.color === KEY_COLOR_RIGHT);
     document.getElementById("wpl-bass-legend").style.display = hasLeft ? "" : "none";
     document.getElementById("wpl-chord-legend").style.display = hasRight ? "" : "none";
+    // Chris, 2026-09-05: "Bass note"/"Chord tones" don't make sense on the
+    // Scales tab (nothing here is a chord) -- "a blue left hand and a red
+    // right hand would make more sense" instead, matching the same
+    // blue=left/red=right coloring RH/LH Fingers already use. Only this
+    // tab's legend text changes; Chords/Progressions reset it back in
+    // buildTabBar.
+    document.getElementById("wpl-bass-legend-label").textContent = "Left Hand";
+    document.getElementById("wpl-chord-legend-label").textContent = "Right Hand";
   }
 
-  // Readout above the piano: Chris, 2026-09-04 -- don't spell out Major/
-  // Minor, fold minor into the root itself ("Cm" not "C Minor") and drop
-  // "Major" entirely (it's the unmarked case): C, Cm, C Pentatonic,
-  // Cm Pentatonic, C Blues, Cm Blues. Indexed by curScaleType, so this must
-  // stay in lockstep with SCALE_TYPE_KEYS/SCALE_TYPES order.
+  // Readout above the piano -- compact form (mobile, and the base form
+  // desktop starts from): C, Cm, C Pentatonic, Cm Pentatonic, C Blues,
+  // Cm Blues. Indexed by curScaleType, so this must stay in lockstep with
+  // SCALE_TYPE_KEYS/SCALE_TYPES order.
   const SCALE_READOUT_SUFFIX = ["", "m", " Pentatonic", "m Pentatonic", " Blues", "m Blues"];
+  // Desktop-only spelled-out form for plain Major/Minor -- Chris,
+  // 2026-09-05: "Cm Blues and pentatonic...text is smaller than C and Cm
+  // in the major/minor tabs" (the short "C"/"Cm" values were staying at
+  // the readout's big/short-label size while the longer scale names
+  // dropped to the small/long-label size -- see setReadoutValue) "...on
+  // desktop, change the text back from C to C Major and Cm to C Minor."
+  // Only the plain Major/Minor entries change; Pentatonic/Blues keep their
+  // existing wording at every width. Undefined entries fall back to the
+  // compact form (see the .wpl-lbl-full span below).
+  const SCALE_READOUT_SUFFIX_FULL = [" Major", " Minor"];
   // The View readout is a fixed-size 140x50px box (sized for short values
   // like "Root High") kept independent of the view row's own button text
   // (which now reads "RH Fingers"/"LH Fingers" in full) so a future button
@@ -636,8 +657,16 @@
   // reference chart for the current scale+view, not a per-note flash.
   function renderScale(highlightStep) {
     const rootName = E.toDisplayFlat(E.transposeNote("C4", curKeyPc, useFlats).replace(/[0-9]/g, ""));
-    const scaleLabel = rootName + SCALE_READOUT_SUFFIX[curScaleType];
-    setReadoutValue(document.getElementById("wpl-chord-name"), scaleLabel, scaleLabel);
+    const shortSuffix = SCALE_READOUT_SUFFIX[curScaleType];
+    const fullSuffix = SCALE_READOUT_SUFFIX_FULL[curScaleType];
+    const chordNameEl = document.getElementById("wpl-chord-name");
+    // Always the smaller/uniform readout size here (not setReadoutValue's
+    // length-based toggle) -- Chris didn't want "C"/"Cm" reading bigger
+    // than "Cm Blues" just because they're shorter strings.
+    chordNameEl.classList.add("long-label");
+    chordNameEl.innerHTML = fullSuffix
+      ? `${rootName}<span class="wpl-lbl-short">${shortSuffix}</span><span class="wpl-lbl-full">${fullSuffix}</span>`
+      : rootName + shortSuffix;
     const viewLabel = VIEW_READOUT_LABELS[curScaleView];
     setReadoutValue(document.getElementById("wpl-step-label"), viewLabel, viewLabel);
     renderScaleKeyMap();
@@ -700,9 +729,11 @@
   // no separate short mobile text needed; styles.css still has a font-size
   // fallback for this row if a width is ever found where it wraps (see the
   // "that row shell size can never change" rule).
+  // "Number"/"Names" (not "Degrees") -- Chris, 2026-09-05: matches "Note"/
+  // "Names" right above it instead of using a different second word.
   const SCALE_VIEWS = [
     { nFull: "Note", nShort: "Note", l: "Names" },
-    { nFull: "Number", nShort: "Number", l: "Degrees" },
+    { nFull: "Number", nShort: "Number", l: "Names" },
     { nFull: "RH Fingers", nShort: "RH Fingers", l: "1 Octave" },
     { nFull: "RH Fingers", nShort: "RH Fingers", l: "2 Octaves" },
     { nFull: "LH Fingers", nShort: "LH Fingers", l: "1 Octave" },
@@ -756,6 +787,8 @@
       // for max speed on a scale... just do 1/2 notes... to double the
       // speed" rather than raising the slider's own max past 160.
       beatsPerChord: 0.5,
+      // Click on every OTHER note, no accent -- Chris, 2026-09-05.
+      halfClick: true,
       onStep: (i) => {
         scaleStepIndex = i;
         renderScale(i);
