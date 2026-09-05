@@ -256,38 +256,16 @@ body {
    Chords v2's quality-row2, Scales' view-row. */
 .step-btn .l { font-size: 12px; opacity: 0.9; line-height: 1.2; }
 
-/* Full label ("Pentatonic", "Right Hand", "Left Hand") vs short label
-   ("Pent", "RH", "LH") -- Chris, 2026-09-04: short only on mobile, full
-   on desktop. Short is the default/safe-everywhere text; full switches
-   on at each row's own min-width query below. Split into two separate
-   thresholds because the two rows have different root causes:
-   - Choose a Scale row: "Pentatonic" at the shared 22px .prog-tab .num
-     size (sized for Progressions' 1-5 digits, way oversized for a
-     10-letter word -- Chris, 2026-09-04: "make the font smaller...
-     I only increased the font size in the Progressions tab cause it
-     was 1,2,3,4,5") overflowed from 521px up to ~880px. Scoping this
-     row's .num down to 16px (same fix already used for the old Chords
-     tab's word-based quality row, #wpl-chord-quality-tabs .prog-tab
-     .num below) lets it switch to full text at the normal 521px
-     breakpoint with no overflow.
-   - Choose a View row: "Right Hand"/"Left Hand" already use the
-     standard (never enlarged) 16px .step-btn .n size, and still wrap
-     to 2 lines from 521px up to ~880px -- that's word length, not an
-     oversized font, so this row keeps the later 900px threshold
-     instead (the first width they fit on one line). */
+/* Full label ("Right Hand", "Left Hand") vs short label ("RH", "LH") --
+   Chris, 2026-09-04: short only on mobile, full on desktop. Short is the
+   default/safe-everywhere text; full switches on at each consumer's own
+   min-width query below. (The Choose a Scale row's title used to need
+   this too, to abbreviate "Pentatonic" to "Pent" -- Chris, 2026-09-05,
+   moved "Pentatonic" down to the button's subtitle instead, always
+   spelled out, so that row no longer uses these classes at all -- see
+   .wpl-name-wide below.) */
 .wpl-lbl-full { display: none; }
 .wpl-lbl-short { display: inline; }
-/* font-size scoped inside min-width:521px (not unconditional) so it
-   doesn't outrank the max-width:520px/340px .prog-tab .num mobile
-   rules (plain class selectors would otherwise lose to this row's
-   ID-scoped one regardless of source order). Text-swap threshold
-   (720px) is a separate, stricter query nested on top: even at 16px,
-   "Pentatonic" only fits from 720px up (Playwright-verified) --
-   smaller still would need ~10px to fit at 521px, visibly tiny next
-   to Major/Minor/Blues in the same row at 16px. */
-@media (min-width: 521px) {
-  #wpl-scale-type-row .prog-tab .num { font-size: 16px; }
-}
 /* Scale readout ("C", "Cm", ...): spelled-out Major/Minor only above the
    readout box's own mobile/desktop split (140px box starts here, same
    breakpoint the .wpl-readout-row mobile override below uses) -- Chris,
@@ -297,10 +275,6 @@ body {
 @media (min-width: 521px) {
   #wpl-chord-name .wpl-lbl-full { display: inline; }
   #wpl-chord-name .wpl-lbl-short { display: none; }
-}
-@media (min-width: 720px) {
-  #wpl-scale-type-row .wpl-lbl-full { display: inline; }
-  #wpl-scale-type-row .wpl-lbl-short { display: none; }
 }
 /* On-key note/number labels: same 11px/10px (white/black) at every width
    until now -- Chris, 2026-09-05: "on desktop only, can you make the note
@@ -314,13 +288,28 @@ body {
   .key-label-white { font-size: 15px; }
   .key-label-black { font-size: 13px; }
 }
-/* Desktop-only bump so the top row (Choose a Scale) reads slightly
-   bigger than the bottom row (Choose a View, .step-btn .n stays at
-   its standard 16px) -- matching the size relationship already in
-   place on mobile (14px/11px, 12px/9px). 780px is the first width
-   'Pentatonic' fits on one line at 18px (Playwright-verified). */
-@media (min-width: 780px) {
-  #wpl-scale-type-row .prog-tab .num { font-size: 18px; }
+/* Choose a Scale row's title (.num) is always "Major"/"Minor" now --
+   Chris, 2026-09-05, reordering the row into 2 groups of 3 -- so it no
+   longer needs its own downscoped size like the old "Pentatonic" title
+   did; it just uses the same .prog-tab .num sizing as every other row
+   (12px/14px/22px across the same 340/520 breakpoints).
+   "Pentatonic" moved down to be the subtitle (.name) instead, always
+   spelled out rather than abbreviated to "Pent" (Chris: "keep it
+   'Pentatonic', reduce text size if you need to... but keep text size
+   as large as you can"). .wpl-name-wide flags just those two buttons'
+   subtitles (see SCALE_TYPES "wide" flag in ui.js) so "Scale"/"Blues"
+   keep the normal, larger .name size everywhere -- only "Pentatonic"
+   needs its own smaller sizing to avoid wrapping. Three tiers, each the
+   largest size that still fits "Pentatonic" at that range's narrowest
+   width (Playwright-verified against the button's actual measured inner
+   width, not just eyeballed): 7.5px covers 320px+ (wraps only in the
+   same sub-320px sliver the RH Fingers fix above already accepts as an
+   edge case); 7px covers the 341-520px range (worst case is right at
+   341px, where the row's own gap/padding shrinks the button back down);
+   9px covers 521-619px; 620px+ is wide enough for the row's own normal
+   .name size (12px) with real margin, so no override is needed there. */
+@media (min-width: 521px) and (max-width: 619px) {
+  #wpl-scale-type-row .prog-tab .name.wpl-name-wide { font-size: 9px; }
 }
 /* "Right Hand"/"Left Hand" became "RH Fingers"/"LH Fingers" (Chris,
    2026-09-04), shown at every width (nFull===nShort for this row again --
@@ -926,6 +915,10 @@ body {
      otherwise force the hand icon to the same 112x40 box size as the
      Scale/View readouts. */
   .wpl-readout-row > .wpl-hand-icon { width: 34px !important; height: 34px !important; }
+  /* "Pentatonic" subtitle on the Choose a Scale row -- see the .wpl-name-wide
+     comment further down for the full breakdown of these three tiers.
+     This is the 341-520px tier (7px). */
+  #wpl-scale-type-row .prog-tab .name.wpl-name-wide { font-size: 7px; }
   /* line-height is a fixed px value (not the desktop inline style's em-relative
      1.3), shared by both the normal and .long-label sizes below, so a
      short value ("C4") and a long one ("2nd Inv") sit on the same vertical
@@ -1034,6 +1027,10 @@ body {
   /* Same override as the 520px tier above, scaled down further for this
      narrowest phone tier. */
   .wpl-readout-row > .wpl-hand-icon { width: 26px !important; height: 26px !important; }
+  /* Overrides the 341-520px tier's 7px above -- this narrowest phone
+     tier gets slightly more room (see .wpl-name-wide comment near the
+     521-619px tier for the full breakdown). */
+  #wpl-scale-type-row .prog-tab .name.wpl-name-wide { font-size: 7.5px; }
   .wpl-readout-row #wpl-chord-name, .wpl-readout-row #wpl-step-label { font-size: 15px !important; }
   /* 11.5px. Was briefly dropped to 10px to squeeze "Finger Patterns" into
      this 88px box on real phones, but Chris shortened the View readout's

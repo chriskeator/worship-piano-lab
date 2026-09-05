@@ -785,24 +785,43 @@
   // "Pentatonic" is the only title here too long to keep spelled out on
   // mobile (Chris, 2026-09-04: "Pent" on mobile, "Pentatonic" on desktop) --
   // same full/short span pattern as the view row below, same breakpoint.
+  // title/name stay indexed exactly like SCALE_TYPE_KEYS/SCALE_READOUT_SUFFIX
+  // above (0=major, 1=minor, 2=pentMajor, 3=pentMinor, 4=bluesMajor,
+  // 5=bluesMinor) -- curScaleType keeps meaning the same thing everywhere
+  // else in the file (curScaleKey(), the readout suffix lookups). Only the
+  // DISPLAY order of the buttons changes, via SCALE_TYPE_DISPLAY_ORDER
+  // below -- Chris, 2026-09-05: "I want the first 3 to be Major, then the
+  // last 3 to be Minor... major scale, major pentatonic, major blues,
+  // minor scale, minor pentatonic, minor blues." Keeping the underlying
+  // index untouched means nothing else in the app has to change or can
+  // silently break -- reordering the data array itself would have thrown
+  // off SCALE_READOUT_SUFFIX_FULL, which assumes index 0/1 are plain
+  // Major/Minor specifically.
+  // "wide: true" flags the two Pentatonic subtitles for the smaller
+  // mobile font sizing below (styles.css .wpl-name-wide) -- Chris wanted
+  // "Pentatonic" kept spelled out as the subtitle rather than abbreviated
+  // to "Pent" now that it's no longer the button's big title.
   const SCALE_TYPES = [
-    { numFull: "Major", numShort: "Major", name: "Scale" },
-    { numFull: "Minor", numShort: "Minor", name: "Scale" },
-    { numFull: "Pentatonic", numShort: "Pent", name: "Major" },
-    { numFull: "Pentatonic", numShort: "Pent", name: "Minor" },
-    { numFull: "Blues", numShort: "Blues", name: "Major" },
-    { numFull: "Blues", numShort: "Blues", name: "Minor" }
+    { title: "Major", name: "Scale" },
+    { title: "Minor", name: "Scale" },
+    { title: "Major", name: "Pentatonic", wide: true },
+    { title: "Minor", name: "Pentatonic", wide: true },
+    { title: "Major", name: "Blues" },
+    { title: "Minor", name: "Blues" }
   ];
+  // Display position -> real SCALE_TYPES/curScaleType index.
+  const SCALE_TYPE_DISPLAY_ORDER = [0, 2, 4, 1, 3, 5];
   let curScaleType = 0;
   function buildScaleTypeRow() {
     const wrap = document.getElementById("wpl-scale-type-row");
     wrap.innerHTML = "";
-    SCALE_TYPES.forEach((opt, i) => {
+    SCALE_TYPE_DISPLAY_ORDER.forEach((realIdx) => {
+      const opt = SCALE_TYPES[realIdx];
       const b = document.createElement("button");
-      b.className = "prog-tab" + (i === curScaleType ? " active" : "");
-      b.innerHTML = `<div class="num"><span class="wpl-lbl-full">${opt.numFull}</span><span class="wpl-lbl-short">${opt.numShort}</span></div><div class="name">${opt.name}</div>`;
+      b.className = "prog-tab" + (realIdx === curScaleType ? " active" : "");
+      b.innerHTML = `<div class="num">${opt.title}</div><div class="name${opt.wide ? " wpl-name-wide" : ""}">${opt.name}</div>`;
       b.addEventListener("click", () => {
-        curScaleType = i;
+        curScaleType = realIdx;
         document.querySelectorAll("#wpl-scale-type-row .prog-tab").forEach(t => t.classList.remove("active"));
         b.classList.add("active");
         onScaleSettingChanged();
