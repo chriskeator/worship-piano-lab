@@ -465,6 +465,10 @@
     const overlay = el.querySelector(".key-flash");
     const s = el.querySelector(".key-label");
     clearTimeout(el._flashTimeout);
+    // Always the default light-green tint here, in case flashPlayedKey
+    // below left its red/blue accent color on this overlay from a prior
+    // played-note pulse.
+    overlay.style.background = "linear-gradient(#e5f2e8,#cfe3d4)";
     overlay.style.transition = "none";
     overlay.style.opacity = "1";
     setKeyLabelText(s, label);
@@ -485,26 +489,37 @@
   // Chris, 2026-09-05: "in the scales tab when i hit the play button, can
   // you make the correct note light up when that note is played... once
   // that note is played or lit up, it'll default back to its original red
-  // or blue color." This only pulses the same translucent overlay a click
-  // already uses (see flashKey above) on top of whatever persistent
-  // color/label that key already has -- it never touches the background
-  // or label itself, so there's nothing to "restore" afterward: the
-  // overlay simply fades back out and the existing red/blue shows through
-  // again underneath, automatically -- no label/timeout bookkeeping needed
-  // the way flashKey has, since nothing here needs restoring afterward.
-  // Faster fade (0.15s) than the click flash (0.6s) since scale playback
-  // steps are eighth notes and can run much quicker than a click's
-  // deliberate single tap.
-  function flashPlayedKey(pc, oct) {
+  // or blue color." This pulses the same overlay a click uses (see
+  // flashKey above) on top of whatever persistent color/label that key
+  // already has -- it never touches the background or label itself, so
+  // there's nothing to "restore" afterward: the overlay simply fades back
+  // out and the existing red/blue shows through again underneath.
+  // Follow-up, same day: "the highlight pulse is too much...reduce it by
+  // 25%...extend the fade longer...make the color fade match the audio
+  // fade...the pulse color isn't good...it should exuentiate the existing
+  // color...if it's red, make the pulse more red, and if its blue, make it
+  // more blue...just a little bit." So: (1) the overlay no longer uses the
+  // fixed light-green tint -- PLAYED_ACCENT below picks a deeper, more
+  // saturated shade of whichever hand color (red for right, blue for
+  // left) the key already shows, at a low fixed alpha (0.5) so it reads as
+  // "a little more" of the same color rather than a wash of a different
+  // one; (2) peak overlay opacity dropped from 1 to 0.75, the 25%
+  // reduction; (3) the fade itself stretched from 0.15s to 0.5s, closer to
+  // the actual sample's ~0.7s release tail (see playSample's gain envelope
+  // above -- linearRampToValueAtTime from peak at +1.1s down to silent at
+  // +1.8s) than the original snappy flash.
+  const PLAYED_ACCENT = { right: "rgba(220,38,38,0.5)", left: "rgba(2,132,199,0.5)" };
+  function flashPlayedKey(pc, oct, hand) {
     const isWhite = [0, 2, 4, 5, 7, 9, 11].includes(pc);
     const list = isWhite ? whiteEls : blackEls;
     const el = list.find(e => +e.dataset.pc === pc && +e.dataset.oct === oct);
     if (!el) return;
     const overlay = el.querySelector(".key-flash");
+    overlay.style.background = PLAYED_ACCENT[hand] || PLAYED_ACCENT.right;
     overlay.style.transition = "none";
-    overlay.style.opacity = "1";
+    overlay.style.opacity = "0.75";
     void overlay.offsetWidth;
-    overlay.style.transition = "opacity 0.15s ease";
+    overlay.style.transition = "opacity 0.5s ease";
     overlay.style.opacity = "0";
   }
 

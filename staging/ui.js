@@ -873,7 +873,7 @@
         // (via renderScaleKeyMap) just rebuilt the persistent state above,
         // so this runs after, matching this step's entry 1:1.
         const played = lastScaleEntries[i];
-        if (played) E.flashPlayedKey(played.pc, played.oct);
+        if (played) E.flashPlayedKey(played.pc, played.oct, played.color === KEY_COLOR_LEFT ? "left" : "right");
       },
       onDone: () => {
         resetScalesPlayButton();
