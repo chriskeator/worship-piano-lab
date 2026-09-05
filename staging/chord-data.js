@@ -42,15 +42,19 @@
     { bottomLabel: "1",   topLabel: "1",     name: "C",     left: ["C3", "C4"], right: ["C5", "E5", "G5"] }
   ];
 
+  // Soft (progression 3) uses only the top bass note, not the octave pair
+  // every other progression doubles -- Chris, 2026-09-05: "on progressions
+  // 3 - remove the lower bass octave. it's soft and we only need the top
+  // bass note on this."
   const prog3 = [
-    { bottomLabel: "1",   topLabel: "1",   name: "C",   left: ["C2", "C3"], right: ["G3", "E4"] },
-    { bottomLabel: "2m",  topLabel: "4/2", name: "Dm",  left: ["D2", "D3"], right: ["A3", "F4"] },
-    { bottomLabel: "1/3", topLabel: "1/3", name: "C/E", left: ["E2", "E3"], right: ["C4", "G4"] },
-    { bottomLabel: "4",   topLabel: "4",   name: "F",   left: ["F2", "F3"], right: ["C4", "A4"] },
-    { bottomLabel: "5",   topLabel: "5",   name: "G",   left: ["G2", "G3"], right: ["D4", "B4"] },
-    { bottomLabel: "6m",  topLabel: "1/6", name: "Am",  left: ["A2", "A3"], right: ["E4", "C5"] },
-    { bottomLabel: "5/7", topLabel: "5/7", name: "G/B", left: ["B2", "B3"], right: ["G4", "D5"] },
-    { bottomLabel: "1",   topLabel: "1",   name: "C",   left: ["C3", "C4"], right: ["G4", "E5"] }
+    { bottomLabel: "1",   topLabel: "1",   name: "C",   left: ["C3"], right: ["G3", "E4"] },
+    { bottomLabel: "2m",  topLabel: "4/2", name: "Dm",  left: ["D3"], right: ["A3", "F4"] },
+    { bottomLabel: "1/3", topLabel: "1/3", name: "C/E", left: ["E3"], right: ["C4", "G4"] },
+    { bottomLabel: "4",   topLabel: "4",   name: "F",   left: ["F3"], right: ["C4", "A4"] },
+    { bottomLabel: "5",   topLabel: "5",   name: "G",   left: ["G3"], right: ["D4", "B4"] },
+    { bottomLabel: "6m",  topLabel: "1/6", name: "Am",  left: ["A3"], right: ["E4", "C5"] },
+    { bottomLabel: "5/7", topLabel: "5/7", name: "G/B", left: ["B3"], right: ["G4", "D5"] },
+    { bottomLabel: "1",   topLabel: "1",   name: "C",   left: ["C4"], right: ["G4", "E5"] }
   ];
 
   const prog4 = [
