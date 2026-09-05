@@ -836,6 +836,15 @@ body {
      which looks wrong. */
   #wpl-piano { height: 57px !important; }
   #wpl-piano span { font-size: 6px !important; }
+  /* Black-key labels with a flat ("E♭", "♭3") stack on two lines here
+     instead of running side by side -- a black key at this width is only
+     ~6px wide, not enough for 2 characters at any legible size. Letter/
+     number always on top (inherits the 6px above), flat always the
+     smaller line underneath, regardless of source-string order -- Chris,
+     2026-09-05: "stack the black keys on mobile." */
+  #wpl-piano .key-label-stacked { display: flex !important; flex-direction: column; align-items: center; justify-content: center; gap: 0; }
+  #wpl-piano .key-label-stacked .key-label-main { display: block; line-height: 1; }
+  #wpl-piano .key-label-stacked .key-label-flat { display: block; line-height: 1; font-size: 5px !important; }
   #wpl-piano-frame { padding: 3px !important; border-radius: 8px !important; }
   .wpl-title { font-size: 22px; }
   .prog-tab { padding: 8px 2px; min-height: 59px; }

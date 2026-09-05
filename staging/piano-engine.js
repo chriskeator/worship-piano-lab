@@ -403,13 +403,35 @@
     });
   }
 
+  // A black key on a 5-octave mobile keyboard is only ~6px wide -- not
+  // enough room for a 2-character label ("E♭", "♭3") side by side at any
+  // legible size, which is why they were unreadable on phones. Splits a
+  // label containing "♭" into a main span (the letter or number) and a
+  // flat span, always main-then-flat regardless of which order they
+  // appear in the raw string ("E♭" vs "♭3"), so styles.css can stack them
+  // on two lines on narrow phones with the letter/number always on top
+  // and the flat always the smaller line underneath -- Chris, 2026-09-05:
+  // "stack the black keys on mobile." Labels without a "♭" (white-key
+  // letters, plain numbers, finger digits) are untouched, single line.
+  function setKeyLabelText(s, text) {
+    const flatIdx = text.indexOf("♭");
+    if (flatIdx === -1) {
+      s.classList.remove("key-label-stacked");
+      s.textContent = text;
+      return;
+    }
+    const main = text.slice(0, flatIdx) + text.slice(flatIdx + 1);
+    s.classList.add("key-label-stacked");
+    s.innerHTML = `<span class="key-label-main">${main}</span><span class="key-label-flat">♭</span>`;
+  }
+
   function light(pc, oct, color, name, isWhite) {
     const list = isWhite ? whiteEls : blackEls;
     const el = list.find(e => +e.dataset.pc === pc && +e.dataset.oct === oct);
     if (!el) return;
     el.style.background = color;
     const s = el.querySelector("span");
-    s.textContent = name;
+    setKeyLabelText(s, name);
     s.style.opacity = "1";
   }
 
@@ -419,7 +441,7 @@
     clearTimeout(el._flashTimeout);
     overlay.style.transition = "none";
     overlay.style.opacity = "1";
-    s.textContent = label;
+    setKeyLabelText(s, label);
     s.style.opacity = "1";
     void overlay.offsetWidth;
     overlay.style.transition = "opacity 0.6s ease";
