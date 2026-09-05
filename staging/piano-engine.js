@@ -408,7 +408,25 @@
     pianoEl.addEventListener("touchend", () => { isDragging = false; lastDragEl.current = null; });
   }
 
-  function resetPiano() {
+  // Chris, 2026-09-05: "it's still red notes when i click them on LH
+  // tabs" -- on the Scales tab's LH Fingers views, only the one hand's
+  // highlighted octave run actually gets a persistent color (see light()
+  // below); every other key on the keyboard has no _persistentHand at
+  // all, so flashKey's `ACCENT_COLOR[el._persistentHand] || ACCENT_COLOR.
+  // right` fallback always painted those clicks red even while looking at
+  // an all-left-hand view. defaultFlashHand is that fallback's context:
+  // "right" everywhere by default (Chords/Progressions always give every
+  // shown note its own real persistent hand already, so this default only
+  // ever matters for genuinely off-scale keys there, and red is the
+  // universal neutral), but the Scales tab sets it to "left" for its LH
+  // Fingers views via resetPiano's hand argument below.
+  let defaultFlashHand = "right";
+  function setDefaultFlashHand(hand) {
+    defaultFlashHand = (hand === "left") ? "left" : "right";
+  }
+
+  function resetPiano(hand) {
+    setDefaultFlashHand(hand);
     whiteEls.forEach(el => {
       el.style.background = "linear-gradient(#fff,#f1f5f9)";
       el.querySelector("span").style.opacity = "0";
@@ -511,9 +529,12 @@
     clearTimeout(el._flashTimeout);
     // Was a fixed light-green tint; now the same red/blue accent the
     // play-through pulse uses, keyed off this key's own persistent hand
-    // color (red by default -- covers unlit keys and right-hand keys --
-    // blue only for a left-hand highlight, e.g. LH Fingers).
-    overlay.style.background = ACCENT_COLOR[el._persistentHand] || ACCENT_COLOR.right;
+    // color when it has one (a lit scale/chord key), falling back to
+    // defaultFlashHand for a key with no persistent color of its own --
+    // e.g. an off-scale key on the Scales tab's LH Fingers view, which
+    // should still flash blue rather than always defaulting to red (see
+    // defaultFlashHand's comment above resetPiano).
+    overlay.style.background = ACCENT_COLOR[el._persistentHand || defaultFlashHand];
     overlay.style.transition = "none";
     overlay.style.opacity = "1";
     setKeyLabelText(s, label);
@@ -568,8 +589,8 @@
   // one chord's worth of notes. `entries`: [{ pc, oct, label, color }], oct
   // is the 0-4 on-screen keyboard octave index (same indexing renderChord
   // uses internally, i.e. note-octave minus 2).
-  function renderScaleMap(entries) {
-    resetPiano();
+  function renderScaleMap(entries, defaultHand) {
+    resetPiano(defaultHand);
     entries.forEach(e => {
       const isWhite = [0, 2, 4, 5, 7, 9, 11].includes(e.pc);
       light(e.pc, e.oct, e.color, e.label, isWhite);

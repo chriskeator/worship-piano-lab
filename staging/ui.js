@@ -625,7 +625,12 @@
       });
     }
     lastScaleEntries = entries;
-    E.renderScaleMap(entries);
+    // Tells piano-engine which hand color an off-scale key (no highlight of
+    // its own) should flash as when clicked -- Chris, 2026-09-05: "it's
+    // still red notes when i click them on LH tabs." Only the LH Fingers
+    // views (4/5) imply an all-left-hand context; every other Scales view
+    // stays "right" (its existing default).
+    E.renderScaleMap(entries, (curScaleView === 4 || curScaleView === 5) ? "left" : "right");
     document.getElementById("wpl-either-legend").style.display = "none";
     // Both always shown together on Scales, never toggled on/off per view --
     // Chris, 2026-09-05: "keep both blue left hand and red right hand there
