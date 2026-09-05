@@ -331,56 +331,20 @@ body {
 @media (min-width: 780px) {
   #wpl-scale-type-row .prog-tab .num { font-size: 18px; }
 }
-/* 920px (not 900px) -- "Finger Patterns" (the nFull this swaps in, see
-   SCALE_VIEWS in ui.js) still wraps at exactly 900-909px at the row's
-   base 16px .n size (Playwright-verified: fits from 910px up). 899px and
-   below keeps showing the short "Fingers" text at that tier's own
-   font-size (see the three tiers below), which fits with room to spare,
-   so nothing here needs its own font-size carve-out for the 900-919 gap. */
-@media (min-width: 920px) {
-  #wpl-scale-view-row .wpl-lbl-full { display: inline; }
-  #wpl-scale-view-row .wpl-lbl-short { display: none; }
-}
 /* "Right Hand"/"Left Hand" became "RH Fingers"/"LH Fingers" (Chris,
-   2026-09-04) then "Finger Patterns"/"Fingers" full/short (2026-09-05, see
-   SCALE_VIEWS in ui.js) -- so unlike "Note"/"Number", this row's text
-   can't just avoid wrapping by getting shorter below some breakpoint on
-   its own; the fix here is shrinking the row's own .step-btn .n font at
-   the widths where it otherwise wraps (Chris: "make the text smaller if
-   there's wrapping"), same font-size-only approach as the Choose a Scale
-   row's Pentatonic fix above. Three tiers, each the largest size that
-   still fits the row's own worst-case text at that range's narrowest
-   width (Playwright-verified against "Fingers", the longest text this row
-   actually shows below 900px): 10px covers all of mobile up to 520px
-   (down to 288px, still fits -- shorter than the old "RH Fingers" this
-   replaced, Chris 2026-09-05: "make the title... bigger on mobile without
-   wrapping"); 13px covers 521-589px; 15px covers 590-899px; 900px+ keeps
-   the row's standard, unscoped 16px (already verified to fit there, and
-   is where "Finger Patterns" -- the nFull spelled out in full -- takes
-   over from "Fingers"). */
-/* Chris, 2026-09-04, follow-up: "the title is now smaller than the sub
-   title" -- the .n tiers above were already the largest size that fits
-   without wrapping at each range's narrowest width, so there's no more
-   room to grow .n further; instead .l (the plain .step-btn .l base rule
-   is a flat 12px everywhere) is scoped down to stay BELOW .n's size at
-   each of the same three tiers, restoring the title-bigger-than-subtitle
-   relationship every other row in the app uses (.prog-tab .num > .name,
-   .step-btn .n > .l at 900px+ here). Smaller-only changes can't reopen
-   wrapping (.l's own text -- "Names"/"1 Octave"/"2 Octaves" -- already
-   fits at the old, larger 12px). Re-verified 1px below .n at each tier's
-   new, bigger size on the 2026-09-05 pass above. */
-@media (max-width: 520px) {
-  #wpl-scale-view-row .step-btn .n { font-size: 10px; }
-  #wpl-scale-view-row .step-btn .l { font-size: 9px; }
-}
-@media (min-width: 521px) and (max-width: 589px) {
-  #wpl-scale-view-row .step-btn .n { font-size: 13px; }
-  #wpl-scale-view-row .step-btn .l { font-size: 12px; }
-}
-@media (min-width: 590px) and (max-width: 899px) {
-  #wpl-scale-view-row .step-btn .n { font-size: 15px; }
-  #wpl-scale-view-row .step-btn .l { font-size: 14px; }
-}
+   2026-09-04), then "Finger Patterns" everywhere including mobile
+   (2026-09-05, see SCALE_VIEWS in ui.js) -- the font-size shrink tiers
+   that used to live here (to keep "RH Fingers"/then "Fingers" on one
+   line at narrow widths) are gone now: "Finger Patterns" doesn't fit on
+   one line below ~590px at any legible size, and Chris asked for it to
+   wrap on mobile rather than stay tiny -- "on mobile, change 'fingers' to
+   Finger Patterns. if it doesn't fit, then widen the distance between
+   scale and view." So this row now uses the same unscoped, standard
+   16px/12px (.step-btn .n/.l) every other row uses, full stop -- no
+   special-casing. See the widened section-to-section gap below (applied
+   uniformly to every "N. Choose a ..." row, not just this one) for the
+   spacing that keeps the now-taller wrapped buttons from crowding the
+   row above. */
 
 /* Choose a View row: every button now has both a title and a subtitle
    (Note/Names, Scale/Degrees, RH/1 Octave, etc, 2026-09-04) so plain

@@ -745,29 +745,33 @@
   // button; n/l divs; touchstart handled the same way) -- only the data
   // source differs (a fixed array here instead of the current
   // progression's chords).
-  // "Number"/"Names" (not "Degrees") -- Chris, 2026-09-05: matches "Note"/
-  // "Names" right above it instead of using a different second word.
-  // "Finger Patterns" (was "RH Fingers"/"LH Fingers") -- Chris, 2026-09-05:
-  // "the view 'finger' needs to say 'finger patterns' like desktop," to
-  // match the View readout box next to it, which already dropped the
-  // hand name from its text in favor of a red/blue color (see
-  // VIEW_READOUT_LABELS/VIEW_READOUT_COLORS above). Since all 4 buttons
-  // would otherwise show identical text ("Finger Patterns" / "1 Octave"
-  // twice, "2 Octaves" twice) with no way left to tell RH from LH apart,
-  // `hand` colors the title red/blue here the same way, via the
-  // view-rh/view-lh classes below. Full text doesn't fit this row's
-  // button width below 900px at any legible size (Playwright-verified --
-  // it wraps even at the smallest size the row has ever used), so below
-  // that it shows the short "Fingers" instead, using the row's existing
-  // full/short swap (the same one "Note"/"Number" here don't need, since
-  // they're already this short everywhere).
+  // "Number"/"Degrees" -- Chris, 2026-09-05, after considering "Number
+  // Intervals" too: an interval is the distance between two notes (a
+  // third, a fifth), usually named with a quality too (major third,
+  // minor seventh); what this view actually shows is each note's scale
+  // degree relative to the root (1, 2, ♭3...), which is what "Degrees" is
+  // the standard term for -- Nashville Number System territory, not
+  // interval-naming territory.
+  // "Finger Patterns" on every width now, including mobile (was "RH
+  // Fingers"/"LH Fingers", then the desktop-only nFull with mobile
+  // falling back to a shorter "Fingers") -- Chris, 2026-09-05: "on mobile,
+  // change 'fingers' to Finger Patterns. if it doesn't fit, then widen
+  // the distance between scale and view." It doesn't fit on one line
+  // below 590px at any legible size (Playwright-verified), so it wraps to
+  // 2 lines there -- see the widened section-to-section gap in
+  // index.html/styles.css, applied the same way to every "N. Choose a
+  // ..." row across every tab so this row isn't a one-off special case.
+  // Since all 4 buttons now show identical text ("Finger Patterns" /
+  // "1 Octave" twice, "2 Octaves" twice) with no way left to tell RH from
+  // LH apart, `hand` colors the title red/blue instead, matching the View
+  // readout box's own red/blue for the same reason.
   const SCALE_VIEWS = [
     { nFull: "Note", nShort: "Note", l: "Names" },
-    { nFull: "Number", nShort: "Number", l: "Names" },
-    { nFull: "Finger Patterns", nShort: "Fingers", l: "1 Octave", hand: "view-rh" },
-    { nFull: "Finger Patterns", nShort: "Fingers", l: "2 Octaves", hand: "view-rh" },
-    { nFull: "Finger Patterns", nShort: "Fingers", l: "1 Octave", hand: "view-lh" },
-    { nFull: "Finger Patterns", nShort: "Fingers", l: "2 Octaves", hand: "view-lh" }
+    { nFull: "Number", nShort: "Number", l: "Degrees" },
+    { nFull: "Finger Patterns", nShort: "Finger Patterns", l: "1 Octave", hand: "view-rh" },
+    { nFull: "Finger Patterns", nShort: "Finger Patterns", l: "2 Octaves", hand: "view-rh" },
+    { nFull: "Finger Patterns", nShort: "Finger Patterns", l: "1 Octave", hand: "view-lh" },
+    { nFull: "Finger Patterns", nShort: "Finger Patterns", l: "2 Octaves", hand: "view-lh" }
   ];
   let curScaleView = 0;
   function buildScaleViewRow() {
