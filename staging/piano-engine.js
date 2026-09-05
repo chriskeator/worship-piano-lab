@@ -253,7 +253,18 @@
   }
 
   // Short synthesized metronome tick — no sample fetch needed.
+  // Chris, 2026-09-05: the click was landing audibly ahead of the piano
+  // note on the same beat. The click is a synthesized square wave (full
+  // volume within a 2ms ramp, so its onset is essentially instant); the
+  // note is a real recorded piano sample (see playSample's 12ms ramp plus
+  // the sample's own natural attack), which lands perceptibly later even
+  // though both are scheduled for the same `when`. Rather than touch the
+  // note/sample side, the click itself is nudged later by CLICK_DELAY so
+  // its perceived onset lines up with the note's -- a single, easy-to-
+  // retune number, isolated to the click only.
+  const CLICK_DELAY = 0.018;
   function playClick(when, accent) {
+    when += CLICK_DELAY;
     const ctx = getAudioCtx();
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
