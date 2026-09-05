@@ -914,6 +914,15 @@
   // ("RH Fingers"/10 chars), so nFull===nShort again, no separate short
   // mobile text needed -- styles.css has the font-size tiers back for the
   // widths where this still wraps.
+  // Indices stay exactly what they've always meant (0=Note, 1=Number,
+  // 2=RH 1 Octave, 3=RH 2 Octaves, 4=LH 1 Octave, 5=LH 2 Octaves) --
+  // curScaleView's numeric value is relied on elsewhere in this file
+  // (renderScaleKeyMap's octave/hand checks, VIEW_READOUT_LABELS/COLORS,
+  // updateHandIcon's RH/LH split), so only the DISPLAY order of the
+  // buttons changes, via SCALE_VIEW_DISPLAY_ORDER below -- same approach
+  // as SCALE_TYPE_DISPLAY_ORDER above for the Choose a Scale row, per
+  // Chris, 2026-09-05: "do it the same way you did the top row... group
+  // 1 octave buttons together and 2 octave together."
   const SCALE_VIEWS = [
     { nFull: "Note", nShort: "Note", l: "Names" },
     { nFull: "Number", nShort: "Number", l: "Degrees" },
@@ -922,16 +931,20 @@
     { nFull: "LH Fingers", nShort: "LH Fingers", l: "1 Octave" },
     { nFull: "LH Fingers", nShort: "LH Fingers", l: "2 Octaves" }
   ];
+  // Display position -> real SCALE_VIEWS/curScaleView index: Note,
+  // Number, RH 1oct, LH 1oct, RH 2oct, LH 2oct.
+  const SCALE_VIEW_DISPLAY_ORDER = [0, 1, 2, 4, 3, 5];
   let curScaleView = 0;
   function buildScaleViewRow() {
     const wrap = document.getElementById("wpl-scale-view-row");
     wrap.innerHTML = "";
-    SCALE_VIEWS.forEach((opt, i) => {
+    SCALE_VIEW_DISPLAY_ORDER.forEach((realIdx) => {
+      const opt = SCALE_VIEWS[realIdx];
       const btn = document.createElement("div");
-      btn.className = "step-btn" + (i === curScaleView ? " active" : "");
+      btn.className = "step-btn" + (realIdx === curScaleView ? " active" : "");
       btn.innerHTML = `<div class="n"><span class="wpl-lbl-full">${opt.nFull}</span><span class="wpl-lbl-short">${opt.nShort}</span></div><div class="l">${opt.l}</div>`;
       const activate = () => {
-        curScaleView = i;
+        curScaleView = realIdx;
         document.querySelectorAll("#wpl-scale-view-row .step-btn").forEach(t => t.classList.remove("active"));
         btn.classList.add("active");
         onScaleSettingChanged();
