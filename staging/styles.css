@@ -120,9 +120,13 @@ body {
      instead of sharing the row width like every other button row in the
      app already does. flex:1 1 0 + min-width:0 makes this row self-
      adjusting the same way, so adding a tab is a markup-only change here
-     too, not a new round of breakpoint tuning. */
+     too, not a new round of breakpoint tuning. white-space:nowrap keeps
+     a label + its "Soon" pill on one line instead of wrapping inside
+     the tab and growing the bar's height once the button gets narrower
+     with more tabs sharing the row. */
   flex: 1 1 0;
   min-width: 0;
+  white-space: nowrap;
 }
 .wpl-tab.active { color: var(--wpl-accent-dark); }
 .wpl-tab.active::after {
