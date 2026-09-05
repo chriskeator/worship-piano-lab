@@ -21,6 +21,32 @@
     return newName + newOct;
   }
 
+  // Chris, 2026-09-01: "the flat character on the Min7 buttons is a real
+  // flat character. on the 5 buttons of flats, it looks like its just a
+  // 'b' symbol" — the interval numbers (♭3/♭7, see chordToneNumbers in
+  // ui.js) already use the real ♭ (U+266D), but note NAMES built from
+  // flatNames (above) use plain ASCII "b" ("Ab", "Bb"...), and that ASCII
+  // form isn't just display text: transposeNote's return value is also fed
+  // straight into noteToPc[] for audio (sample selection, playChordSound)
+  // elsewhere in this file, so flatNames itself has to stay ASCII or every
+  // flat-key chord goes silent. toDisplayFlat() converts only a string
+  // that's about to be shown to the user and is never round-tripped back
+  // through noteToPc — used here, and again in triggerKey()/renderChord()
+  // below wherever a note name is about to hit a label instead of the
+  // audio engine.
+  function toDisplayFlat(noteLetter) {
+    // Global replace (not just the first "b") -- Db minor's b6 is the one
+    // legitimate double-flat ("Bbb") the correct-spelling scale logic in
+    // chord-data.js produces (Chris, 2026-09-05); every other caller here
+    // only ever has at most one "b" anyway, so this is a safe broadening.
+    // Also swaps the ASCII "#" spellScaleTone builds for sharp keys (e.g.
+    // A major's "C#") for the real ♯ (U+266F) -- Chris, 2026-09-05, from a
+    // screenshot: "that's a number symbol right instead of the actual
+    // sharp symbol?" Same reasoning as the "b"/♭ swap above: pure display,
+    // never round-tripped back through noteToPc.
+    return noteLetter.replace(/b/g, "♭").replace(/#/g, "♯");
+  }
+
   function transposeChordName(name, semitones, useFlats) {
     const has4 = name.includes("⁴");
     const has2 = name.includes("²");
@@ -34,15 +60,15 @@
       const [top, bass] = clean.split("/");
       const t = splitRootQuality(top);
       const b = splitRootQuality(bass);
-      const tRoot = transposeNote(t.root + "4", semitones, useFlats).replace(/[0-9]/g, "");
-      const tBass = transposeNote(b.root + "4", semitones, useFlats).replace(/[0-9]/g, "");
+      const tRoot = toDisplayFlat(transposeNote(t.root + "4", semitones, useFlats).replace(/[0-9]/g, ""));
+      const tBass = toDisplayFlat(transposeNote(b.root + "4", semitones, useFlats).replace(/[0-9]/g, ""));
       let result = tRoot + t.quality;
       if (has4) result += "⁴";
       if (has2) result += "²";
       return result + "/" + tBass + b.quality;
     }
     const t = splitRootQuality(clean);
-    let result = transposeNote(t.root + "4", semitones, useFlats).replace(/[0-9]/g, "") + t.quality;
+    let result = toDisplayFlat(transposeNote(t.root + "4", semitones, useFlats).replace(/[0-9]/g, "")) + t.quality;
     if (has4) result += "⁴";
     if (has2) result += "²";
     return result;
@@ -227,7 +253,18 @@
   }
 
   // Short synthesized metronome tick — no sample fetch needed.
+  // Chris, 2026-09-05: the click was landing audibly ahead of the piano
+  // note on the same beat. The click is a synthesized square wave (full
+  // volume within a 2ms ramp, so its onset is essentially instant); the
+  // note is a real recorded piano sample (see playSample's 12ms ramp plus
+  // the sample's own natural attack), which lands perceptibly later even
+  // though both are scheduled for the same `when`. Rather than touch the
+  // note/sample side, the click itself is nudged later by CLICK_DELAY so
+  // its perceived onset lines up with the note's -- a single, easy-to-
+  // retune number, isolated to the click only.
+  const CLICK_DELAY = 0.018;
   function playClick(when, accent) {
+    when += CLICK_DELAY;
     const ctx = getAudioCtx();
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
@@ -254,13 +291,15 @@
 
   function makeLabel(isWhite) {
     const s = document.createElement("span");
-    s.className = "key-label";
+    // Font size moved out to styles.css (.key-label-white/.key-label-black)
+    // so it can be bumped up on desktop only -- Chris, 2026-09-05: "on
+    // desktop only, can you make the note names/number names any bigger?"
+    s.className = "key-label " + (isWhite ? "key-label-white" : "key-label-black");
     s.style.cssText = `
       position: absolute;
       bottom: ${isWhite ? "4px" : "3px"};
       left: 0; right: 0;
       text-align: center;
-      font-size: ${isWhite ? "11px" : "10px"};
       font-weight: 700;
       color: ${isWhite ? "#0f172a" : "#fff"};
       opacity: 0;
@@ -330,9 +369,12 @@
       lastDragEl.current = el;
       const pc = +el.dataset.pc;
       const oct = +el.dataset.oct + 2;
+      // `name` feeds playSingleNote's noteToPc lookup below and must stay
+      // the raw ASCII flatNames/sharpNames value — only the flashed on-key
+      // label (pure display) gets the real ♭ (Chris, 2026-09-01).
       const name = (preferFlats.includes(pc) && useFlats) ? flatNames[pc] : sharpNames[pc];
       playSingleNote(name + oct);
-      flashKey(el, name);
+      flashKey(el, toDisplayFlat(name));
     }
     function keyElAtPoint(x, y) {
       const target = document.elementFromPoint(x, y);
@@ -366,15 +408,73 @@
     pianoEl.addEventListener("touchend", () => { isDragging = false; lastDragEl.current = null; });
   }
 
-  function resetPiano() {
+  // Chris, 2026-09-05: "it's still red notes when i click them on LH
+  // tabs" -- on the Scales tab's LH Fingers views, only the one hand's
+  // highlighted octave run actually gets a persistent color (see light()
+  // below); every other key on the keyboard has no _persistentHand at
+  // all, so flashKey's `ACCENT_COLOR[el._persistentHand] || ACCENT_COLOR.
+  // right` fallback always painted those clicks red even while looking at
+  // an all-left-hand view. defaultFlashHand is that fallback's context:
+  // "right" everywhere by default (Chords/Progressions always give every
+  // shown note its own real persistent hand already, so this default only
+  // ever matters for genuinely off-scale keys there, and red is the
+  // universal neutral), but the Scales tab sets it to "left" for its LH
+  // Fingers views via resetPiano's hand argument below.
+  let defaultFlashHand = "right";
+  function setDefaultFlashHand(hand) {
+    defaultFlashHand = (hand === "left") ? "left" : "right";
+  }
+
+  function resetPiano(hand) {
+    setDefaultFlashHand(hand);
     whiteEls.forEach(el => {
       el.style.background = "linear-gradient(#fff,#f1f5f9)";
       el.querySelector("span").style.opacity = "0";
+      el._persistentLabel = null;
+      el._persistentHand = null;
     });
     blackEls.forEach(el => {
       el.style.background = "linear-gradient(#1e293b,#334155)";
       el.querySelector("span").style.opacity = "0";
+      el._persistentLabel = null;
+      el._persistentHand = null;
     });
+  }
+
+  // A black key on a 5-octave mobile keyboard is only ~6px wide -- not
+  // enough room for a 2-character label ("E♭", "♭3", "C♯") side by side at
+  // any legible size, which is why they were unreadable on phones. Splits
+  // a label containing an accidental into two stacked lines, in the SAME
+  // left-to-right order the raw string already has ("E♭" -> E over ♭;
+  // "♭3" -> ♭ over 3) -- Chris, 2026-09-05, after seeing the earlier
+  // always-letter/number-on-top version live: "I dont' like 7b where 7 is
+  // on top of the flat. it needs to be reversed to flat is on top." The
+  // accidental character (whichever position it's in) still gets the
+  // smaller/subordinate styling via key-label-accidental; the other
+  // character gets key-label-main. Labels with neither symbol (white-key
+  // letters, plain numbers, finger digits) are untouched, single line.
+  function setKeyLabelText(s, text) {
+    const m = text.match(/[♭♯]/);
+    if (!m) {
+      s.classList.remove("key-label-stacked");
+      s.textContent = text;
+      return;
+    }
+    s.classList.add("key-label-stacked");
+    s.innerHTML = text.split("").map((ch, i) =>
+      `<span class="${i === m.index ? "key-label-accidental" : "key-label-main"}">${ch}</span>`
+    ).join("");
+  }
+
+  // Both hand colors used everywhere a key gets a persistent highlight --
+  // Scales' renderScaleMap (KEY_COLOR_RIGHT/LEFT in ui.js) and Chords'
+  // renderChord below -- happen to share the exact same blue hex
+  // (#38bdf8) for left hand and red hex (#f87171) for right hand, so
+  // sniffing the `color` string for that blue hex is enough to tell which
+  // hand a given persistent highlight belongs to, without needing a
+  // separate "which hand" argument threaded through every caller.
+  function handFromColor(color) {
+    return color && color.indexOf("38bdf8") !== -1 ? "left" : "right";
   }
 
   function light(pc, oct, color, name, isWhite) {
@@ -383,22 +483,118 @@
     if (!el) return;
     el.style.background = color;
     const s = el.querySelector("span");
-    s.textContent = name;
+    setKeyLabelText(s, name);
     s.style.opacity = "1";
+    // Remembered so flashKey() below can restore this label instead of
+    // hiding it when the user clicks a key that's already part of a
+    // persistent chord/scale highlight (see flashKey's comment), and so
+    // it can pick a matching click-flash accent color (see ACCENT_COLOR
+    // below).
+    el._persistentLabel = name;
+    el._persistentHand = handFromColor(color);
   }
 
+  // Shared by both flashes below. Chris, 2026-09-05 (play-through pulse):
+  // "the pulse color isn't good...it should exuentiate the existing
+  // color...if it's red, make the pulse more red, and if its blue, make it
+  // more blue...just a little bit" -- a deeper, more saturated shade of
+  // whichever hand color (red for right, blue for left) the key already
+  // shows, at a low fixed alpha (0.5) so it reads as "a little more" of
+  // the same color rather than a wash of a different one. Chris,
+  // 2026-09-05 follow-up: "now that the color is red and blue, i don't
+  // need the 25% dimmer anymore" (see flashPlayedKey) and "change colors
+  // from the green color when i click a button, to that new red color
+  // except for the LH Fingers buttons...make it the bluer color" -- so
+  // the click flash (flashKey) now uses this same map too, picked via
+  // el._persistentHand (see handFromColor above): red for a key with no
+  // persistent highlight or a right-hand one, blue only for a left-hand
+  // one (LH Fingers, or a chord's left-hand notes on Chords/Progressions).
+  const ACCENT_COLOR = { right: "rgba(220,38,38,0.5)", left: "rgba(2,132,199,0.5)" };
+
+  // Chris, 2026-09-05: "when i click a note with my mouse, the note name
+  // lights up then fades out. that's good, except for when i click a note
+  // that is already lit up in the scale... it needs to make sure those
+  // already highlighted notes don't fade if they're clicked." Previously
+  // this always hid the label after the flash, which stomped on any
+  // persistent chord/scale label light() had already put there — clicking
+  // a handful of highlighted keys in a row made their reference labels
+  // disappear for good (until the next full re-render). Now the flash
+  // still shows the clicked note's own label for the same 600ms, but
+  // afterward restores whichever persistent label (if any) that key held
+  // instead of blanking it — a plain unlit key (no persistent label) still
+  // fades to nothing exactly as before.
   function flashKey(el, label) {
     const overlay = el.querySelector(".key-flash");
     const s = el.querySelector(".key-label");
     clearTimeout(el._flashTimeout);
+    // Was a fixed light-green tint; now the same red/blue accent the
+    // play-through pulse uses, keyed off this key's own persistent hand
+    // color when it has one (a lit scale/chord key), falling back to
+    // defaultFlashHand for a key with no persistent color of its own --
+    // e.g. an off-scale key on the Scales tab's LH Fingers view, which
+    // should still flash blue rather than always defaulting to red (see
+    // defaultFlashHand's comment above resetPiano).
+    overlay.style.background = ACCENT_COLOR[el._persistentHand || defaultFlashHand];
     overlay.style.transition = "none";
     overlay.style.opacity = "1";
-    s.textContent = label;
+    setKeyLabelText(s, label);
     s.style.opacity = "1";
     void overlay.offsetWidth;
     overlay.style.transition = "opacity 0.6s ease";
     overlay.style.opacity = "0";
-    el._flashTimeout = setTimeout(() => { s.style.opacity = "0"; }, 600);
+    el._flashTimeout = setTimeout(() => {
+      if (el._persistentLabel) {
+        setKeyLabelText(s, el._persistentLabel);
+        s.style.opacity = "1";
+      } else {
+        s.style.opacity = "0";
+      }
+    }, 600);
+  }
+
+  // Chris, 2026-09-05: "in the scales tab when i hit the play button, can
+  // you make the correct note light up when that note is played... once
+  // that note is played or lit up, it'll default back to its original red
+  // or blue color." This pulses the same overlay a click uses (see
+  // flashKey above) on top of whatever persistent color/label that key
+  // already has -- it never touches the background or label itself, so
+  // there's nothing to "restore" afterward: the overlay simply fades back
+  // out and the existing red/blue shows through again underneath.
+  // Follow-up, same day: fade stretched from 0.15s to 0.5s, closer to the
+  // actual sample's ~0.7s release tail (see playSample's gain envelope
+  // above -- linearRampToValueAtTime from peak at +1.1s down to silent at
+  // +1.8s) than the original snappy flash. Peak opacity briefly dropped to
+  // 0.75 (a 25% reduction) when the accent color was still a mismatched
+  // green; now that it's ACCENT_COLOR's own red/blue (see above), Chris:
+  // "now that the color is red and blue, i don't need the 25% dimmer
+  // anymore" -- back to a full 1, with ACCENT_COLOR's own low alpha still
+  // doing the "just a little bit" restraint on its own.
+  function flashPlayedKey(pc, oct, hand) {
+    const isWhite = [0, 2, 4, 5, 7, 9, 11].includes(pc);
+    const list = isWhite ? whiteEls : blackEls;
+    const el = list.find(e => +e.dataset.pc === pc && +e.dataset.oct === oct);
+    if (!el) return;
+    const overlay = el.querySelector(".key-flash");
+    overlay.style.background = ACCENT_COLOR[hand] || ACCENT_COLOR.right;
+    overlay.style.transition = "none";
+    overlay.style.opacity = "1";
+    void overlay.offsetWidth;
+    overlay.style.transition = "opacity 0.5s ease";
+    overlay.style.opacity = "0";
+  }
+
+  // Lights an arbitrary set of keys with custom labels/colors — used by the
+  // Scales tab's "Choose a view" row, which needs to show many keys at once
+  // (every octave of a scale, or a specific finger-numbered run) rather than
+  // one chord's worth of notes. `entries`: [{ pc, oct, label, color }], oct
+  // is the 0-4 on-screen keyboard octave index (same indexing renderChord
+  // uses internally, i.e. note-octave minus 2).
+  function renderScaleMap(entries, defaultHand) {
+    resetPiano(defaultHand);
+    entries.forEach(e => {
+      const isWhite = [0, 2, 4, 5, 7, 9, 11].includes(e.pc);
+      light(e.pc, e.oct, e.color, e.label, isWhite);
+    });
   }
 
   // Lights the keyboard for a chord. `progIndex`/`stepIndex` are only used to
@@ -411,6 +607,9 @@
     const rightKeys = new Set();
     const keyMeta = {};
     function keyId(pc, oct) { return pc + ":" + oct; }
+    // `name` still keys noteToPc[] below (must stay ASCII) — only the copy
+    // stored on keyMeta for the on-key label (drawn via light(), pure
+    // display) gets the real ♭ (Chris, 2026-09-01).
     ch.left.forEach(note => {
       const tNote = transposeNote(note, keyPc, useFlatsArg);
       const name = tNote.replace(/[0-9]/g, "");
@@ -418,7 +617,7 @@
       const pc = noteToPc[name];
       const id = keyId(pc, oct);
       leftKeys.add(id);
-      keyMeta[id] = { name, pc, oct, isWhite: [0, 2, 4, 5, 7, 9, 11].includes(pc) };
+      keyMeta[id] = { name: toDisplayFlat(name), pc, oct, isWhite: [0, 2, 4, 5, 7, 9, 11].includes(pc) };
     });
     ch.right.forEach(note => {
       const tNote = transposeNote(note, keyPc, useFlatsArg);
@@ -427,7 +626,7 @@
       const pc = noteToPc[name];
       const id = keyId(pc, oct);
       rightKeys.add(id);
-      keyMeta[id] = { name, pc, oct, isWhite: [0, 2, 4, 5, 7, 9, 11].includes(pc) };
+      keyMeta[id] = { name: toDisplayFlat(name), pc, oct, isWhite: [0, 2, 4, 5, 7, 9, 11].includes(pc) };
     });
     const allIds = new Set([...leftKeys, ...rightKeys]);
     const usePurple = (progIndex === 3 && stepIndex === 7 && (keyPc === 10 || keyPc === 11));
@@ -489,6 +688,13 @@
       loop: !!opts.loop,
       click: !!opts.click,
       beatsPerChord: opts.beatsPerChord || 2,
+      // Scales-only (Chris, 2026-09-05: "the click on the scales tab needs
+      // to be half what it is...no accents, just half...not slow down the
+      // scales, just make the click not on every note, every other note")
+      // -- since each scale note is already its own step, this just skips
+      // the click on every other step instead of looping beatsPerChord
+      // times per step like Chords/Progressions below.
+      halfClick: !!opts.halfClick,
       direction: 1,
       stepIndex: 0,
       progArray: progArray,
@@ -505,8 +711,12 @@
       const secPerBeat = 60 / state.bpm;
       if (state.click) {
         const ctx = getAudioCtx();
-        for (let b = 0; b < state.beatsPerChord; b++) {
-          playClick(ctx.currentTime + b * secPerBeat, b === 0);
+        if (state.halfClick) {
+          if (state.stepIndex % 2 === 0) playClick(ctx.currentTime, false);
+        } else {
+          for (let b = 0; b < state.beatsPerChord; b++) {
+            playClick(ctx.currentTime + b * secPerBeat, b === 0);
+          }
         }
       }
       let next = state.stepIndex + state.direction;
@@ -531,9 +741,12 @@
     transposeNote,
     transposeChordName,
     formatLabel,
+    toDisplayFlat,
     buildKeyboard,
     resetPiano,
     renderChord,
+    renderScaleMap,
+    flashPlayedKey,
     playChordSound,
     playSingleNote,
     playThrough,

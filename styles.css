@@ -111,7 +111,22 @@ body {
   transition: color 0.15s ease;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
+  /* Unlike .prog-tab/.step-btn/.key-tab (the sub-rows within a panel),
+     this row never got flex:1 -- with exactly 4 tabs today the fixed
+     padding + font sizes below happen to fit every breakpoint, but a
+     future 5th tab would just overflow or wrap the bar (adding height)
+     instead of sharing the row width like every other button row in the
+     app already does. flex:1 1 0 + min-width:0 makes this row self-
+     adjusting the same way, so adding a tab is a markup-only change here
+     too, not a new round of breakpoint tuning. white-space:nowrap keeps
+     a label + its "Soon" pill on one line instead of wrapping inside
+     the tab and growing the bar's height once the button gets narrower
+     with more tabs sharing the row. */
+  flex: 1 1 0;
+  min-width: 0;
+  white-space: nowrap;
 }
 .wpl-tab.active { color: var(--wpl-accent-dark); }
 .wpl-tab.active::after {
@@ -171,17 +186,36 @@ body {
 .prog-tab {
   flex: 1; border-radius: 12px; padding: 14px 6px;
   background: var(--wpl-prog-bg); border-color: var(--wpl-prog-border);
+  /* center (not flex-start): all 5 progression names are now single
+     words (Foundation/Smooth/Soft/Big/Full), so every button's .num +
+     .name block is the same height and centers identically — no more
+     risk of a 2-line-wrapped name pushing one button's .num out of
+     line with the rest. If a future name gets long enough to wrap
+     again, revisit this (see git history 2026-08-30 for the prior
+     flex-start fix and why it was needed then). */
   display: flex; flex-direction: column; justify-content: center;
   min-height: 78px;
 }
 .prog-tab .num { font-weight: 800; font-size: 22px; line-height: 1.2; }
-.prog-tab .name { font-size: 12px; font-weight: 600; opacity: 0.9; margin-top: 2px; }
+/* margin-top: 4px matches the vertical gap every other "label + caption"
+   pairing in the app uses (.step-btn's flex gap:4px, both for the
+   Progressions step-row and the Chords position row) — Chris, 2026-09-02:
+   "make it all equal" after comparing this row's spacing to the step-row's
+   and finding this one tighter (was 2px here, 1px on the Chords quality
+   row's override below — now both 4px, one shared standard). */
+.prog-tab .name { font-size: 12px; font-weight: 600; opacity: 0.9; margin-top: 4px; }
 
 /* ---------- Key tabs ---------- */
 .key-tab {
   flex: 1; border-radius: 8px; padding: 9px 0; font-weight: 600; font-size: 13px;
   background: var(--wpl-tan); color: var(--wpl-tan-text);
   white-space: nowrap;
+  /* Fixed (px, not ratio) line-height so box height depends only on
+     padding, never on font-size — .key-tab-wide sets a smaller
+     font-size for 2-letter labels (Db/Eb/F#/Ab/Bb) and, since it never
+     redeclares line-height, inherits this exact px value, keeping its
+     row the same height as the 1-letter keys next to it. */
+  line-height: 15px;
 }
 .key-tab.locked { opacity: 0.55; }
 
@@ -201,14 +235,173 @@ body {
 .step-btn.active .n { color: #fff; }
 .step-btn.active .l { color: rgba(255,255,255,0.85); }
 .step-btn.playing { border-color: #f59e0b; box-shadow: 0 0 0 2px rgba(245,158,11,0.35); }
-.step-btn .n { font-weight: 700; color: var(--wpl-ink); font-size: 15px; line-height: 1.2; }
-.step-btn .l { font-size: 12px; color: var(--wpl-muted); line-height: 1.2; }
+/* Chris, 2026-09-02, follow-up (after reviewing Chords v2): "the Major/Minor
+   titles on the OLD Chords tab's bottom row look bigger/bolder than Chords
+   v2's... make that change on chords2 to match" + "make the progressions
+   tab lower row title match... so the shell fonts are the same size" +
+   later, after a scoped fix still left Practice's row out: "why do I keep
+   having to tell you to resize text? they should be the same on all the
+   tabs... unless the text on a button is too long." So this is the BASE
+   rule now (not a per-ID override) — every consumer of plain .step-btn .n
+   automatically gets the same weight/size with no per-tab patching needed:
+   Progressions' #wpl-step-row, Chords v2's #wpl-quality-row2, AND
+   Practice's #wpl-scale-hands-row/#wpl-scale-direction-row/
+   #wpl-scale-octaves-row (Right/Both, Up/Down/Up-Dn, 1-2-3 8ve) all share
+   this one rule. Matches the OLD Chords tab's #wpl-chord-quality-tabs
+   .prog-tab .num sizing exactly (800/16px desktop, see that rule further
+   down) — that's the one row this whole family is modeled on. Captions
+   (.l) are untouched; only rows that use them (step-row, quality-row2) are
+   affected, at 12px as before. */
+.step-btn .n { font-weight: 800; color: var(--wpl-ink); font-size: 16px; line-height: 1.2; }
+/* Chris, 2026-09-04: top-row subtitle (.prog-tab .name) and bottom-row
+   subtitle (.step-btn .l) read as two different colors -- .name has no
+   color of its own (inherits --wpl-ink at 0.9 opacity from the shared
+   .prog-tab/.key-tab/.step-btn rule above), .l was hardcoded to
+   --wpl-muted (gray). Matching .l to the same treatment (drop the
+   hardcoded color, add the same 0.9 opacity) makes every subtitle the
+   same color everywhere .step-btn .l is used -- Progressions' step-row,
+   Chords v2's quality-row2, Scales' view-row. */
+.step-btn .l { font-size: 12px; opacity: 0.9; line-height: 1.2; }
+
+/* Full label ("Right Hand", "Left Hand") vs short label ("RH", "LH") --
+   Chris, 2026-09-04: short only on mobile, full on desktop. Short is the
+   default/safe-everywhere text; full switches on at each consumer's own
+   min-width query below. (The Choose a Scale row's title used to need
+   this too, to abbreviate "Pentatonic" to "Pent" -- Chris, 2026-09-05,
+   moved "Pentatonic" down to the button's subtitle instead, always
+   spelled out, so that row no longer uses these classes at all -- see
+   .wpl-name-wide below.) */
+.wpl-lbl-full { display: none; }
+.wpl-lbl-short { display: inline; }
+/* Scale readout ("C", "Cm", ...): spelled-out Major/Minor only above the
+   readout box's own mobile/desktop split (140px box starts here, same
+   breakpoint the .wpl-readout-row mobile override below uses) -- Chris,
+   2026-09-05: "on desktop... change the text back from C to C Major and
+   Cm to C Minor." Below this width the compact "C"/"Cm" stays (matches
+   the smaller 112px/88px boxes at narrower widths). */
+@media (min-width: 521px) {
+  #wpl-chord-name .wpl-lbl-full { display: inline; }
+  #wpl-chord-name .wpl-lbl-short { display: none; }
+}
+/* On-key note/number labels: same 11px/10px (white/black) at every width
+   until now -- Chris, 2026-09-05: "on desktop only, can you make the note
+   names/number names any bigger?" Base size (mobile/tablet keys are too
+   narrow for anything bigger) stays the original inline-style values;
+   only bumped from 521px up, same "desktop" threshold as the readout
+   box above. */
+.key-label-white { font-size: 11px; }
+.key-label-black { font-size: 10px; }
+@media (min-width: 521px) {
+  .key-label-white { font-size: 15px; }
+  .key-label-black { font-size: 13px; }
+}
+/* Choose a Scale row's title (.num) is always "Major"/"Minor" now --
+   Chris, 2026-09-05, reordering the row into 2 groups of 3 -- so it no
+   longer needs its own downscoped size like the old "Pentatonic" title
+   did; it just uses the same .prog-tab .num sizing as every other row
+   (12px/14px/22px across the same 340/520 breakpoints).
+   "Pentatonic" moved down to be the subtitle (.name) instead, always
+   spelled out rather than abbreviated to "Pent". .wpl-name-wide still
+   flags just those two buttons' subtitles (see SCALE_TYPES "wide" flag
+   in ui.js) for the 521-619px tier below, where "Scale"/"Blues" keep the
+   row's normal, larger .name size and only "Pentatonic" needs its own
+   smaller size to avoid wrapping.
+   Below 521px, though, Chris, 2026-09-05 (mobile only): "make Pentatonic
+   bigger... then reduce the subtitles Scale and Blues to be the same
+   size as Pentatonic" -- so the two mobile tiers (see #wpl-scale-type-row
+   .prog-tab .name further down, at the 341-520px and <=340px breakpoints)
+   drop the .wpl-name-wide restriction and size ALL THREE subtitles
+   (Scale/Pentatonic/Blues) the same, at the largest size that still fits
+   "Pentatonic" -- the longest of the three -- at that tier's narrowest
+   real device width (Playwright-verified: candidate sizes tested against
+   the button's actual measured width, with wrap/overflow checked directly
+   via scrollHeight and scrollWidth, at real phone widths 320-520px rather
+   than the full theoretical breakpoint range, since e.g. 341-359px has no
+   real device and its own tighter "pinch" from the row's padding/gap
+   shrinking right at that boundary). 9px still covers 521-619px; 620px+
+   is wide enough for the row's own normal .name size (12px) with real
+   margin, so no override is needed there. */
+@media (min-width: 521px) and (max-width: 619px) {
+  #wpl-scale-type-row .prog-tab .name.wpl-name-wide { font-size: 9px; }
+}
+/* "Right Hand"/"Left Hand" became "RH Fingers"/"LH Fingers" (Chris,
+   2026-09-04), shown at every width (nFull===nShort for this row again --
+   "Finger Patterns" briefly lived here on 2026-09-05 but Chris caught it:
+   "no! not 'finger patterns' on the bottom row! only the scale / view
+   part above the piano," so this row is back to "RH Fingers"/"LH
+   Fingers", see SCALE_VIEWS in ui.js) -- so unlike "Note"/"Number", this
+   row's text can't just avoid wrapping by getting shorter below some
+   breakpoint on its own; the fix here is shrinking the row's own
+   .step-btn .n font at the widths where it otherwise wraps.
+   Chris, 2026-09-05 (mobile only): "make the titles bigger, but don't
+   let LH and RH fingers wrap... make the bottom subtitles the same text
+   size as the top row subtitles." The old flat 8px/7px for all of
+   <=520px actually still wrapped "RH Fingers"/"LH Fingers" at real
+   320px-wide phones (Playwright-confirmed: scrollHeight jumps to a 2nd
+   line at 8px there), so the <=520px tier is now split into four
+   narrower bands, each the largest .n size that keeps "RH Fingers" on
+   one line at that band's narrowest *real* device width (forced
+   white-space:nowrap + measured scrollWidth against the button's actual
+   width, tested across every common phone width 320-520px, not the
+   theoretical breakpoint continuum): 7px for <=340px (real floor: 320px);
+   8px for 341-374px (real floor: 360px); 8.25px for 375-411px (real
+   floor: 375px); 9px for 412-520px (real floor: 412px). .l (the
+   subtitle) is set to match the Choose a Scale row's own new unified
+   subtitle size at the same two breakpoints it uses (7.75px <=340px,
+   8px 341-520px) per Chris's "same as the top row" instruction, rather
+   than following the .n tiers above -- both sets of numbers were
+   verified together (all six buttons' .n and .l, at every real width
+   320-520px) with zero wraps or overflow. 10px/9px still covers
+   521-589px; 12px/10px still covers 590-899px; 900px+ keeps the row's
+   standard, unscoped 16px/12px (already verified to fit there). */
+@media (max-width: 340px) {
+  #wpl-scale-view-row .step-btn .n { font-size: 7px; }
+  #wpl-scale-view-row .step-btn .l { font-size: 7.75px; }
+}
+@media (min-width: 341px) and (max-width: 374px) {
+  #wpl-scale-view-row .step-btn .n { font-size: 8px; }
+  #wpl-scale-view-row .step-btn .l { font-size: 8px; }
+}
+@media (min-width: 375px) and (max-width: 411px) {
+  #wpl-scale-view-row .step-btn .n { font-size: 8.25px; }
+  #wpl-scale-view-row .step-btn .l { font-size: 8px; }
+}
+@media (min-width: 412px) and (max-width: 520px) {
+  #wpl-scale-view-row .step-btn .n { font-size: 9px; }
+  #wpl-scale-view-row .step-btn .l { font-size: 8px; }
+}
+@media (min-width: 521px) and (max-width: 589px) {
+  #wpl-scale-view-row .step-btn .n { font-size: 10px; }
+  #wpl-scale-view-row .step-btn .l { font-size: 9px; }
+}
+@media (min-width: 590px) and (max-width: 899px) {
+  #wpl-scale-view-row .step-btn .n { font-size: 12px; }
+  #wpl-scale-view-row .step-btn .l { font-size: 10px; }
+}
+
+/* Choose a View row: every button now has both a title and a subtitle
+   (Note/Names, Scale/Degrees, RH/1 Octave, etc, 2026-09-04) so plain
+   .step-btn centering (shared rule above) already puts every title on
+   the same plane -- no per-row override needed, same as Progressions'
+   own step-row. (Earlier attempt used flex-start to compensate for 2
+   of the 6 buttons having no subtitle; not needed once the labels
+   were split.) */
 
 /* ---------- Chord / number readout ---------- */
 /* Both boxes are a fixed width (not min-width) sized with buffer to fit the
    widest real value ("Root High"/"Root Low" on the Chords tab) so the row
    never shifts based on content length, and justify-content:center + gap
-   groups them near the middle instead of pinning them to the row's edges. */
+   groups them near the middle instead of pinning them to the row's edges.
+   (A hand-with-numbered-fingers icon briefly lived in this row too,
+   2026-09-05 -- removed again: even capped at a modest max size it was
+   still taller than the readout boxes on every tier, which grew the
+   row's own height and visibly pushed the piano down every time a
+   Fingers view was selected. Chris: "your hand is too big which pushed
+   that row down which made the entire shell move down... just delete
+   the hand." A real PNG image, sized to fit inside the existing box
+   height instead of growing it, is the likely next approach if he
+   supplies one -- flagged here so the reasoning isn't lost if it comes
+   back.) */
 .wpl-readout-row { display: flex; justify-content: center; align-items: flex-end; gap: 36px; margin: 8px 0 6px; padding: 0 20px; }
 .wpl-readout-label { font-size: 13px; color: var(--wpl-muted); }
 /* Numbers/symbols ("C", "1", "5/7") read fine big and bold; full words
@@ -328,6 +521,16 @@ body {
   grid-column: 1;
   visibility: hidden;
   pointer-events: none;
+  /* Without this, a grid item's default min-width:auto lets its own
+     content's min-content size force the shared grid COLUMN wider than
+     the wrapper — the width equivalent of the height "tallest wins"
+     trick above, but as a bug: one panel's non-wrapping row (e.g. the
+     Scales settings row) can blow out the column and drag every OTHER
+     panel to that same width, overflowing the card on narrow screens
+     (Chris, 2026-08-31 — caught via Playwright at 390px). min-width:0
+     lets the item shrink to the column's real size so its own flex/text
+     content wraps instead. */
+  min-width: 0;
 }
 .wpl-panel.active {
   visibility: visible;
@@ -409,6 +612,7 @@ body {
    nothing left stuck afterward. */
 @media (hover: hover) and (pointer: fine) {
   .wpl-tab:hover { color: var(--wpl-ink); }
+  .wpl-tab.active:hover { color: var(--wpl-accent-dark); }
   .prog-tab:hover, .key-tab:hover, .step-btn:hover {
     box-shadow: var(--wpl-lift-shadow);
     transform: translateY(-1.5px);
@@ -435,22 +639,108 @@ body {
      screens (the badge is position:absolute, so it doesn't reserve space
      on its own). */
   #wpl-wrapper.wpl-has-trial-badge .wpl-header { padding-right: 100px; }
-  #wpl-piano { height: 55px !important; }
+  /* Chris, 2026-09-02: "the black border around the piano on mobile seems
+     too thick. it looks more proportionate on desktop." Desktop's frame
+     padding-to-frame-height ratio is 5/(118+2*5) ≈ 3.9%; mobile's old 4px
+     padding on a 55px piano (frame = 55+2*4 = 63px) was ≈ 6.3% — visibly
+     chunkier. "don't want that to move everyting up in the shell" — so the
+     FRAME's total height must stay exactly 63px through every pass below.
+     First pass used padding:2.5px + piano height:58px (58+2*2.5=63) which
+     matched the ratio, but Chris then noticed "why does the left border
+     seem thicker than the right border" — a real, measured artifact: a
+     2.5px (half-pixel) padding lands asymmetrically on the device pixel
+     grid, rendering 2 solid dark pixels on the left edge vs only 1 on the
+     right (confirmed via pixel-level screenshot scanning). Second pass
+     went to a whole-number padding:2px + piano height:59px (59+2*2=63,
+     frame height still exactly preserved), which fixed the left/right
+     symmetry — but Chris then noticed "the rounded corners are getting
+     cut off" on mobile: with only 2px of dark material and an 8px
+     border-radius shared by both the frame and the inner piano, there was
+     barely any dark corner left to show the curve — the piano's own key
+     content pokes almost right up to the rounded edge (confirmed via a
+     15x cropped zoom of the top-left corner: the blue highlighted key's
+     rounded top corner is nearly flush with the frame's own curve, with
+     only a sliver of dark pixels between them). Chris: "make the mobile
+     border 1px bigger all the way around" — padding goes to 3px (still a
+     whole number, so the left/right pixel-symmetry fix above is
+     unaffected) and piano height compensates down to 57px (57+2*3=63,
+     frame height still exactly the same 63px as every prior pass — "don't
+     want that to move everyting up in the shell" still holds). border-
+     radius stays 8px (unchanged) since it already matches #wpl-piano's
+     own fixed inline border-radius:8px (index.html) — shrinking it would
+     make the outer frame corner tighter than the inner piano's corner,
+     which looks wrong. */
+  #wpl-piano { height: 57px !important; }
   #wpl-piano span { font-size: 6px !important; }
-  #wpl-piano-frame { padding: 4px !important; border-radius: 8px !important; }
+  /* Black-key labels with an accidental ("E♭", "♭3", "C♯") stack on two
+     lines here instead of running side by side -- a black key at this
+     width is only ~6px wide, not enough for 2 characters at any legible
+     size. Stacked in the label's own left-to-right order (see
+     setKeyLabelText in piano-engine.js), so "E♭" is E-over-♭ but "♭3" is
+     ♭-over-3 -- Chris, 2026-09-05: "stack the black keys on mobile," then
+     "I dont' like 7b where 7 is on top of the flat. it needs to be
+     reversed to flat is on top." Accidental line bumped from 5px to 6px
+     the same day: "make the # and flat symbols on mobile be larger.
+     there is more room to fit them." */
+  #wpl-piano .key-label-stacked { display: flex !important; flex-direction: column; align-items: center; justify-content: center; gap: 0; }
+  #wpl-piano .key-label-stacked .key-label-main { display: block; line-height: 1; }
+  #wpl-piano .key-label-stacked .key-label-accidental { display: block; line-height: 1; font-size: 6px !important; }
+  #wpl-piano-frame { padding: 3px !important; border-radius: 8px !important; }
   .wpl-title { font-size: 22px; }
   .prog-tab { padding: 8px 2px; min-height: 59px; }
   .prog-tab .num { font-size: 14px; }
-  .prog-tab .name { font-size: 8px; }
-  .key-tab { padding: 6px 0; font-size: 11px; }
+  /* Chris, 2026-09-02: "the sub fonts on the top row can be a little
+     bigger... make sure 'foundation' text looks good cause that's the
+     longest text" — shared by Progressions' own top row (5 buttons, the
+     tighter fit) and Chords v2's position row (4 buttons, more room per
+     button). Playwright nowrap-probe against Progressions' narrower
+     buttons — the binding case — at this breakpoint: "Foundation" fits up
+     to 10.5px (57.16px natural vs 58.41px available) and wraps at 10.75px;
+     10px keeps a real ~4px margin below that, still a clear step up from
+     the old 8px. */
+  .prog-tab .name { font-size: 10px; }
+  .key-tab { padding: 6px 0; font-size: 11px; line-height: 12px; }
+  /* 2-letter keys (Db/Eb/F#/Ab/Bb) keep the SAME font-size as the
+     1-letter keys (Chris: text must match, not shrink) — only
+     letter-spacing tightens slightly so the extra character still fits
+     the same flex:1 box without wrapping. */
+  .key-tab.key-tab-wide { letter-spacing: -0.3px; }
   #wpl-key-tabs { gap: 3px !important; }
   .step-btn { padding: 5px 1px; min-height: 44px; }
-  .step-btn .n { font-size: 10px; }
+  /* Base rule now (see the desktop rule above), so every .step-btn .n
+     consumer (step-row, quality-row2, Practice's Hand/Direction/Octaves)
+     moves together automatically. */
+  .step-btn .n { font-size: 11px; }
   .step-btn .l { font-size: 10px; }
-  #wpl-prog-tabs, #wpl-step-row, #wpl-chord-quality-tabs, #wpl-chord-position-row { gap: 4px !important; }
-  #wpl-prog-tabs, #wpl-chord-quality-tabs { margin-bottom: 6px !important; }
+  /* #wpl-position-tabs2 / #wpl-quality-row2 (Chords v2's own two rows)
+     added to this shared list — Chris, 2026-09-02: "the mobile horizontal
+     spacing between the buttons are not the same on progressions, practice
+     and chords2" — these two rows were left out when this rule was first
+     written (before Chords v2 existed) and were still falling back to
+     their own 8px inline gap (index.html) at this breakpoint instead of
+     shrinking with every other row's buttons. */
+  #wpl-prog-tabs, #wpl-step-row, #wpl-scale-type-row, #wpl-scale-view-row, #wpl-position-tabs2, #wpl-quality-row2 { gap: 4px !important; }
+  #wpl-prog-tabs, #wpl-scale-type-row, #wpl-position-tabs2 { margin-bottom: 6px !important; }
+  /* Chris, 2026-09-01: "why do you have 3 rows of buttons? make it
+     identical to chords/progressions that have 2 rows" — this row (Hand +
+     Direction + Octaves) used to force Octaves onto its own 2nd line here
+     via .wpl-scale-break, with its own compact min-height/font tuned just
+     to fit that 2-line layout in Practice's height budget. Now that
+     index.html removed the forced break, this row is a single line of 8
+     .step-btns exactly like Progressions' #wpl-step-row / Chords' two
+     rows — it inherits their shared .step-btn sizing above (gap/margin
+     folded into the same selectors) instead of a bespoke override, and
+     with only ONE line instead of two, Practice's total height only
+     shrinks further below Chords/Progressions's shared max, so there's
+     no shell-height risk (confirmed via qa/check-dimensions.js). */
   .wpl-readout-row { padding: 0 4px; margin: 4px 0 2px; gap: 20px; }
   .wpl-readout-row > div { width: 112px !important; height: 40px !important; }
+  /* Choose a Scale row's subtitles (Scale/Pentatonic/Blues), unified --
+     see the .wpl-name-wide comment further up for the full breakdown.
+     This is the 341-520px tier (8px), scoped generically (not just
+     .wpl-name-wide) so Scale/Blues shrink down to match Pentatonic
+     instead of keeping the unscoped 10px .prog-tab .name mobile size. */
+  #wpl-scale-type-row .prog-tab .name { font-size: 8px; }
   /* line-height is a fixed px value (not the desktop inline style's em-relative
      1.3), shared by both the normal and .long-label sizes below, so a
      short value ("C4") and a long one ("2nd Inv") sit on the same vertical
@@ -503,15 +793,50 @@ body {
   #wpl-wrapper.wpl-has-trial-badge .wpl-subtitle { font-size: 11px; margin-top: 3px; }
   .prog-tab { padding: 6px 1px; min-height: 52px; }
   .prog-tab .num { font-size: 12px; }
-  .prog-tab .name { font-size: 7px; }
+  /* Same "a little bigger, keep Foundation on one line" request as the 520px
+     rule above — Playwright nowrap-probe at this narrower breakpoint:
+     "Foundation" fits up to 8.75px (47.64px natural vs 48.80px available,
+     ~1.2px margin) and wraps at 9px, so 8.5px keeps a real ~2.5px margin
+     while still stepping up from the old 7px. */
+  .prog-tab .name { font-size: 8.5px; }
   .step-btn { padding: 4px 1px; min-height: 40px; }
+  /* Same value the shared 520px rule above already uses, so no change is
+     needed stepping down into this breakpoint. */
   .step-btn .n, .step-btn .l { font-size: 9px; }
-  .key-tab { font-size: 9.5px; padding: 5px 0; }
+  .key-tab { font-size: 9.5px; padding: 5px 0; line-height: 11px; }
+  .key-tab.key-tab-wide { letter-spacing: -0.4px; }
   #wpl-key-tabs { gap: 2px !important; }
-  #wpl-prog-tabs, #wpl-step-row, #wpl-chord-quality-tabs, #wpl-chord-position-row { gap: 3px !important; }
-  .wpl-readout-row { gap: 10px; padding: 0 2px; }
+  /* Same fix as the 520px rule above: #wpl-position-tabs2 / #wpl-quality-row2
+     added so Chords v2's own two rows shrink their gap along with every
+     other row at this breakpoint too. */
+  #wpl-prog-tabs, #wpl-step-row, #wpl-scale-type-row, #wpl-scale-view-row, #wpl-position-tabs2, #wpl-quality-row2 { gap: 3px !important; }
+  /* Chords v2 (#wpl-panel-chords2): quality row's captions are plain
+     .step-btn .l, which is 9px at this breakpoint (shared rule above) —
+     fine for Progressions' own short captions ("2m", "1/3"), but Min7's
+     "1-♭3-5-♭7" wraps to a 2nd line at 9px in this row's slightly
+     different padding (Playwright probe: needs ≤8.25px to clear 35.3px of
+     available width; wraps at 8.5px). Chris, 2026-09-02: "reduce text
+     size only as much as to prevent wrapping... only on a smaller phone"
+     — so this ONLY overrides the caption size, ONLY at this narrowest
+     breakpoint (nothing changes at 340–520px or desktop, where it already
+     fits at the shared 10px/12px sizes with room to spare), and only down
+     to 8px — 2px of real margin below the exact 8.25px threshold, not
+     shaved to the bone. */
+  #wpl-quality-row2 .step-btn .l { font-size: 8px; }
+  .wpl-readout-row { padding: 0 2px; gap: 10px; }
   .wpl-readout-row > div { width: 88px !important; height: 34px !important; }
+  /* Overrides the 341-520px tier's 8px above -- this narrowest phone
+     tier (real floor: 320px) has slightly less room, so Scale/Pentatonic/
+     Blues are unified at 7.75px here instead (see .wpl-name-wide comment
+     near the 521-619px tier for the full breakdown). */
+  #wpl-scale-type-row .prog-tab .name { font-size: 7.75px; }
   .wpl-readout-row #wpl-chord-name, .wpl-readout-row #wpl-step-label { font-size: 15px !important; }
+  /* 11.5px. Was briefly dropped to 10px to squeeze "Finger Patterns" into
+     this 88px box on real phones, but Chris shortened the View readout's
+     finger-view label to "Fingers" instead (see VIEW_READOUT_LABELS in
+     ui.js) -- same length as "Numbers", which already fit fine here --
+     so the extra shrink is no longer needed and this reverts to the size
+     tuned for the longest Scale readout values (Cm Pentatonic, etc). */
   .wpl-readout-row #wpl-chord-name.long-label, .wpl-readout-row #wpl-step-label.long-label { font-size: 11.5px !important; }
   .wpl-playbar { gap: 6px; padding: 8px 8px; }
   .wpl-playbar-controls { gap: 5px; flex-wrap: wrap; row-gap: 6px; }
@@ -521,5 +846,15 @@ body {
 @media (max-height: 500px) {
   #wpl-piano { height: 95px !important; }
   #wpl-piano span { font-size: 8px !important; }
+  /* Same two-line stacking as the portrait tier above -- landscape phones
+     hit this height-based query at widths this app never gave black-key
+     labels any stacking treatment at all, so a 2-character "C♯"/"♭3" ran
+     side by side and didn't fit a black key here either (~10-14px wide)
+     -- Chris, 2026-09-05: "on mobile landscape, the black notes are not
+     stacked." Slightly bigger than the portrait tier's sizes since these
+     keys have a bit more room. */
+  #wpl-piano .key-label-stacked { display: flex !important; flex-direction: column; align-items: center; justify-content: center; gap: 0; }
+  #wpl-piano .key-label-stacked .key-label-main { display: block; line-height: 1; }
+  #wpl-piano .key-label-stacked .key-label-accidental { display: block; line-height: 1; font-size: 7px !important; }
   #wpl-piano-frame { padding: 4px !important; border-radius: 8px !important; }
 }
